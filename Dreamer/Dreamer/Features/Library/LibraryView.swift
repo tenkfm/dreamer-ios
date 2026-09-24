@@ -1,0 +1,107 @@
+import SwiftUI
+
+/// 13 Library (tab).
+struct LibraryView: View {
+    @State private var viewModel: LibraryViewModel
+
+    private let columns = [GridItem(.flexible(), spacing: DS.Space.stack), GridItem(.flexible(), spacing: DS.Space.stack)]
+
+    init(viewModel: LibraryViewModel) {
+        _viewModel = State(initialValue: viewModel)
+    }
+
+    var body: some View {
+        ZStack {
+            SkyBackground(kind: .top)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    HeaderBar(center: { SkyTitle(text: "Library") }, trailing: { EmptyView() })
+                        .enterUp(0.1)
+                    GlassSearchField(placeholder: "Search a symbol, e.g. teeth", text: $viewModel.query)
+                        .padding(.horizontal, DS.Space.screen)
+                        .padding(.top, 18)
+                        .enterUp(0.25)
+                    categories
+                        .padding(.top, 8)
+                        .enterUp(0.35)
+                    SectionHeader(title: viewModel.sectionTitle)
+                        .padding(.horizontal, DS.Space.screen)
+                        .padding(.top, 14)
+                        .enterUp(0.45)
+                    grid
+                        .padding(.horizontal, DS.Space.screen)
+                        .padding(.top, 14)
+                        .enterUp(0.55)
+                }
+                .padding(.bottom, DS.Space.tabBarClearance)
+            }
+            .scrollIndicators(.hidden)
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .animation(.soft(0.4), value: viewModel.symbols)
+    }
+
+    private var categories: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(viewModel.categories) { category in
+                    Chip(title: category.title, isOn: viewModel.category == category, size: .small) {
+                        viewModel.category = category
+                    }
+                }
+            }
+            .padding(.horizontal, DS.Space.screen)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    @ViewBuilder private var grid: some View {
+        if viewModel.symbols.isEmpty {
+            Text("Nothing found. Try another word.")
+                .textStyle(.body, color: DS.Palette.textTertiary)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 30)
+        } else {
+            LazyVGrid(columns: columns, spacing: DS.Space.stack) {
+                ForEach(viewModel.symbols) { symbol in
+                    Button { viewModel.open(symbol) } label: {
+                        SymbolTile(symbol: symbol)
+                    }
+                    .buttonStyle(PressableButtonStyle())
+                }
+            }
+        }
+    }
+}
+
+/// Image on top, glass footer with title and meaning.
+private struct SymbolTile: View {
+    var symbol: LibrarySymbol
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            DreamImage.image(named: symbol.imageName)
+                .resizable()
+                .scaledToFill()
+                .frame(height: 96)
+                .frame(maxWidth: .infinity)
+                .clipped()
+            VStack(alignment: .leading, spacing: 4) {
+                Text(symbol.title).textStyle(.bodyStrong).lineLimit(1)
+                Text(symbol.meaning).textStyle(.label, color: DS.Palette.textTertiary).lineLimit(2, reservesSpace: true)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.option, style: .continuous))
+        .glassCard(radius: DS.Radius.option)
+        .multilineTextAlignment(.leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+    }
+}
+
+#Preview {
+    LibraryView(viewModel: LibraryViewModel(appState: .preview(), catalog: MockSymbolCatalog()))
+}

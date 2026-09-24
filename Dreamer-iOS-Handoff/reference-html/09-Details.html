@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dreamer - a few details</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&amp;family=Quicksand:wght@300..700&amp;family=Nunito:wght@200..700&amp;family=M+PLUS+Rounded+1c:wght@300;400;500;700&amp;family=Comfortaa:wght@300..700&amp;family=Outfit:wght@200..700&amp;family=Urbanist:wght@200..700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF4FB;font-family:Quicksand,system-ui,sans-serif;color:#1E2A4A;-webkit-font-smoothing:antialiased}
+a{color:#1E2A4A}a:hover{color:#4B587A}
+button{font-family:inherit}
+@keyframes skyDrift{0%{transform:scale(1.12) translateX(-10px)}50%{transform:scale(1.12) translateX(10px)}100%{transform:scale(1.12) translateX(-10px)}}
+@keyframes enterUp{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.08);opacity:.45}}
+@keyframes breathe2{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.14);opacity:.2}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.55;transform:scale(.85) rotate(0deg)}50%{opacity:1;transform:scale(1.1) rotate(20deg)}}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes bar{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes caret{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ring{from{stroke-dashoffset:302}}
+@keyframes reveal{from{filter:blur(14px);transform:scale(1.05)}to{filter:blur(0);transform:none}}
+@keyframes slideUp{from{opacity:0;translate:0 40px}to{opacity:1;translate:0 0}}
+.e{opacity:0;animation:enterUp .9s cubic-bezier(.22,.8,.26,1) forwards}
+.press{transition:transform .18s cubic-bezier(.3,.7,.4,1),box-shadow .25s,background .25s}
+.press:active{transform:scale(.95)}
+.lift{transition:transform .35s cubic-bezier(.22,.8,.26,1),box-shadow .35s}
+.lift:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(80,110,170,.18)}
+.noscroll::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.e{opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #EEF4FB; color: #1E2A4A; {{fontVars}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden"><img src="asset:SkyTall" alt="" style="display: block; width: 390px; height: 844px; object-fit: cover; animation: skyDrift 46s ease-in-out infinite"></div>
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 420px; bottom: 0; background: linear-gradient(180deg, rgba(238, 244, 251, 0) 0%, rgba(241, 245, 250, 0.75) 35%, #EEF4FB 70%)"></div>
+<p style="position: absolute; left: 28px; right: 28px; top: 150px; margin: 0; text-align: center; font-size: 18px; line-height: 27px; font-weight: 500; color: #FFFFFF; text-shadow: 0 1px 10px rgba(70, 110, 180, 0.4)">I was back in my grandmother’s house, but the hallway kept getting longer…</p>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(30, 42, 74, 0.18); animation: fadeIn .5s ease both"></div>
+<section aria-label="A few details" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 22px 34px; border-radius: 32px 32px 0 0; background: rgba(247, 250, 254, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 -12px 40px rgba(60, 90, 150, 0.2); display: flex; flex-direction: column; gap: 18px; animation: sheetUp .7s cubic-bezier(.22,.8,.26,1) both">
+<span style="align-self: center; width: 40px; height: 5px; border-radius: 999px; background: rgba(90, 110, 150, 0.25)"></span>
+<div><h2 style="margin: 0; font-size: 24px; line-height: 30px; font-weight: 500; color: #1E2A4A">A few details</h2><p style="margin: 4px 0 0; font-size: 15px; line-height: 21px; color: #3A4666">They make your interpretation more personal.</p></div>
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 15px; font-weight: 500; color: #1E2A4A">How did it feel?</span><div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" class="press" aria-pressed="{{aFear}}" onClick="{{tFear}}" style="{{eFear}}">Fear</button><button type="button" class="press" aria-pressed="{{aJoy}}" onClick="{{tJoy}}" style="{{eJoy}}">Joy</button><button type="button" class="press" aria-pressed="{{aAnxiety}}" onClick="{{tAnxiety}}" style="{{eAnxiety}}">Anxiety</button><button type="button" class="press" aria-pressed="{{aCalm}}" onClick="{{tCalm}}" style="{{eCalm}}">Calm</button><button type="button" class="press" aria-pressed="{{aConfusion}}" onClick="{{tConfusion}}" style="{{eConfusion}}">Confusion</button></div></div>
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 15px; font-weight: 500; color: #1E2A4A">Have you had this dream before?</span><div role="radiogroup" aria-label="Have you had this dream before?" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 999px; background: rgba(90, 110, 150, 0.1)"><button type="button" role="radio" aria-checked="{{h0}}" onClick="{{q0}}" style="{{g0}}">Never</button><button type="button" role="radio" aria-checked="{{h1}}" onClick="{{q1}}" style="{{g1}}">Sometimes</button><button type="button" role="radio" aria-checked="{{h2}}" onClick="{{q2}}" style="{{g2}}">Often</button></div></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 20px; background: rgba(255, 255, 255, 0.7); color: #5670A3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="8" r="4"></circle><path d="M4 20a8 8 0 0 1 16 0"></path></svg><span style="flex-grow: 1; font-size: 15px; color: #1E2A4A">Someone specific was in it</span><button type="button" role="switch" aria-checked="{{swOn}}" aria-label="Someone specific was in it" onClick="{{swToggle}}" style="{{swStyle}}"><span style="{{knob}}"></span></button></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><a href="10-Analysis.html" class="press" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 56px; box-sizing: border-box; border: none; border-radius: 999px; background: #2E4677; color: #FFFFFF; font-size: 16px; font-weight: var(--wb); text-decoration: none; cursor: pointer; box-shadow: 0 14px 30px rgba(46, 70, 119, 0.3); "><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path></svg>Interpret my dream</a><a href="10-Analysis.html" style="display: flex; align-items: center; justify-content: center; height: 40px; color: #1E2A4A; font-size: 14px; font-weight: var(--wm); text-decoration: none">Skip</a></div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"font":{"editor":"enum","options":["Quicksand","Nunito","M PLUS Rounded 1c","Comfortaa","Outfit","Urbanist"],"default":"Quicksand","section":"Type"},"weight":{"editor":"enum","options":["Thin","Light","Regular"],"default":"Light","section":"Type"},"logo":{"editor":"enum","options":["Serif italic","Rounded"],"default":"Serif italic","section":"Type"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = {emos: ["Anxiety", "Confusion"], rep: 1, someone: true}; }
+  renderVals() {
+    const st = this.state;
+    const font = this.props.font || "Quicksand";
+    const W = {Thin: [300, 300, 400, 500], Light: [300, 400, 500, 500], Regular: [400, 500, 600, 600]}[this.props.weight || "Light"];
+    const serif = (this.props.logo || "Serif italic") === "Serif italic";
+    const fontVars = 'font-family: "' + font + '", system-ui, sans-serif; --wh: ' + W[0] + '; --wm: ' + W[1] + '; --wb: ' + W[2] + '; --wl: ' + (serif ? 600 : W[3]) +
+      '; --logoFamily: ' + (serif ? '"Cormorant Garamond", Georgia, serif' : '"' + font + '", system-ui, sans-serif') + '; --logoStyle: ' + (serif ? 'italic' : 'normal') + '; --logoTrack: ' + (serif ? '0' : '-0.5px');
+    return { fontVars: fontVars, yes: true, no: false,
+      ...(() => {
+        const EM = {"Fear": "#F6C1C1", "Joy": "#F9DF98", "Anxiety": "#F8CFB2", "Calm": "#C4E2F4", "Confusion": "#DCD3F8"};
+        const emo = (n) => { const on = st.emos.indexOf(n) >= 0; return "height: 38px; padding: 0 16px; border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: var(--wm); color: #1E2A4A; transition: background .3s, border-color .3s; background: " + (on ? EM[n] : "rgba(255, 255, 255, 0.6)") + "; border: 1px solid " + (on ? EM[n] : "rgba(90, 110, 150, 0.25)"); };
+        const tog = (n) => () => this.setState({emos: st.emos.indexOf(n) >= 0 ? st.emos.filter((x) => x !== n) : st.emos.concat([n])});
+        const seg = (i) => "height: 36px; border: none; border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: var(--wm); color: #1E2A4A; transition: background .3s, box-shadow .3s; background: " + (st.rep === i ? "#FFFFFF" : "transparent") + "; box-shadow: " + (st.rep === i ? "0 4px 12px rgba(80, 110, 170, 0.15)" : "none");
+        const out = {};
+        ["Fear", "Joy", "Anxiety", "Calm", "Confusion"].forEach((n) => { out["e" + n] = emo(n); out["t" + n] = tog(n); out["a" + n] = st.emos.indexOf(n) >= 0 ? "true" : "false"; });
+        [0, 1, 2].forEach((i) => { out["g" + i] = seg(i); out["q" + i] = () => this.setState({rep: i}); out["h" + i] = st.rep === i ? "true" : "false"; });
+        out.swOn = st.someone ? "true" : "false";
+        out.swToggle = () => this.setState({someone: !st.someone});
+        out.swStyle = "position: relative; width: 50px; height: 30px; flex-shrink: 0; border: none; border-radius: 999px; cursor: pointer; padding: 0; transition: background .3s; background: " + (st.someone ? "#2E4677" : "rgba(90, 110, 150, 0.3)");
+        out.knob = "position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); transition: transform .35s cubic-bezier(.3,.7,.4,1.3); transform: translateX(" + (st.someone ? "20px" : "0") + ")";
+        return out;
+      })(),
+    };
+  }
+}
+</script>
+</body>
+</html>

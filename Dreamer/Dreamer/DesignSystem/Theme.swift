@@ -1,0 +1,222 @@
+import SwiftUI
+
+// MARK: - Colors
+
+extension Color {
+    init(hex: UInt32, opacity: Double = 1) {
+        self.init(.sRGB,
+                  red: Double((hex >> 16) & 0xFF) / 255,
+                  green: Double((hex >> 8) & 0xFF) / 255,
+                  blue: Double(hex & 0xFF) / 255,
+                  opacity: opacity)
+    }
+}
+
+/// Design tokens from docs/02-design-system.md. Feature code uses only these values.
+enum DS {
+    enum Palette {
+        static let background      = Color(hex: 0xEEF4FB)
+        static let textPrimary     = Color(hex: 0x1E2A4A)
+        static let textSecondary   = Color(hex: 0x3A4666)
+        static let textTertiary    = Color(hex: 0x4B587A)
+        static let overline        = Color(hex: 0x3D4A6B)
+        static let icon            = Color(hex: 0x5670A3)
+        static let iconSoft        = Color(hex: 0x7FA2DC)
+        static let accent          = Color(hex: 0x3F5E9C)
+        static let cta             = Color(hex: 0x2E4677)
+        static let peach           = Color(hex: 0xF2A488)
+        static let tabInactive     = Color(hex: 0x8392B4)
+        static let segmentInactive = Color(hex: 0x5B6785)
+        static let destructive     = Color(hex: 0xB4453C)
+        static let recordDot       = Color(hex: 0xE9826A)
+        static let white           = Color.white
+
+        /// Soft blue used for every shadow: rgb(80,110,170).
+        static let shadow          = Color(hex: 0x506EAA)
+        static let ctaShadow       = Color(hex: 0x2E4677)
+        /// Orb drop shadow rgb(70,105,170).
+        static let orbShadow       = Color(hex: 0x4669AA)
+        /// Text shadow for white text over the sky: rgb(70,110,180).
+        static let skyTextShadow   = Color(hex: 0x466EB4)
+        /// Neutral line color rgb(90,110,150) used for radio rings, chip borders, switch off.
+        static let line            = Color(hex: 0x5A6E96)
+        /// Empty week-day ring rgb(130,150,190).
+        static let weekRing        = Color(hex: 0x8296BE)
+        /// Bottom sheet fill rgb(247,250,254) and its shadow rgb(60,90,150).
+        static let sheetFill       = Color(hex: 0xF7FAFE)
+        static let sheetShadow     = Color(hex: 0x3C5A96)
+        /// Veil laid over the sky behind the Details sheet.
+        static let skyDim          = Color(hex: 0x2E4677)
+        /// Mid stops of the sky fades.
+        static let fadeTop         = Color(hex: 0xF1F4F8)
+        static let fadeFull        = Color(hex: 0xF1F5FA)
+
+        static let orbGradient = RadialGradient(
+            stops: [
+                .init(color: .white, location: 0),
+                .init(color: Color(hex: 0xF6F9FE), location: 0.7),
+                .init(color: Color(hex: 0xE9F0FA), location: 1)
+            ],
+            center: UnitPoint(x: 0.5, y: 0.35), startRadius: 0, endRadius: 70)
+    }
+
+    enum Emotion {
+        static let anxiety   = Color(hex: 0xF8CFB2)
+        static let confusion = Color(hex: 0xDCD3F8)
+        static let calm      = Color(hex: 0xC4E2F4)
+        static let joy       = Color(hex: 0xF9DF98)
+        static let fear      = Color(hex: 0xF6C1C1)
+    }
+
+    // MARK: - Spacing / radii / sizes
+
+    enum Space {
+        static let screen: CGFloat = 22      // side margin for cards and headers
+        static let cta: CGFloat = 24         // side margin for bottom CTA blocks
+        static let text: CGFloat = 32        // side margin for centered onboarding text
+        static let stack: CGFloat = 10       // gap between stacked cards / options
+        static let section: CGFloat = 22     // gap between sections
+        static let cardPadding: CGFloat = 16
+        static let cardPaddingLarge: CGFloat = 18
+        /// Distance from the top safe area edge to the header buttons.
+        static let headerTop: CGFloat = 6
+        /// Bottom content inset on tab screens so the last row clears the floating tab bar.
+        static let tabBarClearance: CGFloat = 110
+    }
+
+    enum Radius {
+        static let card: CGFloat = 24
+        static let cardLarge: CGFloat = 26
+        static let option: CGFloat = 22
+        static let tile: CGFloat = 16
+        static let sheet: CGFloat = 32
+    }
+
+    enum Size {
+        static let primaryButton: CGFloat = 56
+        static let linkButton: CGFloat = 40
+        static let iconButton: CGFloat = 46
+        static let tabBarHeight: CGFloat = 62
+        static let tabBarInset: CGFloat = 26
+        static let tabBarBottom: CGFloat = 24
+        static let heroHeight: CGFloat = 380
+        static let heroFade: CGFloat = 200
+        static let topSkyHeight: CGFloat = 300
+    }
+}
+
+// MARK: - Fonts
+
+/// One place to swap the UI family. Default = Quicksand ("Light" weight set from the design).
+enum DreamerFont {
+    enum Weight { case light, regular, medium, semibold, bold }
+
+    static func postScriptName(_ weight: Weight) -> String {
+        switch weight {
+        case .light:    "Quicksand-Light"
+        case .regular:  "Quicksand-Regular"
+        case .medium:   "Quicksand-Medium"
+        case .semibold: "Quicksand-SemiBold"
+        case .bold:     "Quicksand-Bold"
+        }
+    }
+
+    /// Scales with Dynamic Type relative to `textStyle`.
+    static func ui(_ size: CGFloat, _ weight: Weight = .regular, relativeTo textStyle: Font.TextStyle = .body) -> Font {
+        .custom(postScriptName(weight), size: size, relativeTo: textStyle)
+    }
+
+    /// Does not scale. For chrome that must keep its geometry (tab bar, pills).
+    static func fixed(_ size: CGFloat, _ weight: Weight = .regular) -> Font {
+        .custom(postScriptName(weight), fixedSize: size)
+    }
+
+    static func logo(_ size: CGFloat) -> Font {
+        .custom("CormorantGaramond-SemiBoldItalic", fixedSize: size)
+    }
+}
+
+/// Type scale from docs/02-design-system.md section 3.
+enum TextStyle {
+    case logoLarge, logo, display, title, heading, lead, bodyStrong, body, bodyLong, button, link, secondary, label, small, overline
+
+    var font: Font {
+        switch self {
+        case .logoLarge:       DreamerFont.logo(44)
+        case .logo:            DreamerFont.logo(28)
+        case .display:         DreamerFont.ui(26, .medium, relativeTo: .title)
+        case .title:           DreamerFont.ui(24, .medium, relativeTo: .title2)
+        case .heading:         DreamerFont.ui(18, .medium, relativeTo: .headline)
+        case .lead:            DreamerFont.ui(17, .regular, relativeTo: .body)
+        case .bodyStrong:      DreamerFont.ui(15, .medium, relativeTo: .body)
+        case .body, .bodyLong: DreamerFont.ui(15, .regular, relativeTo: .body)
+        case .button:          DreamerFont.ui(16, .medium, relativeTo: .body)
+        case .link:            DreamerFont.ui(14, .regular, relativeTo: .callout)
+        case .secondary:       DreamerFont.ui(13, .regular, relativeTo: .subheadline)
+        case .label:           DreamerFont.ui(12, .regular, relativeTo: .caption)
+        case .small:           DreamerFont.ui(11, .regular, relativeTo: .caption2)
+        case .overline:        DreamerFont.ui(11, .medium, relativeTo: .caption2)
+        }
+    }
+
+    var size: CGFloat {
+        switch self {
+        case .logoLarge: 44
+        case .logo: 28
+        case .display: 26
+        case .title: 24
+        case .heading: 18
+        case .lead: 17
+        case .bodyStrong, .body, .bodyLong: 15
+        case .button: 16
+        case .link: 14
+        case .secondary: 13
+        case .label: 12
+        case .small, .overline: 11
+        }
+    }
+
+    /// Target line height in pt (nil = default).
+    var lineHeight: CGFloat? {
+        switch self {
+        case .logoLarge: 52
+        case .logo: 36
+        case .display: 32
+        case .title: 30
+        case .heading: 24
+        case .lead: 27
+        case .bodyStrong, .body: 21
+        case .bodyLong: 23
+        case .secondary: 18
+        case .label: 16
+        case .small, .overline: 14
+        case .button, .link: nil
+        }
+    }
+
+    var tracking: CGFloat {
+        switch self {
+        case .display: -0.3
+        case .title: -0.2
+        case .overline: 1.4
+        default: 0
+        }
+    }
+}
+
+extension View {
+    /// Applies font, tracking and approximate line height of a design-system text style.
+    func textStyle(_ style: TextStyle, color: Color = DS.Palette.textPrimary) -> some View {
+        let extra = max(0, (style.lineHeight ?? style.size * 1.2) - style.size * 1.2)
+        return self
+            .font(style.font)
+            .tracking(style.tracking)
+            .lineSpacing(extra)
+            .foregroundStyle(color)
+    }
+
+    /// Soft blue shadow used for white text over the sky.
+    func skyTextShadow() -> some View {
+        shadow(color: DS.Palette.skyTextShadow.opacity(0.4), radius: 7, x: 0, y: 1)
+    }
+}

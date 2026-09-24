@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "name": "Dreamer",
+    "canvas": {
+      "width": 390,
+      "height": 844,
+      "unit": "pt"
+    },
+    "note": "CSS blur values; SwiftUI shadow radius ~= blur/2"
+  },
+  "color": {
+    "background": "#EEF4FB",
+    "textPrimary": "#1E2A4A",
+    "textSecondary": "#3A4666",
+    "textTertiary": "#4B587A",
+    "overline": "#3D4A6B",
+    "icon": "#5670A3",
+    "iconSoft": "#7FA2DC",
+    "accent": "#3F5E9C",
+    "cta": "#2E4677",
+    "peach": "#F2A488",
+    "tabInactive": "#8392B4",
+    "segmentInactive": "#5B6785",
+    "destructive": "#B4453C",
+    "recordDot": "#E9826A",
+    "shadow": "#506EAA",
+    "ctaShadow": "#2E4677",
+    "skyTextShadow": "#466EB4",
+    "line": "#5A6E96",
+    "emotion": {
+      "anxiety": "#F8CFB2",
+      "confusion": "#DCD3F8",
+      "calm": "#C4E2F4",
+      "joy": "#F9DF98",
+      "fear": "#F6C1C1"
+    },
+    "orbGradient": [
+      "#FFFFFF",
+      "#F6F9FE 70%",
+      "#E9F0FA 100%"
+    ]
+  },
+  "font": {
+    "ui": "Quicksand",
+    "logo": "Cormorant Garamond Italic",
+    "postscript": {
+      "light": "Quicksand-Light",
+      "regular": "Quicksand-Regular",
+      "medium": "Quicksand-Medium",
+      "semibold": "Quicksand-SemiBold",
+      "bold": "Quicksand-Bold",
+      "logo": "CormorantGaramond-SemiBoldItalic",
+      "logoMedium": "CormorantGaramond-MediumItalic"
+    }
+  },
+  "type": {
+    "logoLarge": {
+      "size": 44,
+      "line": 52,
+      "font": "logo"
+    },
+    "logo": {
+      "size": 28,
+      "line": 36,
+      "font": "logo"
+    },
+    "display": {
+      "size": 26,
+      "line": 32,
+      "weight": 500,
+      "tracking": -0.3
+    },
+    "title": {
+      "size": 24,
+      "line": 30,
+      "weight": 500,
+      "tracking": -0.2
+    },
+    "heading": {
+      "size": 18,
+      "line": 24,
+      "weight": 500
+    },
+    "bodyStrong": {
+      "size": 15,
+      "line": 21,
+      "weight": 500
+    },
+    "body": {
+      "size": 15,
+      "line": 21,
+      "weight": 400
+    },
+    "bodyLong": {
+      "size": 15,
+      "line": 23,
+      "weight": 400
+    },
+    "button": {
+      "size": 16,
+      "weight": 500
+    },
+    "link": {
+      "size": 14,
+      "weight": 400
+    },
+    "secondary": {
+      "size": 13,
+      "line": 18,
+      "weight": 400
+    },
+    "label": {
+      "size": 12,
+      "line": 16,
+      "weight": 400
+    },
+    "small": {
+      "size": 11,
+      "line": 14,
+      "weight": 400
+    },
+    "overline": {
+      "size": 11,
+      "line": 14,
+      "weight": 500,
+      "tracking": 1.4,
+      "uppercase": true
+    }
+  },
+  "space": {
+    "screen": 22,
+    "cta": 24,
+    "text": 32,
+    "stack": 10,
+    "section": 22,
+    "cardPadding": 16
+  },
+  "radius": {
+    "card": 24,
+    "cardLarge": 26,
+    "option": 22,
+    "tile": 16,
+    "sheet": 32,
+    "capsule": 999
+  },
+  "size": {
+    "primaryButton": 56,
+    "linkButton": 40,
+    "iconButton": 46,
+    "tabBarHeight": 62,
+    "tabBarInset": 26,
+    "orbHome": {
+      "frame": 150,
+      "orb": 92
+    },
+    "orbOnboarding": {
+      "frame": 170,
+      "orb": 98
+    },
+    "toggle": {
+      "w": 50,
+      "h": 30,
+      "knob": 24
+    }
+  },
+  "glass": {
+    "card": {
+      "fill": "white 0.36",
+      "blur": 14,
+      "border": "white 0.7 1pt",
+      "shadow": "0 10 28 shadow 0.12"
+    },
+    "tabBar": {
+      "fill": "white 0.42",
+      "blur": 16,
+      "border": "white 0.75 1pt",
+      "shadow": "0 12 30 shadow 0.16"
+    },
+    "selected": {
+      "fill": "white 0.82",
+      "border": "white 1.0 1.5pt",
+      "shadow": "0 12 28 shadow 0.18"
+    },
+    "option": {
+      "fill": "white 0.36",
+      "border": "white 0.7 1pt",
+      "shadow": "0 8 22 shadow 0.08"
+    },
+    "sheet": {
+      "fill": "#F7FAFE 0.92",
+      "blur": 20,
+      "shadow": "0 -12 40 #3C5A96 0.2"
+    }
+  },
+  "sky": {
+    "top": {
+      "asset": "SkyTop",
+      "height": 300,
+      "fadeFrom": 150,
+      "fadeTo": 380
+    },
+    "full": {
+      "asset": "SkyTall",
+      "fadeFrom": 470
+    },
+    "drift": {
+      "scale": 1.12,
+      "x": 10,
+      "durationTop": 40,
+      "durationFull": 46
+    }
+  },
+  "motion": {
+    "easeSoft": [
+      0.22,
+      0.8,
+      0.26,
+      1
+    ],
+    "enterUp": {
+      "duration": 0.9,
+      "distance": 18
+    },
+    "press": {
+      "scale": 0.95,
+      "duration": 0.18
+    },
+    "breathe": {
+      "period": 4.4
+    },
+    "segment": {
+      "duration": 0.45
+    }
+  }
+}

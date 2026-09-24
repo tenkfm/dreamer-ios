@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dreamer - welcome</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&amp;family=Quicksand:wght@300..700&amp;family=Nunito:wght@200..700&amp;family=M+PLUS+Rounded+1c:wght@300;400;500;700&amp;family=Comfortaa:wght@300..700&amp;family=Outfit:wght@200..700&amp;family=Urbanist:wght@200..700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF4FB;font-family:Quicksand,system-ui,sans-serif;color:#1E2A4A;-webkit-font-smoothing:antialiased}
+a{color:#1E2A4A}a:hover{color:#4B587A}
+button{font-family:inherit}
+@keyframes skyDrift{0%{transform:scale(1.12) translateX(-10px)}50%{transform:scale(1.12) translateX(10px)}100%{transform:scale(1.12) translateX(-10px)}}
+@keyframes enterUp{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.08);opacity:.45}}
+@keyframes breathe2{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.14);opacity:.2}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.55;transform:scale(.85) rotate(0deg)}50%{opacity:1;transform:scale(1.1) rotate(20deg)}}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes slideUp{from{opacity:0;translate:0 40px}to{opacity:1;translate:0 0}}
+.e{opacity:0;animation:enterUp .9s cubic-bezier(.22,.8,.26,1) forwards}
+.press{transition:transform .18s cubic-bezier(.3,.7,.4,1),box-shadow .25s,background .25s}
+.press:active{transform:scale(.95)}
+.lift{transition:transform .35s cubic-bezier(.22,.8,.26,1),box-shadow .35s}
+.lift:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(80,110,170,.18)}
+.noscroll::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.e{opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #EEF4FB; color: #1E2A4A; {{fontVars}}">
+
+<div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden">
+<img src="asset:SkyTall" alt="" style="display: block; width: 390px; height: 844px; object-fit: cover; animation: skyDrift 46s ease-in-out infinite">
+</div>
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 470px; bottom: 0; background: linear-gradient(180deg, rgba(238, 244, 251, 0) 0%, rgba(241, 245, 250, 0.75) 35%, #EEF4FB 70%)"></div>
+
+<div class="e" style="position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-size: 44px; line-height: 52px; font-family: var(--logoFamily); font-style: var(--logoStyle); font-weight: var(--wl); letter-spacing: var(--logoTrack); color: #FFFFFF; text-shadow: 0 2px 14px rgba(70, 110, 180, 0.35); animation-delay: 0.2s">Dreamer</div>
+<p class="e" style="position: absolute; left: 0; right: 0; top: 168px; margin: 0; text-align: center; font-size: 12px; font-weight: var(--wm); letter-spacing: 2.4px; color: #FFFFFF; text-shadow: 0 1px 10px rgba(70, 110, 180, 0.4); animation-delay: 0.35s">YOUR DREAM JOURNAL</p>
+
+<div class="e" aria-hidden="true" style="position: absolute; left: 110px; top: 262px; width: 170px; height: 170px; animation-delay: 0.5s">
+<span style="position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.75); background: rgba(255, 255, 255, 0.12); animation: breathe2 4.6s ease-in-out infinite"></span>
+<span style="position: absolute; inset: 18px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.9); background: rgba(255, 255, 255, 0.2); animation: breathe 4.6s ease-in-out .6s infinite"></span>
+<span style="position: absolute; inset: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 35%, #FFFFFF 0%, #F6F9FE 70%, #E9F0FA 100%); box-shadow: 0 14px 32px rgba(70, 105, 170, 0.22); animation: floaty 5s ease-in-out infinite"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7FA2DC" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M19 14.5A7.5 7.5 0 1 1 9.5 5a6 6 0 0 0 9.5 9.5z"></path></svg></span>
+</div>
+
+<div class="e" style="position: absolute; left: 32px; right: 32px; top: 540px; text-align: center; animation-delay: 0.75s">
+<h1 style="margin: 0; font-size: 26px; line-height: 32px; font-weight: 500; letter-spacing: -0.3px; color: #1E2A4A">Your dreams are<br>talking to you</h1>
+<p style="margin: 10px 0 0; font-size: 15px; line-height: 22px; color: #3A4666">Tell a dream in 10 seconds after you wake up. Get a personal interpretation every morning.</p>
+</div>
+
+<div class="e" aria-label="Step 1 of 3" style="position: absolute; left: 0; right: 0; top: 684px; display: flex; justify-content: center; gap: 8px; animation-delay: 0.9s">
+<span style="width: 26px; height: 8px; border-radius: 999px; background: #3F5E9C"></span><span style="width: 8px; height: 8px; border-radius: 999px; background: rgba(63, 94, 156, 0.25)"></span><span style="width: 8px; height: 8px; border-radius: 999px; background: rgba(63, 94, 156, 0.25)"></span>
+</div>
+
+<div class="e" style="position: absolute; left: 24px; right: 24px; top: 712px; display: flex; flex-direction: column; gap: 8px; animation-delay: 1.0s">
+<a href="02-Onboarding-Record.html" class="press" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 999px; background: #2E4677; color: #FFFFFF; font-size: 16px; font-weight: var(--wb); text-decoration: none; box-shadow: 0 14px 30px rgba(46, 70, 119, 0.3)">Get started</a>
+<a href="07-Home.html" style="display: flex; align-items: center; justify-content: center; height: 40px; color: #1E2A4A; font-size: 14px; font-weight: var(--wm); text-decoration: none">I already have an account</a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"font":{"editor":"enum","options":["Quicksand","Nunito","M PLUS Rounded 1c","Comfortaa","Outfit","Urbanist"],"default":"Quicksand","section":"Type"},"weight":{"editor":"enum","options":["Thin","Light","Regular"],"default":"Light","section":"Type"},"logo":{"editor":"enum","options":["Serif italic","Rounded"],"default":"Serif italic","section":"Type"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = {tab: 0}; }
+  renderVals() {
+    const t = this.state.tab;
+    const font = this.props.font || "Quicksand";
+    const W = {Thin: [300, 300, 400, 500], Light: [300, 400, 500, 500], Regular: [400, 500, 600, 600]}[this.props.weight || "Light"];
+    const serif = (this.props.logo || "Serif italic") === "Serif italic";
+    const fontVars = 'font-family: "' + font + '", system-ui, sans-serif; --wh: ' + W[0] + '; --wm: ' + W[1] + '; --wb: ' + W[2] + '; --wl: ' + (serif ? 600 : W[3]) +
+      '; --logoFamily: ' + (serif ? '"Cormorant Garamond", Georgia, serif' : '"' + font + '", system-ui, sans-serif') + '; --logoStyle: ' + (serif ? 'italic' : 'normal') + '; --logoTrack: ' + (serif ? '0' : '-0.5px');
+    const tab = (i) => "flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 50px; border: none; border-radius: 26px; cursor: pointer; font-size: 13px; font-weight: var(--wb); transition: background .35s, color .35s, box-shadow .35s; " + (t === i ? "background: rgba(255, 255, 255, 0.95); color: #1E2A4A; box-shadow: 0 6px 16px rgba(80, 110, 170, 0.16)" : "background: transparent; color: #8392B4");
+    return { fontVars: fontVars, t0: tab(0), t1: tab(1), t2: tab(2), s0: t === 0 ? "true" : "false", s1: t === 1 ? "true" : "false", s2: t === 2 ? "true" : "false",
+      p0: () => this.setState({tab: 0}), p1: () => this.setState({tab: 1}), p2: () => this.setState({tab: 2}) };
+  }
+}
+</script>
+</body>
+</html>

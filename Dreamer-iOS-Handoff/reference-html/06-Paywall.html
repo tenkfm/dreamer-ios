@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dreamer - paywall</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&amp;family=Quicksand:wght@300..700&amp;family=Nunito:wght@200..700&amp;family=M+PLUS+Rounded+1c:wght@300;400;500;700&amp;family=Comfortaa:wght@300..700&amp;family=Outfit:wght@200..700&amp;family=Urbanist:wght@200..700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF4FB;font-family:Quicksand,system-ui,sans-serif;color:#1E2A4A;-webkit-font-smoothing:antialiased}
+a{color:#1E2A4A}a:hover{color:#4B587A}
+button{font-family:inherit}
+@keyframes skyDrift{0%{transform:scale(1.12) translateX(-10px)}50%{transform:scale(1.12) translateX(10px)}100%{transform:scale(1.12) translateX(-10px)}}
+@keyframes enterUp{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.08);opacity:.45}}
+@keyframes breathe2{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.14);opacity:.2}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.55;transform:scale(.85) rotate(0deg)}50%{opacity:1;transform:scale(1.1) rotate(20deg)}}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes bar{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes caret{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ring{from{stroke-dashoffset:302}}
+@keyframes reveal{from{filter:blur(14px);transform:scale(1.05)}to{filter:blur(0);transform:none}}
+@keyframes slideUp{from{opacity:0;translate:0 40px}to{opacity:1;translate:0 0}}
+.e{opacity:0;animation:enterUp .9s cubic-bezier(.22,.8,.26,1) forwards}
+.press{transition:transform .18s cubic-bezier(.3,.7,.4,1),box-shadow .25s,background .25s}
+.press:active{transform:scale(.95)}
+.lift{transition:transform .35s cubic-bezier(.22,.8,.26,1),box-shadow .35s}
+.lift:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(80,110,170,.18)}
+.noscroll::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.e{opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #EEF4FB; color: #1E2A4A; {{fontVars}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden"><img src="asset:SkyTall" alt="" style="display: block; width: 390px; height: 844px; object-fit: cover; animation: skyDrift 46s ease-in-out infinite"></div>
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 360px; bottom: 0; background: linear-gradient(180deg, rgba(238, 244, 251, 0) 0%, rgba(241, 245, 250, 0.75) 35%, #EEF4FB 70%)"></div>
+<a href="07-Home.html" class="press e" aria-label="Close" style="position: absolute; right: 22px; top: 64px; width: 46px; height: 46px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; color: #5670A3; text-decoration: none; background: rgba(255, 255, 255, 0.36); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 28px rgba(80, 110, 170, 0.12); animation-delay: 0.1s"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+<div class="e" style="position: absolute; left: 0; right: 0; top: 118px; text-align: center; font-size: 44px; line-height: 52px; font-family: var(--logoFamily); font-style: var(--logoStyle); font-weight: var(--wl); letter-spacing: var(--logoTrack); color: #FFFFFF; text-shadow: 0 2px 14px rgba(70, 110, 180, 0.35); animation-delay: 0.15s">Dreamer</div>
+<h1 class="e" style="position: absolute; left: 24px; right: 24px; top: 184px; margin: 0; text-align: center; font-size: 26px; line-height: 32px; font-weight: 500; color: #FFFFFF; text-shadow: 0 2px 14px rgba(70, 110, 180, 0.35); animation-delay: 0.3s">Wake up to meaning</h1>
+<ul class="e" style="position: absolute; left: 36px; right: 24px; top: 262px; margin: 0; padding: 18px 16px; list-style: none; display: flex; flex-direction: column; gap: 12px; border-radius: 24px; left: 22px; right: 22px; background: rgba(255, 255, 255, 0.36); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 28px rgba(80, 110, 170, 0.12); animation-delay: 0.45s"><li style="display: flex; align-items: center; gap: 12px; font-size: 15px; line-height: 21px; color: #1E2A4A"><span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(80, 110, 170, 0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5670A3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Personal interpretation in 3 lenses</li><li style="display: flex; align-items: center; gap: 12px; font-size: 15px; line-height: 21px; color: #1E2A4A"><span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(80, 110, 170, 0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5670A3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>An image of every dream</li><li style="display: flex; align-items: center; gap: 12px; font-size: 15px; line-height: 21px; color: #1E2A4A"><span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(80, 110, 170, 0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5670A3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Private journal and recurring symbols</li><li style="display: flex; align-items: center; gap: 12px; font-size: 15px; line-height: 21px; color: #1E2A4A"><span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(80, 110, 170, 0.15)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5670A3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Gentle morning reminders</li></ul>
+<div role="radiogroup" aria-label="Plan" class="e" style="position: absolute; left: 22px; right: 22px; top: 470px; display: flex; flex-direction: column; gap: 10px; animation-delay: 0.6s">
+<button type="button" role="radio" aria-checked="{{c0}}" class="press" onClick="{{p0}}" style="{{s0}}"><span style="{{r0}}"></span><span style="flex-grow: 1"><span style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: #1E2A4A">Yearly<span style="height: 20px; padding: 0 8px; border-radius: 999px; background: #F2A488; color: #1E2A4A; font-size: 11px; font-weight: var(--wb); display: inline-flex; align-items: center">7 days free</span></span><span style="display: block; margin-top: 2px; font-size: 13px; color: #4B587A">$3.33 a month, billed yearly</span></span><span style="font-size: 15px; font-weight: 500; color: #1E2A4A">$39.99</span></button>
+<button type="button" role="radio" aria-checked="{{c1}}" class="press" onClick="{{p1}}" style="{{s1}}"><span style="{{r1}}"></span><span style="flex-grow: 1"><span style="display: block; font-size: 15px; font-weight: 500; color: #1E2A4A">Weekly</span><span style="display: block; margin-top: 2px; font-size: 13px; color: #4B587A">Billed every week</span></span><span style="font-size: 15px; font-weight: 500; color: #1E2A4A">$6.99</span></button>
+</div>
+<div class="e" style="position: absolute; left: 24px; right: 24px; top: 660px; display: flex; flex-direction: column; gap: 10px; animation-delay: 0.8s">
+<a href="07-Home.html" class="press" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 56px; box-sizing: border-box; border: none; border-radius: 999px; background: #2E4677; color: #FFFFFF; font-size: 16px; font-weight: var(--wb); text-decoration: none; cursor: pointer; box-shadow: 0 14px 30px rgba(46, 70, 119, 0.3); ">{{ctaLabel}}</a>
+<p style="margin: 0; text-align: center; font-size: 12px; line-height: 17px; color: #4B587A">{{terms}}</p>
+<div style="display: flex; justify-content: center; gap: 18px; font-size: 12px; font-weight: var(--wm)"><a href="#" style="color: #1E2A4A">Restore</a><a href="#" style="color: #1E2A4A">Terms</a><a href="#" style="color: #1E2A4A">Privacy</a></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"font":{"editor":"enum","options":["Quicksand","Nunito","M PLUS Rounded 1c","Comfortaa","Outfit","Urbanist"],"default":"Quicksand","section":"Type"},"weight":{"editor":"enum","options":["Thin","Light","Regular"],"default":"Light","section":"Type"},"logo":{"editor":"enum","options":["Serif italic","Rounded"],"default":"Serif italic","section":"Type"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = {plan: 0}; }
+  renderVals() {
+    const st = this.state;
+    const font = this.props.font || "Quicksand";
+    const W = {Thin: [300, 300, 400, 500], Light: [300, 400, 500, 500], Regular: [400, 500, 600, 600]}[this.props.weight || "Light"];
+    const serif = (this.props.logo || "Serif italic") === "Serif italic";
+    const fontVars = 'font-family: "' + font + '", system-ui, sans-serif; --wh: ' + W[0] + '; --wm: ' + W[1] + '; --wb: ' + W[2] + '; --wl: ' + (serif ? 600 : W[3]) +
+      '; --logoFamily: ' + (serif ? '"Cormorant Garamond", Georgia, serif' : '"' + font + '", system-ui, sans-serif') + '; --logoStyle: ' + (serif ? 'italic' : 'normal') + '; --logoTrack: ' + (serif ? '0' : '-0.5px');
+    return { fontVars: fontVars, yes: true, no: false,
+      ...(() => {
+        const card = (on) => "display: flex; align-items: center; gap: 14px; width: 100%; box-sizing: border-box; padding: 14px 16px; border-radius: 22px; cursor: pointer; font-family: inherit; text-align: left; transition: background .3s, border-color .3s, box-shadow .3s; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); " + (on ? "background: rgba(255, 255, 255, 0.82); border: 1.5px solid #FFFFFF; box-shadow: 0 12px 28px rgba(80, 110, 170, 0.18)" : "background: rgba(255, 255, 255, 0.36); border: 1px solid rgba(255, 255, 255, 0.7)");
+        const radio = (on) => "width: 22px; height: 22px; flex-shrink: 0; box-sizing: border-box; border-radius: 50%; transition: border .3s; border: " + (on ? "7px solid #2E4677" : "1.5px solid rgba(90, 110, 150, 0.45)");
+        return { c0: st.plan === 0 ? "true" : "false", c1: st.plan === 1 ? "true" : "false", p0: () => this.setState({plan: 0}), p1: () => this.setState({plan: 1}),
+          s0: card(st.plan === 0), s1: card(st.plan === 1), r0: radio(st.plan === 0), r1: radio(st.plan === 1),
+          ctaLabel: st.plan === 0 ? "Try 7 days free" : "Subscribe for $6.99 a week",
+          terms: st.plan === 0 ? "Free for 7 days, then $39.99 a year. We remind you 2 days before it ends. Cancel anytime." : "Renews every week until you cancel. Cancel anytime." };
+      })(),
+    };
+  }
+}
+</script>
+</body>
+</html>

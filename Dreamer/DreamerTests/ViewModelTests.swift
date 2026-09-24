@@ -1,0 +1,195 @@
+import Foundation
+import Testing
+@testable import Dreamer
+
+@MainActor
+struct OnboardingTests {
+    @Test func quizAnswersAreStoredWhenLeavingTheLensQuestion() {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        let viewModel = OnboardingViewModel(appState: appState, step: .quizGoal)
+
+        viewModel.goal = .recurring
+        viewModel.next()
+        viewModel.lens = .spiritual
+        viewModel.next()
+
+        #expect(viewModel.step == .paywall)
+        #expect(appState.goal == .recurring)
+        #expect(appState.preferredLens == .spiritual)
+        #expect(appState.rootScreen == .onboarding)
+    }
+
+    @Test func skipJumpsToTheQuiz() {
+        let viewModel = OnboardingViewModel(appState: AppState(store: InMemoryPreferencesStore()), step: .record)
+        viewModel.skipIntro()
+        #expect(viewModel.step == .quizGoal)
+    }
+
+    @Test func existingAccountOpensMain() {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        OnboardingViewModel(appState: appState).useExistingAccount()
+        #expect(appState.rootScreen == .main)
+    }
+
+    @Test func completionIsPersisted() {
+        let store = InMemoryPreferencesStore()
+        AppState(store: store).activateSubscription(.weekly)
+
+        let relaunched = AppState(store: store)
+        #expect(relaunched.rootScreen == .main)
+        #expect(relaunched.subscription == .active(.weekly))
+    }
+
+    @Test func hardPaywallShowsWithoutSubscription() {
+        let store = InMemoryPreferencesStore(UserPreferences(onboardingCompleted: true))
+        #expect(AppState(store: store).rootScreen == .paywall)
+    }
+}
+
+@MainActor
+struct PaywallTests {
+    @Test func purchaseActivatesTheSelectedPlan() async {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        let viewModel = PaywallViewModel(purchases: MockPurchaseService(delay: .zero), appState: appState)
+
+        viewModel.selectedPlan = .weekly
+        #expect(viewModel.ctaTitle == "Subscribe for $6.99 a week")
+        await viewModel.purchase()
+
+        #expect(appState.subscription == .active(.weekly))
+        #expect(appState.rootScreen == .main)
+        #expect(!viewModel.isPurchasing)
+    }
+
+    @Test func restoreWithNothingToRestoreShowsAMessage() async {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        let viewModel = PaywallViewModel(purchases: MockPurchaseService(delay: .zero, restoredPlan: nil), appState: appState)
+
+        await viewModel.restore()
+
+        #expect(viewModel.alertMessage != nil)
+        #expect(appState.subscription == .none)
+    }
+}
+
+@MainActor
+struct InterpretationTests {
+    private func makeViewModel(preferred: Lens = .psychology) -> (InterpretationViewModel, MockReadAloudService, InMemoryDreamStore) {
+        let store = InMemoryDreamStore()
+        let appState = AppState(store: InMemoryPreferencesStore())
+        appState.preferredLens = preferred
+        let readAloud = MockReadAloudService()
+        let viewModel = InterpretationViewModel(dreamID: store.dreams[0].id, store: store, appState: appState,
+                                                readAloud: readAloud, imageSaver: MockImageSaver())
+        return (viewModel, readAloud, store)
+    }
+
+    @Test func preferredLensIsMainAndOthersAreAlternatives() {
+        let (viewModel, _, _) = makeViewModel(preferred: .spiritual)
+        #expect(viewModel.mainLens == .spiritual)
+        #expect(viewModel.alternativeLenses == [.psychology, .dreamBook])
+        #expect(viewModel.durationText == "1:04")
+    }
+
+    @Test func promotingALensSwapsItAndResetsPlayer() {
+        let (viewModel, readAloud, _) = makeViewModel()
+        viewModel.togglePlayback()
+        viewModel.toggleExpanded(.dreamBook)
+        #expect(readAloud.state == .playing)
+
+        viewModel.promote(.dreamBook)
+
+        #expect(viewModel.mainLens == .dreamBook)
+        #expect(viewModel.alternativeLenses == [.psychology, .spiritual])
+        #expect(viewModel.expandedLenses.isEmpty)
+        #expect(readAloud.state == .idle)
+    }
+
+    @Test func playbackTogglesBetweenPlayAndPause() {
+        let (viewModel, readAloud, _) = makeViewModel()
+        viewModel.togglePlayback()
+        #expect(readAloud.state == .playing)
+        #expect(readAloud.lastText == viewModel.text(for: .psychology))
+        viewModel.togglePlayback()
+        #expect(readAloud.state == .paused)
+    }
+
+    @Test func notesAreSavedToTheDream() {
+        let (viewModel, _, store) = makeViewModel()
+        viewModel.notes = "Work deadline on Friday"
+        #expect(store.dreams[0].notes == "Work deadline on Friday")
+    }
+}
+
+@MainActor
+struct RecordFlowTests {
+    @Test func finishedAnalysisSavesTheDreamAndReportsIt() async throws {
+        let store = InMemoryDreamStore(seed: [])
+        var finishedID: Dream.ID?
+        let flow = RecordFlowViewModel(speech: MockSpeechService(), analysisService: MockDreamAnalysisService(stepDuration: .zero),
+                                       store: store, onFinish: { finishedID = $0 }, onCancel: {})
+
+        flow.record.transcript = "A long hallway"
+        flow.finishRecording()
+        flow.details?.toggle(.joy)
+        flow.interpret(includeDetails: true)
+        await flow.analysis?.run()
+        flow.showInterpretation()
+
+        let dream = try #require(store.dreams.first)
+        #expect(dream.transcript == "A long hallway")
+        #expect(dream.emotions == [.joy, .anxiety, .confusion])
+        #expect(finishedID == dream.id)
+    }
+
+    @Test func analysisStepsProgressInOrder() async {
+        let viewModel = AnalysisViewModel(draft: DreamDraft(), service: MockDreamAnalysisService(stepDuration: .zero),
+                                          store: InMemoryDreamStore(seed: []))
+        #expect(viewModel.status(of: .reading) == .active)
+        #expect(viewModel.status(of: .writing) == .pending)
+        await viewModel.run()
+        #expect(AnalysisStep.allCases.allSatisfy { viewModel.status(of: $0) == .done })
+        #expect(viewModel.isFinished)
+    }
+}
+
+@MainActor
+struct JournalAndLibraryTests {
+    private let calendar = Calendar(identifier: .gregorian)
+    private var now: Date { calendar.date(from: DateComponents(year: 2026, month: 9, day: 25, hour: 8))! }
+
+    @Test func summaryIsComputedFromStoredDreams() {
+        let store = InMemoryDreamStore(seed: MockData.seedDreams(now: now, calendar: calendar))
+        let viewModel = JournalViewModel(appState: AppState(store: InMemoryPreferencesStore()), store: store,
+                                         now: { now }, calendar: calendar)
+
+        let summary = viewModel.summary
+        #expect(summary.title == "Your September")
+        #expect(summary.dreamCount == 12)
+        #expect(summary.mostFrequentSymbol == "stairs")
+        #expect(summary.distribution.first?.emotion == .anxiety)
+        #expect(viewModel.thisMonthRows.first?.dateText == "Yesterday")
+    }
+
+    @Test func homeInsightFindsTheRepeatedSymbol() {
+        let store = InMemoryDreamStore(seed: MockData.seedDreams(now: now, calendar: calendar))
+        let viewModel = HomeViewModel(appState: AppState(store: InMemoryPreferencesStore()), store: store,
+                                      catalog: MockSymbolCatalog(), now: { now }, calendar: calendar)
+
+        #expect(viewModel.greeting == "Good morning, Anna")
+        #expect(viewModel.insight == "Stairs appeared in 3 of your dreams this week.")
+        #expect(viewModel.weekCaption == "3 dreams caught this week")
+    }
+
+    @Test func librarySearchAndCategoriesFilterTiles() {
+        let viewModel = LibraryViewModel(appState: AppState(store: InMemoryPreferencesStore()), catalog: MockSymbolCatalog())
+        #expect(viewModel.symbols.count == 8)
+
+        viewModel.category = .animals
+        #expect(viewModel.symbols.map(\.id) == ["snakes", "dog"])
+
+        viewModel.query = "teeth"
+        #expect(viewModel.symbols.map(\.id) == ["teeth"])
+        #expect(viewModel.sectionTitle == "Results")
+    }
+}

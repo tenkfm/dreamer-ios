@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dreamer - quiz 2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&amp;family=Quicksand:wght@300..700&amp;family=Nunito:wght@200..700&amp;family=M+PLUS+Rounded+1c:wght@300;400;500;700&amp;family=Comfortaa:wght@300..700&amp;family=Outfit:wght@200..700&amp;family=Urbanist:wght@200..700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF4FB;font-family:Quicksand,system-ui,sans-serif;color:#1E2A4A;-webkit-font-smoothing:antialiased}
+a{color:#1E2A4A}a:hover{color:#4B587A}
+button{font-family:inherit}
+@keyframes skyDrift{0%{transform:scale(1.12) translateX(-10px)}50%{transform:scale(1.12) translateX(10px)}100%{transform:scale(1.12) translateX(-10px)}}
+@keyframes enterUp{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.08);opacity:.45}}
+@keyframes breathe2{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.14);opacity:.2}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.55;transform:scale(.85) rotate(0deg)}50%{opacity:1;transform:scale(1.1) rotate(20deg)}}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes bar{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes caret{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ring{from{stroke-dashoffset:302}}
+@keyframes reveal{from{filter:blur(14px);transform:scale(1.05)}to{filter:blur(0);transform:none}}
+@keyframes grow{from{width:0}}
+@keyframes slideUp{from{opacity:0;translate:0 40px}to{opacity:1;translate:0 0}}
+.e{opacity:0;animation:enterUp .9s cubic-bezier(.22,.8,.26,1) forwards}
+.press{transition:transform .18s cubic-bezier(.3,.7,.4,1),box-shadow .25s,background .25s}
+.press:active{transform:scale(.95)}
+.lift{transition:transform .35s cubic-bezier(.22,.8,.26,1),box-shadow .35s}
+.lift:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(80,110,170,.18)}
+.noscroll::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.e{opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #EEF4FB; color: #1E2A4A; {{fontVars}}">
+<div aria-hidden="true" style="position: absolute; left: 0; top: 0; width: 390px; height: 300px; overflow: hidden"><img src="asset:SkyTop" alt="" style="display: block; width: 390px; height: 300px; object-fit: cover; animation: skyDrift 40s ease-in-out infinite"></div>
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 150px; height: 230px; background: linear-gradient(180deg, rgba(238, 244, 251, 0) 0%, rgba(241, 244, 248, 0.6) 45%, #EEF4FB 100%)"></div>
+<a href="04-Quiz-Goal.html" class="press e" aria-label="Back" style="position: absolute; left: 22px; top: 64px; width: 46px; height: 46px; box-sizing: border-box; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #5670A3; background: rgba(255, 255, 255, 0.36); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 28px rgba(80, 110, 170, 0.12); animation-delay: 0.1s"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M15 5l-7 7 7 7"></path></svg></a>
+<div class="e" style="position: absolute; left: 84px; right: 84px; top: 84px; display: flex; align-items: center; gap: 10px; animation-delay: 0.15s"><div role="progressbar" aria-label="Quiz progress" aria-valuenow="100" style="flex-grow: 1; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.55); overflow: hidden"><div style="height: 100%; width: 100%; border-radius: 999px; background: #2E4677; animation: grow 1s cubic-bezier(.22,.8,.26,1) .3s both"></div></div><span style="font-size: 12px; font-weight: var(--wm); color: #FFFFFF; text-shadow: 0 1px 8px rgba(70, 110, 180, 0.4)">2 of 2</span></div>
+<h1 class="e" style="position: absolute; left: 24px; right: 24px; top: 210px; margin: 0; text-align: center; font-size: 26px; line-height: 32px; font-weight: 500; letter-spacing: -0.3px; color: #1E2A4A; animation-delay: 0.3s">Which lens feels closer to you?</h1>
+<div role="radiogroup" aria-label="Which lens feels closer to you?" style="position: absolute; left: 22px; right: 22px; top: 310px; display: flex; flex-direction: column; gap: 10px">
+<div class="e" style="animation-delay: 0.45s"><button type="button" role="radio" aria-checked="{{c0}}" class="press" onClick="{{p0}}" style="{{s0}}"><span style="flex-grow: 1; text-align: left"><span style="display: block; font-size: 15px; line-height: 21px; font-weight: 500; color: #1E2A4A">Psychology</span><span style="display: block; margin-top: 2px; font-size: 13px; line-height: 18px; color: #4B587A">What your mind is working through</span></span><span style="{{r0}}"></span></button></div><div class="e" style="animation-delay: 0.55s"><button type="button" role="radio" aria-checked="{{c1}}" class="press" onClick="{{p1}}" style="{{s1}}"><span style="flex-grow: 1; text-align: left"><span style="display: block; font-size: 15px; line-height: 21px; font-weight: 500; color: #1E2A4A">Spiritual</span><span style="display: block; margin-top: 2px; font-size: 13px; line-height: 18px; color: #4B587A">Signs, symbols and inner guidance</span></span><span style="{{r1}}"></span></button></div><div class="e" style="animation-delay: 0.65s"><button type="button" role="radio" aria-checked="{{c2}}" class="press" onClick="{{p2}}" style="{{s2}}"><span style="flex-grow: 1; text-align: left"><span style="display: block; font-size: 15px; line-height: 21px; font-weight: 500; color: #1E2A4A">Dream book</span><span style="display: block; margin-top: 2px; font-size: 13px; line-height: 18px; color: #4B587A">Classic meanings of dream symbols</span></span><span style="{{r2}}"></span></button></div>
+</div>
+<div class="e" style="position: absolute; left: 24px; right: 24px; top: 760px; animation-delay: 0.9s"><a href="06-Paywall.html" class="press" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 56px; box-sizing: border-box; border: none; border-radius: 999px; background: #2E4677; color: #FFFFFF; font-size: 16px; font-weight: var(--wb); text-decoration: none; cursor: pointer; box-shadow: 0 14px 30px rgba(46, 70, 119, 0.3); ">Continue</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"font":{"editor":"enum","options":["Quicksand","Nunito","M PLUS Rounded 1c","Comfortaa","Outfit","Urbanist"],"default":"Quicksand","section":"Type"},"weight":{"editor":"enum","options":["Thin","Light","Regular"],"default":"Light","section":"Type"},"logo":{"editor":"enum","options":["Serif italic","Rounded"],"default":"Serif italic","section":"Type"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = {sel: 0}; }
+  renderVals() {
+    const st = this.state;
+    const font = this.props.font || "Quicksand";
+    const W = {Thin: [300, 300, 400, 500], Light: [300, 400, 500, 500], Regular: [400, 500, 600, 600]}[this.props.weight || "Light"];
+    const serif = (this.props.logo || "Serif italic") === "Serif italic";
+    const fontVars = 'font-family: "' + font + '", system-ui, sans-serif; --wh: ' + W[0] + '; --wm: ' + W[1] + '; --wb: ' + W[2] + '; --wl: ' + (serif ? 600 : W[3]) +
+      '; --logoFamily: ' + (serif ? '"Cormorant Garamond", Georgia, serif' : '"' + font + '", system-ui, sans-serif') + '; --logoStyle: ' + (serif ? 'italic' : 'normal') + '; --logoTrack: ' + (serif ? '0' : '-0.5px');
+    return { fontVars: fontVars, yes: true, no: false,
+      ...(() => {
+        const card = (on) => "display: flex; align-items: center; gap: 14px; width: 100%; box-sizing: border-box; padding: 14px 16px; border-radius: 22px; cursor: pointer; font-family: inherit; transition: background .3s, border-color .3s, box-shadow .3s; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); " + (on ? "background: rgba(255, 255, 255, 0.82); border: 1.5px solid #FFFFFF; box-shadow: 0 12px 28px rgba(80, 110, 170, 0.18)" : "background: rgba(255, 255, 255, 0.36); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 8px 22px rgba(80, 110, 170, 0.08)");
+        const radio = (on) => "width: 22px; height: 22px; flex-shrink: 0; box-sizing: border-box; border-radius: 50%; transition: border .3s; border: " + (on ? "7px solid #2E4677" : "1.5px solid rgba(90, 110, 150, 0.45)");
+        return {
+      c0: st.sel === 0 ? "true" : "false", p0: () => this.setState({sel: 0}), s0: card(st.sel === 0), r0: radio(st.sel === 0),
+      c1: st.sel === 1 ? "true" : "false", p1: () => this.setState({sel: 1}), s1: card(st.sel === 1), r1: radio(st.sel === 1),
+      c2: st.sel === 2 ? "true" : "false", p2: () => this.setState({sel: 2}), s2: card(st.sel === 2), r2: radio(st.sel === 2),
+        };
+      })(),
+    };
+  }
+}
+</script>
+</body>
+</html>
