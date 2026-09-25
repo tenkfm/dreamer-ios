@@ -1,0 +1,90 @@
+# Tests and the Release build on every pull request and on main.
+# Make "CI / test-and-build" a required status check in the branch protection rules of main,
+# so a red CI blocks the merge (GitHub repository settings, not this file).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: Dreamer
+    env:
+      # The runner image may not have this exact device; the lane falls back to the newest iPhone.
+      SIMULATOR_DEVICE: iPhone 17
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      FASTLANE_HIDE_TIMESTAMP: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select the newest Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.5"
+          bundler-cache: true
+          working-directory: Dreamer
+
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            Dreamer/build/DerivedData/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('Dreamer/Dreamer.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            Dreamer/build/DerivedData/Build/Intermediates.noindex
+            Dreamer/build/DerivedData/ModuleCache.noindex
+          key: deriveddata-${{ runner.os }}-${{ hashFiles('Dreamer/Dreamer.xcodeproj/project.pbxproj', 'Dreamer/Config/*.xcconfig') }}-${{ github.sha }}
+          restore-keys: |
+            deriveddata-${{ runner.os }}-${{ hashFiles('Dreamer/Dreamer.xcodeproj/project.pbxproj', 'Dreamer/Config/*.xcconfig') }}-
+            deriveddata-${{ runner.os }}-
+
+      # SDK keys stay in repository secrets; only their names appear here, never their values.
+      - name: Write Secrets.xcconfig from CI secrets
+        env:
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          API_BASE_URL_RELEASE: ${{ secrets.API_BASE_URL_RELEASE }}
+        run: ../scripts/write-secrets-xcconfig.sh
+
+      - name: Unit tests
+        run: bundle exec fastlane test
+
+      - name: Release build (unsigned)
+        run: bundle exec fastlane build_release
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: |
+            Dreamer/build/test_output/*.junit
+            Dreamer/build/test_output/*.html
+            Dreamer/build/test_output/*.xcresult
+          if-no-files-found: ignore
+          retention-days: 14

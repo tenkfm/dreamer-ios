@@ -37,6 +37,14 @@ Run the unit tests in the simulator
 
 Options: device (simulator name)
 
+### ios build_release
+
+```sh
+[bundle exec] fastlane ios build_release
+```
+
+Compile the Release configuration for devices without signing (CI check that the App Store build builds)
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

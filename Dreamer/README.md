@@ -36,6 +36,15 @@ Ruby 3.3.5 (`.tool-versions`) and Bundler; the first run installs the gems.
 `run.sh` wraps `bundle exec fastlane sim` / `bundle exec fastlane test` (see `fastlane/Fastfile`).
 Build products go to `build/DerivedData` (git-ignored).
 
+## CI
+
+`.github/workflows/ci.yml` runs on every pull request and on `main` (macOS 26 runner, Xcode 26):
+unit tests (`fastlane test`, JUnit and HTML report as the `test-report` artifact) and an unsigned
+Release build for devices (`fastlane build_release`). Swift packages and DerivedData are cached.
+SDK keys come from repository secrets through `scripts/write-secrets-xcconfig.sh`, which logs only
+the names it set. To block merging on a red CI, mark `CI / test-and-build` as a required status
+check in the branch protection of `main`.
+
 ## Architecture (MVVM)
 
 ```
