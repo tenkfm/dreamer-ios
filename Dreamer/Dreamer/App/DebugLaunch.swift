@@ -9,7 +9,7 @@ import Foundation
 enum DebugLaunch {
     enum Screen: String {
         case welcome, recordIntro, understand, quizGoal, quizLens, account, paywall
-        case home, journal, library, settings, interpretation, symbol
+        case home, journal, library, settings, deleteAccount, interpretation, symbol
         case record, details, analysis
     }
 
@@ -55,7 +55,7 @@ enum DebugLaunch {
         switch screen {
         case .journal: state.open(.journal)
         case .library: state.open(.library)
-        case .settings: state.push(.settings, on: .today)
+        case .settings, .deleteAccount: state.push(.settings, on: .today)
         case .interpretation:
             if let dream = dependencies.dreamStore.dreams.first { state.push(.interpretation(dream.id), on: .today) }
         case .symbol: state.open(.library, route: .symbol(MockData.librarySymbols[0].id))

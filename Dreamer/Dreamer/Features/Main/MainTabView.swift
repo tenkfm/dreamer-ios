@@ -86,7 +86,10 @@ private struct RouteDestination: View {
     var body: some View {
         switch route {
         case .settings:
-            SettingsView(viewModel: SettingsViewModel(appState: appState, purchases: dependencies.purchases, store: dependencies.dreamStore))
+            SettingsView(viewModel: SettingsViewModel(
+                appState: appState, purchases: dependencies.purchases,
+                account: AccountController(auth: dependencies.auth, dreamStore: dependencies.dreamStore,
+                                           appState: appState, unlink: dependencies.unlinkAccount)))
         case .interpretation(let id):
             ViewModelHost {
                 InterpretationViewModel(dreamID: id, store: dependencies.dreamStore, appState: appState,

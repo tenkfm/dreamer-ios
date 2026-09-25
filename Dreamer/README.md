@@ -90,6 +90,13 @@ lists `applinks:$(API_HOST)` and the backend serves the AASA file from that host
 AppState, which keeps it until the account step verifies it (so a cold start works too). An
 expired link offers "Send a new link" to the address requested on this device.
 
+Settings has "Sign out" and "Delete account and all dreams" (`AccountController`). Sign-out calls
+`POST /v1/auth/logout` (best effort, works offline), forgets the tokens, clears the dreams cached
+for the account and unlinks the SDKs; the next sign-in is "Welcome back". Deletion shows a sheet
+that warns the App Store subscription is separate (with Manage subscription), calls
+`DELETE /v1/me`, and only then resets the device to a fresh install; a failure leaves everything
+in place and explains why. Debug: `-debugScreen deleteAccount`.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

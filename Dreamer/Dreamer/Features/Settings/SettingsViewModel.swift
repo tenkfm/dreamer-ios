@@ -12,18 +12,23 @@ final class SettingsViewModel {
 
     var activeSheet: Sheet?
     var isDeleteConfirmationPresented = false
+    var isSignOutConfirmationPresented = false
     var alertMessage: String?
     private(set) var isRestoring = false
+    private(set) var isDeleting = false
+    private(set) var isSigningOut = false
+    /// Why the last deletion failed (shown in the confirmation sheet).
+    private(set) var deleteError: ErrorState?
 
     private let appState: AppState
     private let purchases: any PurchaseService
-    private let store: any DreamStore
+    private let account: any AccountActions
     private let calendar: Calendar
 
-    init(appState: AppState, purchases: any PurchaseService, store: any DreamStore, calendar: Calendar = .current) {
+    init(appState: AppState, purchases: any PurchaseService, account: any AccountActions, calendar: Calendar = .current) {
         self.appState = appState
         self.purchases = purchases
-        self.store = store
+        self.account = account
         self.calendar = calendar
     }
 
@@ -98,9 +103,32 @@ final class SettingsViewModel {
         }
     }
 
-    /// "Delete account and all dreams": wipes dreams and preferences, back to Welcome.
-    func deleteEverything() {
-        store.deleteAll()
-        appState.reset()
+    var hasSubscription: Bool { appState.subscription != .none }
+
+    func signOut() async {
+        guard !isSigningOut else { return }
+        isSigningOut = true
+        defer { isSigningOut = false }
+        await account.signOut()
+    }
+
+    /// "Delete account and all dreams": the backend deletes everything, then the device is reset to
+    /// a fresh install (Welcome). On failure nothing is removed and the sheet says why.
+    func deleteAccount() async {
+        guard !isDeleting else { return }
+        isDeleting = true
+        deleteError = nil
+        defer { isDeleting = false }
+        do {
+            try await account.deleteAccount()
+            isDeleteConfirmationPresented = false
+        } catch {
+            deleteError = ErrorState(error)
+        }
+    }
+
+    func cancelDelete() {
+        isDeleteConfirmationPresented = false
+        deleteError = nil
     }
 }
