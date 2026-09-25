@@ -123,6 +123,14 @@ launch and, after a purchase, polled for a few seconds until the backend agrees 
 lag); it also brings the paywall variant and the free interpretations left. `PREMIUM_REQUIRED`
 during analysis shows "See plans"; buying reads the same dream at once.
 
+Paywall variant: the backend assigns it at sign-up (`paywallVariant`, kept on the device between
+launches). `hard` shows the paywall right after sign-up; `oneFree` sends the new account to Main
+with one free interpretation, and the paywall appears once it is used (the mic opens the paywall
+instead of recording, so a told dream is never stuck behind a 402). Restore explains when there is
+nothing to restore; subscribers open the App Store's own management from Settings -> Subscription.
+Events: `paywall_viewed {placement, variant}`, `plan_selected`, `purchase_started`; trial and
+purchase events come from the RevenueCat integration.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

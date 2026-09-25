@@ -29,7 +29,17 @@ final class AppState {
     /// Profile sync to run for the current account (set on sign-in and at launch).
     private(set) var pendingProfileSync: ProfileSyncDirection?
     /// The backend's subscription record (paywall variant, free interpretations left).
-    var serverSubscription: SubscriptionInfo?
+    var serverSubscription: SubscriptionInfo? {
+        didSet {
+            guard let serverSubscription else { return }
+            storedPaywallVariant = serverSubscription.paywallVariant
+            freeInterpretationsLeft = serverSubscription.freeInterpretationsLeft
+        }
+    }
+    private(set) var storedPaywallVariant: PaywallVariant? { didSet { persist() } }
+    private(set) var freeInterpretationsLeft: Int { didSet { persist() } }
+    /// "See plans" from anywhere in Main (record without access, Settings).
+    var isPaywallSheetPresented = false
     /// Bumped to ask for a fresh backend subscription record; true = a purchase just happened.
     private(set) var subscriptionRefresh: SubscriptionRefreshRequest?
 
@@ -56,13 +66,15 @@ final class AppState {
         paywallBypassed = saved.paywallBypassed
         reminders = saved.reminders
         userID = saved.userID
+        storedPaywallVariant = saved.paywallVariant
+        freeInterpretationsLeft = saved.freeInterpretationsLeft
     }
 
     /// Onboarding until the user has an account and has been through it (new users) or signed
     /// back in (returning users); then the hard paywall until there is a subscription.
     var rootScreen: RootScreen {
         guard isSignedIn, onboardingCompleted else { return .onboarding }
-        if subscription == .none && !isPaywallBypassed { return .paywall }
+        if subscription == .none && !isPaywallBypassed && !hasFreeInterpretation { return .paywall }
         return .main
     }
 
@@ -133,6 +145,8 @@ final class AppState {
         userID = nil
         pendingProfileSync = nil
         serverSubscription = nil
+        storedPaywallVariant = nil
+        freeInterpretationsLeft = 0
         subscription = .none
         selectedTab = .today
         paths = [:]
@@ -204,7 +218,18 @@ final class AppState {
     }
 
     /// Paywall variant assigned by the backend at sign-up (hard until it says otherwise).
-    var paywallVariant: PaywallVariant { serverSubscription?.paywallVariant ?? .hard }
+    var paywallVariant: PaywallVariant { serverSubscription?.paywallVariant ?? storedPaywallVariant ?? .hard }
+
+    /// `oneFree` users read their first dream before the paywall.
+    var hasFreeInterpretation: Bool { paywallVariant == .oneFree && freeInterpretationsLeft > 0 }
+
+    /// Recording leads to an interpretation: it needs a subscription or a free one left.
+    var canInterpret: Bool { subscription != .none || hasFreeInterpretation || isPaywallBypassed }
+
+    /// A new `oneFree` account skips the onboarding paywall.
+    func finishOnboardingWithoutPurchase() {
+        onboardingCompleted = true
+    }
 
     /// Debug builds: the paywall close button goes straight to Main (ignored in Release).
     func enterMainForTesting() {
@@ -244,7 +269,11 @@ final class AppState {
         if let route { push(route, on: tab) }
     }
 
-    func presentRecordFlow() { isRecordFlowPresented = true }
+    /// The mic: record when an interpretation can follow, otherwise the paywall first (a oneFree
+    /// user who used the free one), so a told dream is never stuck behind a 402.
+    func presentRecordFlow() {
+        if canInterpret { isRecordFlowPresented = true } else { isPaywallSheetPresented = true }
+    }
 
     /// Record flow finished: the cover dismisses and the interpretation is pushed on Today,
     /// so Back returns to Home.
@@ -266,6 +295,8 @@ final class AppState {
         preferences.paywallBypassed = paywallBypassed
         preferences.reminders = reminders
         preferences.userID = userID
+        preferences.paywallVariant = storedPaywallVariant
+        preferences.freeInterpretationsLeft = freeInterpretationsLeft
         store.save(preferences)
     }
 }

@@ -36,6 +36,16 @@ struct MainTabView: View {
                 .ignoresSafeArea(.container, edges: .bottom)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .sheet(isPresented: $appState.isPaywallSheetPresented) {
+            ZStack {
+                SkyBackground(kind: .full)
+                PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
+                                                        placement: .record, analytics: dependencies.analytics) {
+                    appState.isPaywallSheetPresented = false
+                })
+            }
+            .scrollEdgeEffectsHidden()
+        }
         .fullScreenCover(isPresented: $appState.isRecordFlowPresented) {
             ViewModelHost {
                 makeRecordFlowViewModel()
@@ -89,7 +99,8 @@ private struct RouteDestination: View {
             SettingsView(viewModel: SettingsViewModel(
                 appState: appState, purchases: dependencies.purchases,
                 account: AccountController(auth: dependencies.auth, dreamStore: dependencies.dreamStore,
-                                           appState: appState, unlink: dependencies.unlinkAccount)))
+                                           appState: appState, unlink: dependencies.unlinkAccount),
+                analytics: dependencies.analytics))
         case .interpretation(let id):
             ViewModelHost {
                 InterpretationViewModel(dreamID: id, store: dependencies.dreamStore, appState: appState,

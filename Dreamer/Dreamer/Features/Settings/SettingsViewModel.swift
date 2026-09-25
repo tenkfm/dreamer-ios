@@ -20,16 +20,31 @@ final class SettingsViewModel {
     /// Why the last deletion failed (shown in the confirmation sheet).
     private(set) var deleteError: ErrorState?
 
+    /// The system's subscription management (plan change, cancel), for subscribers.
+    var isManagingSubscription = false
+
     private let appState: AppState
     private let purchases: any PurchaseService
     private let account: any AccountActions
+    private let analytics: any Analytics
     private let calendar: Calendar
 
-    init(appState: AppState, purchases: any PurchaseService, account: any AccountActions, calendar: Calendar = .current) {
+    init(appState: AppState, purchases: any PurchaseService, account: any AccountActions,
+         analytics: any Analytics = NoopAnalytics(), calendar: Calendar = .current) {
         self.appState = appState
         self.purchases = purchases
         self.account = account
+        self.analytics = analytics
         self.calendar = calendar
+    }
+
+    /// Settings -> Subscription: subscribers manage it in the App Store sheet, others see the plans.
+    func openSubscription() {
+        if appState.subscription != .none {
+            isManagingSubscription = true
+        } else {
+            activeSheet = .subscription
+        }
     }
 
     // MARK: Preferences
@@ -82,7 +97,7 @@ final class SettingsViewModel {
     // MARK: Actions
 
     func makePaywallViewModel() -> PaywallViewModel {
-        PaywallViewModel(purchases: purchases, appState: appState) { [weak self] in
+        PaywallViewModel(purchases: purchases, appState: appState, placement: .settings, analytics: analytics) { [weak self] in
             self?.activeSheet = nil
         }
     }

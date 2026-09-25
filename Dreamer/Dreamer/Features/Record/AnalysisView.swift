@@ -71,7 +71,8 @@ struct AnalysisView: View {
         .sheet(isPresented: $isPaywallPresented) {
             ZStack {
                 SkyBackground(kind: .full)
-                PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState) {
+                PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
+                                                        placement: .analysis, analytics: dependencies.analytics) {
                     isPaywallPresented = false
                 })
             }

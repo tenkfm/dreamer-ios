@@ -87,6 +87,8 @@ struct UserPreferences: Codable, Hashable, Sendable {
         paywallBypassed = try container.decodeIfPresent(Bool.self, forKey: .paywallBypassed) ?? defaults.paywallBypassed
         reminders = try container.decodeIfPresent(ReminderSettings.self, forKey: .reminders) ?? defaults.reminders
         userID = try container.decodeIfPresent(String.self, forKey: .userID)
+        paywallVariant = try container.decodeIfPresent(PaywallVariant.self, forKey: .paywallVariant)
+        freeInterpretationsLeft = try container.decodeIfPresent(Int.self, forKey: .freeInterpretationsLeft) ?? 0
     }
 
     var onboardingCompleted = false
@@ -100,6 +102,9 @@ struct UserPreferences: Codable, Hashable, Sendable {
     var reminders = ReminderSettings()
     /// Backend user id of the signed-in account (not secret; the tokens live in the Keychain).
     var userID: String?
+    /// Last known from `GET /v1/subscription`, so the right screen shows before it answers again.
+    var paywallVariant: PaywallVariant?
+    var freeInterpretationsLeft = 0
 }
 
 @MainActor

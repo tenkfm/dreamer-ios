@@ -17,7 +17,8 @@ struct RootView: View {
             case .paywall:
                 ZStack {
                     SkyBackground(kind: .full)
-                    PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState))
+                    PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
+                                                            placement: .gate, analytics: dependencies.analytics))
                         .offlineBannerInset()
                 }
                 .transition(.opacity)

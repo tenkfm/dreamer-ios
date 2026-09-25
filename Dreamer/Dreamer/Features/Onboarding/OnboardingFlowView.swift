@@ -100,7 +100,11 @@ struct OnboardingFlowView: View {
         case .account:
             ViewModelHost {
                 SignInViewModel(mode: viewModel.accountMode, auth: dependencies.auth, analytics: dependencies.analytics) { session in
-                    withAnimation(.soft(0.6)) { viewModel.signedIn(session) }
+                    Task {
+                        // The paywall variant decides where a new account goes next.
+                        let subscription = try? await dependencies.subscriptionStatus.subscription()
+                        withAnimation(.soft(0.6)) { viewModel.signedIn(session, subscription: subscription) }
+                    }
                 }
             } content: { signIn in
                 SignInView(viewModel: signIn) {
@@ -114,7 +118,8 @@ struct OnboardingFlowView: View {
                 }
             }
         case .paywall:
-            PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState))
+            PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
+                                                    placement: .onboarding, analytics: dependencies.analytics))
         }
     }
 

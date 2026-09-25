@@ -58,6 +58,7 @@ struct SettingsView: View {
             }
             .scrollEdgeEffectsHidden()
         }
+        .manageSubscriptionsSheet(isPresented: $viewModel.isManagingSubscription)
         .sheet(isPresented: $viewModel.isDeleteConfirmationPresented, onDismiss: viewModel.cancelDelete) {
             DeleteAccountSheet(viewModel: viewModel)
         }
@@ -96,7 +97,7 @@ struct SettingsView: View {
 
     private var accountGroup: some View {
         SettingsGroup {
-            navigationRow("creditcard", "Subscription", value: viewModel.subscriptionText) { viewModel.activeSheet = .subscription }
+            navigationRow("creditcard", "Subscription", value: viewModel.subscriptionText) { viewModel.openSubscription() }
             SettingsDivider()
             navigationRow("arrow.clockwise", "Restore purchases", value: viewModel.isRestoring ? "Restoring…" : nil) {
                 Task { await viewModel.restorePurchases() }

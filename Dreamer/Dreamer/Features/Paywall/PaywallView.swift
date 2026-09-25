@@ -37,6 +37,7 @@ struct PaywallView: View {
             }
         }
         .task { await viewModel.loadProducts() }
+        .onAppear { viewModel.viewed() }
         .alert("Dreamer", isPresented: alertBinding) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -102,7 +103,7 @@ struct PaywallView: View {
                     PlanCard(title: product.plan.title, subtitle: viewModel.subtitle(for: product),
                              price: product.displayPrice, badge: viewModel.badge(for: product),
                              isSelected: viewModel.selectedPlan == product.plan) {
-                        viewModel.selectedPlan = product.plan
+                        viewModel.select(product.plan)
                     }
                     .enterUp(0.55 + Double(index) * 0.15)
                 }

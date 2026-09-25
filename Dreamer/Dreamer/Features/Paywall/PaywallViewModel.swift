@@ -11,6 +11,11 @@ final class PaywallViewModel {
         case failed
     }
 
+    /// Where the paywall was shown, for `paywall_viewed`.
+    enum Placement: String, Sendable {
+        case onboarding, gate, settings, analysis, record
+    }
+
     var selectedPlan: Plan = .yearly
     private(set) var productsState: ProductsState = .loading
     private(set) var isPurchasing = false
@@ -26,15 +31,35 @@ final class PaywallViewModel {
 
     private let purchases: any PurchaseService
     private let appState: AppState
+    private let analytics: any Analytics
+    private let placement: Placement
     private let onFinish: (() -> Void)?
+    private var hasReportedView = false
 
     /// - Parameter onFinish: called after a purchase, restore or close. When nil (onboarding / hard
     ///   paywall) the app state change itself moves the user to Main.
-    init(purchases: any PurchaseService, appState: AppState, onFinish: (() -> Void)? = nil) {
+    init(purchases: any PurchaseService, appState: AppState, placement: Placement = .gate,
+         analytics: any Analytics = NoopAnalytics(), onFinish: (() -> Void)? = nil) {
         self.purchases = purchases
         self.appState = appState
+        self.placement = placement
+        self.analytics = analytics
         self.onFinish = onFinish
         selectedPlan = appState.subscription.plan ?? .yearly
+    }
+
+    /// Once per presentation.
+    func viewed() {
+        guard !hasReportedView else { return }
+        hasReportedView = true
+        analytics.track(.paywallViewed(placement: placement.rawValue, variant: appState.paywallVariant.rawValue))
+    }
+
+    /// A plan card was tapped.
+    func select(_ plan: Plan) {
+        guard plan != selectedPlan else { return }
+        selectedPlan = plan
+        analytics.track(.planSelected(plan: plan.rawValue))
     }
 
     // MARK: Products
@@ -97,6 +122,8 @@ final class PaywallViewModel {
 
     func purchase() async {
         guard !isBusy, selectedProduct != nil else { return }
+        // trial_started / subscription_purchased come from the RevenueCat integration, not from here.
+        analytics.track(.purchaseStarted(plan: selectedPlan.rawValue))
         isPurchasing = true
         defer { isPurchasing = false }
         do {

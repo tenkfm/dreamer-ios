@@ -116,10 +116,17 @@ final class OnboardingViewModel {
         accountMode = .signUp
     }
 
-    /// Signed in on the account step. New users go on to the paywall; returning users are done
-    /// with onboarding (AppState moves them on).
-    func signedIn(_ session: AuthSession) {
+    /// Signed in on the account step. Returning users are done with onboarding (AppState moves them
+    /// on). New users go on to the paywall - unless the backend gave them the `oneFree` variant,
+    /// whose paywall comes after the first interpretation.
+    func signedIn(_ session: AuthSession, subscription: SubscriptionInfo? = nil) {
+        if let subscription { appState.serverSubscription = subscription }
         appState.signedIn(userID: session.userID, isNewUser: session.isNewUser)
-        if session.isNewUser { go(to: .paywall) }
+        guard session.isNewUser else { return }
+        if appState.hasFreeInterpretation {
+            appState.finishOnboardingWithoutPurchase()
+        } else {
+            go(to: .paywall)
+        }
     }
 }
