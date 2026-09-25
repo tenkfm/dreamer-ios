@@ -19,6 +19,11 @@
 /* Begin PBXFileReference section */
 		D7A000000000000000000002 /* Dreamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dreamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7A000000000000000000003 /* DreamerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DreamerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7A000000000000000000060 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		D7A000000000000000000061 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		D7A000000000000000000062 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
+		D7A000000000000000000063 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		D7A000000000000000000064 /* Secrets.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -70,8 +75,21 @@
 			children = (
 				D7A000000000000000000004 /* Dreamer */,
 				D7A000000000000000000005 /* DreamerTests */,
+				D7A000000000000000000070 /* Config */,
 				D7A000000000000000000007 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D7A000000000000000000070 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				D7A000000000000000000060 /* Shared.xcconfig */,
+				D7A000000000000000000061 /* Debug.xcconfig */,
+				D7A000000000000000000062 /* Staging.xcconfig */,
+				D7A000000000000000000063 /* Release.xcconfig */,
+				D7A000000000000000000064 /* Secrets.example.xcconfig */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		D7A000000000000000000007 /* Products */ = {
@@ -246,6 +264,32 @@
 			};
 			name = Debug;
 		};
+		D7A000000000000000000057 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Staging;
+		};
 		D7A000000000000000000052 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -274,16 +318,14 @@
 		};
 		D7A000000000000000000053 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D7A000000000000000000061 /* Debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 7ZG77S8NDR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Dreamer/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dreamer;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(DREAMER_DISPLAY_NAME)";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Dreamer saves your dream images to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -293,8 +335,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -305,18 +345,16 @@
 			};
 			name = Debug;
 		};
-		D7A000000000000000000054 /* Release */ = {
+		D7A000000000000000000058 /* Staging */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D7A000000000000000000062 /* Staging.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 7ZG77S8NDR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Dreamer/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dreamer;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(DREAMER_DISPLAY_NAME)";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Dreamer saves your dream images to your photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -326,8 +364,35 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Staging;
+		};
+		D7A000000000000000000054 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D7A000000000000000000063 /* Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Dreamer/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(DREAMER_DISPLAY_NAME)";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Dreamer saves your dream images to your photo library.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -355,6 +420,23 @@
 			};
 			name = Debug;
 		};
+		D7A000000000000000000059 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dreamer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Dreamer";
+			};
+			name = Staging;
+		};
 		D7A000000000000000000056 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -379,6 +461,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D7A000000000000000000051 /* Debug */,
+				D7A000000000000000000057 /* Staging */,
 				D7A000000000000000000052 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -388,6 +471,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D7A000000000000000000053 /* Debug */,
+				D7A000000000000000000058 /* Staging */,
 				D7A000000000000000000054 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -397,12 +481,14 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D7A000000000000000000055 /* Debug */,
+				D7A000000000000000000059 /* Staging */,
 				D7A000000000000000000056 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
 	};
 	rootObject = D7A000000000000000000001 /* Project object */;
 }

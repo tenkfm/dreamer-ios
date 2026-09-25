@@ -2,6 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>DreamerEnvironment</key>
+	<string>$(APP_ENVIRONMENT)</string>
+	<key>DreamerAPIBaseURL</key>
+	<string>$(API_BASE_URL)</string>
+	<key>DreamerRevenueCatAPIKey</key>
+	<string>$(REVENUECAT_API_KEY)</string>
+	<key>DreamerPostHogAPIKey</key>
+	<string>$(POSTHOG_API_KEY)</string>
+	<key>DreamerPostHogHost</key>
+	<string>$(POSTHOG_HOST)</string>
+	<key>DreamerSentryDSN</key>
+	<string>$(SENTRY_DSN)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Quicksand-Light.ttf</string>

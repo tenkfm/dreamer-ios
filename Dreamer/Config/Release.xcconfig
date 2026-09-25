@@ -1,0 +1,12 @@
+// App Store build.
+#include "Shared.xcconfig"
+
+APP_ENVIRONMENT = production
+// The production API domain is not chosen yet (blocker in PROGRESS.md). Empty = the app
+// refuses to start networking and says so, instead of silently hitting staging.
+API_BASE_URL =
+PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer
+DREAMER_DISPLAY_NAME = Dreamer
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+
+#include? "Secrets.xcconfig"

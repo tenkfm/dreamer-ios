@@ -1,0 +1,11 @@
+// Settings shared by every configuration.
+// SDK keys are never committed: they come from Secrets.xcconfig (local, git-ignored) or from CI
+// secrets. An empty key means the SDK stays off and the app uses its local fallback.
+
+MARKETING_VERSION = 1.0.0
+CURRENT_PROJECT_VERSION = 1
+
+REVENUECAT_API_KEY =
+POSTHOG_API_KEY =
+POSTHOG_HOST =
+SENTRY_DSN =

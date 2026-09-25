@@ -23,7 +23,9 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Build the app and run it in the simulator
 
-Options: device (simulator name), screen (debug start screen, e.g. journal), reset (true = clean install)
+Options: device (simulator name), screen (debug start screen, e.g. journal), reset (true = clean install),
+
+configuration (Debug, Staging or Release)
 
 ### ios test
 

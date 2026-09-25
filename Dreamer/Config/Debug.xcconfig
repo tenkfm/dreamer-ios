@@ -1,0 +1,11 @@
+// Local development: talks to staging, installs next to the Release app.
+#include "Shared.xcconfig"
+
+APP_ENVIRONMENT = debug
+// "//" starts a comment in xcconfig, hence the $() in the URL.
+API_BASE_URL = https:/$()/api-staging-0ea4.up.railway.app
+PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.staging
+DREAMER_DISPLAY_NAME = Dreamer β
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon-Staging
+
+#include? "Secrets.xcconfig"
