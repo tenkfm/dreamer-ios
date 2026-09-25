@@ -14,6 +14,7 @@ struct FillingScrollView<Content: View>: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .scrollIndicators(.hidden)
+            .scrollEdgeEffectsHidden()
         }
     }
 }

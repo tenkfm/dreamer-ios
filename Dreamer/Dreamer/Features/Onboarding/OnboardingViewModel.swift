@@ -1,11 +1,12 @@
 import Foundation
 import Observation
 
-/// Linear first-launch flow: 3 intro pages, 2 quiz questions, paywall.
+/// Paged first-launch flow: 3 intro pages, 2 quiz questions, paywall.
+/// The step follows the pager, so buttons and swipes go through the same `go(to:)`.
 @MainActor
 @Observable
 final class OnboardingViewModel {
-    enum Step: Int, CaseIterable, Comparable {
+    enum Step: Int, CaseIterable, Comparable, Hashable {
         case welcome, record, understand, quizGoal, quizLens, paywall
 
         static func < (lhs: Step, rhs: Step) -> Bool { lhs.rawValue < rhs.rawValue }
@@ -36,22 +37,28 @@ final class OnboardingViewModel {
         goal = appState.goal ?? .understand
     }
 
-    func next() {
-        if step == .quizLens {
+    func go(to step: Step) {
+        guard step != self.step else { return }
+        self.step = step
+        // The paywall can be reached by swiping too, so the answers are committed on arrival.
+        if step == .paywall {
             appState.completeOnboarding(goal: goal, lens: lens)
         }
+    }
+
+    func next() {
         guard let next = Step(rawValue: step.rawValue + 1) else { return }
-        step = next
+        go(to: next)
     }
 
     func back() {
         guard let previous = Step(rawValue: step.rawValue - 1) else { return }
-        step = previous
+        go(to: previous)
     }
 
     /// "Skip" on the intro pages jumps to the quiz.
     func skipIntro() {
-        step = .quizGoal
+        go(to: .quizGoal)
     }
 
     /// Phase 1: "I already have an account" opens Main directly.

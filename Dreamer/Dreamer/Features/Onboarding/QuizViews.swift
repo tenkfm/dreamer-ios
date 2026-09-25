@@ -32,6 +32,7 @@ private struct QuizScaffold<Options: View>: View {
             }
         }
         .scrollBounceBehavior(.basedOnSize)
+        .scrollEdgeEffectsHidden()
         .safeAreaInset(edge: .top, spacing: 0) {
             HeaderBar(leading: {
                 GlassIconButton(systemImage: "chevron.left", accessibilityLabel: "Back", action: onBack)
@@ -61,6 +62,8 @@ private struct QuizScaffold<Options: View>: View {
 
 struct QuizGoalView: View {
     @Bindable var viewModel: OnboardingViewModel
+    var onBack: () -> Void
+    var onContinue: () -> Void
 
     var body: some View {
         QuizScaffold(
@@ -68,8 +71,8 @@ struct QuizGoalView: View {
             progress: 0.5,
             previousProgress: 0,
             stepLabel: "1 of 2",
-            onBack: { viewModel.back() },
-            onContinue: { viewModel.next() }
+            onBack: onBack,
+            onContinue: onContinue
         ) {
             ForEach(Array(Goal.allCases.enumerated()), id: \.element) { index, goal in
                 RadioOptionCard(title: goal.title, glyph: goal.glyph, isSelected: viewModel.goal == goal) {
@@ -85,6 +88,8 @@ struct QuizGoalView: View {
 
 struct QuizLensView: View {
     @Bindable var viewModel: OnboardingViewModel
+    var onBack: () -> Void
+    var onContinue: () -> Void
 
     var body: some View {
         QuizScaffold(
@@ -92,8 +97,8 @@ struct QuizLensView: View {
             progress: 1,
             previousProgress: 0.5,
             stepLabel: "2 of 2",
-            onBack: { viewModel.back() },
-            onContinue: { viewModel.next() }
+            onBack: onBack,
+            onContinue: onContinue
         ) {
             ForEach(Array(Lens.allCases.enumerated()), id: \.element) { index, lens in
                 RadioOptionCard(title: lens.title, subtitle: lens.summary, isSelected: viewModel.lens == lens) {
@@ -108,6 +113,7 @@ struct QuizLensView: View {
 #Preview("Quiz goal") {
     ZStack {
         SkyBackground(kind: .top)
-        QuizGoalView(viewModel: OnboardingViewModel(appState: .preview(onboardingCompleted: false), step: .quizGoal))
+        QuizGoalView(viewModel: OnboardingViewModel(appState: .preview(onboardingCompleted: false), step: .quizGoal),
+                     onBack: {}, onContinue: {})
     }
 }

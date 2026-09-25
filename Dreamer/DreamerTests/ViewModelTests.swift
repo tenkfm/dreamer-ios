@@ -19,6 +19,17 @@ struct OnboardingTests {
         #expect(appState.rootScreen == .onboarding)
     }
 
+    @Test func swipingToThePaywallAlsoStoresTheAnswers() {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        let viewModel = OnboardingViewModel(appState: appState, step: .quizLens)
+
+        viewModel.lens = .dreamBook
+        viewModel.go(to: .paywall)
+
+        #expect(appState.preferredLens == .dreamBook)
+        #expect(appState.goal == .understand)
+    }
+
     @Test func skipJumpsToTheQuiz() {
         let viewModel = OnboardingViewModel(appState: AppState(store: InMemoryPreferencesStore()), step: .record)
         viewModel.skipIntro()
