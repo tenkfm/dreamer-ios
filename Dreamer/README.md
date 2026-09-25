@@ -57,6 +57,12 @@ connections (backoff 0.5 s, 1 s), never on 4xx. `ErrorState` (Features/Shared) t
 until `resetAt`), shown with `ErrorStateCard`. `NetworkMonitor` drives a glass offline banner
 (`offlineBannerInset()`, applied inside each navigation container; debug: `-offline`).
 
+Live analysis: `APIClient.dreamEventStream` reads `GET /v1/dreams/{id}/events` (Server-Sent Events,
+parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an event) into
+`DreamEvent` (step, text delta with reset, ready with the whole dream, failed).
+`DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
+or the connection drops, and keeps polling through network gaps, so the result is never lost.
+
 Tests use `DreamerTests/Support/StubURLProtocol.swift`; `LiveAPITests` hit staging when run with
 `TEST_RUNNER_DREAMER_LIVE_TESTS=1`.
 
