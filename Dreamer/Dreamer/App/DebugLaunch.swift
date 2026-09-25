@@ -10,6 +10,8 @@ enum DebugLaunch {
     enum Screen: String {
         case welcome, recordIntro, understand, quizGoal, quizLens, account, paywall
         case home, journal, library, settings, deleteAccount, interpretation, symbol
+        /// Interpretation of a crisis-flagged dream (the support screen).
+        case support
         case record, details, analysis
     }
 
@@ -60,6 +62,13 @@ enum DebugLaunch {
         case .settings, .deleteAccount: state.push(.settings, on: .today)
         case .interpretation:
             if let dream = dependencies.dreamStore.dreams.first { state.push(.interpretation(dream.id), on: .today) }
+        case .support:
+            if var dream = dependencies.dreamStore.dreams.first {
+                dream.interpretation?.safetyFlag = true
+                dream.imageName = nil
+                dependencies.dreamStore.save(dream)
+                state.push(.interpretation(dream.id), on: .today)
+            }
         case .symbol: state.open(.library, route: .symbol(MockData.librarySymbols[0].id))
         case .record, .details, .analysis: state.presentRecordFlow()
         default: break

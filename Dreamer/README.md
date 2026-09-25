@@ -63,6 +63,13 @@ parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an
 `DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
 or the connection drops, and keeps polling through network gaps, so the result is never lost.
 
+Crisis-flagged dreams (IOS-05.2): when `interpretation.safetyFlag` is true, Interpretation shows
+`SupportCard` instead of the reading. There are no lenses, voice, image badge, sharing or saving;
+the notes and the disclaimer stay. Analysis also drops the text it streamed. The copy and the
+per-country help services come from `SupportContentProvider`. Until Tony approves them,
+`PendingSupportContent` shows a neutral draft with only "call your local emergency number" and no
+phone numbers. Debug: `-debugScreen support`.
+
 Analysis (IOS-05.1): the checklist follows the `step` events. The main lens appears under the card
 as it is written (`text` deltas; `reset: true` drops what was shown because the backend restarted
 with its fallback provider). `ready` enables "See my interpretation". A failed dream (`status: failed`
@@ -279,7 +286,7 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 ```
 
 Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
-interpretation symbol record details analysis`. Debug screens use mock services (`-liveServices`
+interpretation support symbol record details analysis`. Debug screens use mock services (`-liveServices`
 to talk to the backend instead); `-mockServices` does the same for a normal launch,
 `-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).

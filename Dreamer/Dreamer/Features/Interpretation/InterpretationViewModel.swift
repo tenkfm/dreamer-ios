@@ -19,12 +19,16 @@ final class InterpretationViewModel {
     private let appState: AppState
     private let imageSaver: any ImageSaving
     private let dateFormatter: DreamDateFormatter
+    private let supportContent: any SupportContentProvider
+    private let region: Locale.Region?
 
     init(dreamID: Dream.ID,
          store: any DreamStore,
          appState: AppState,
          readAloud: any ReadAloudService,
          imageSaver: any ImageSaving,
+         supportContent: any SupportContentProvider = PendingSupportContent(),
+         region: Locale.Region? = Locale.current.region,
          dateFormatter: DreamDateFormatter = DreamDateFormatter()) {
         let dream = store.dream(id: dreamID)
         self.dream = dream
@@ -34,9 +38,18 @@ final class InterpretationViewModel {
         self.readAloud = readAloud
         self.imageSaver = imageSaver
         self.dateFormatter = dateFormatter
+        self.supportContent = supportContent
+        self.region = region
     }
 
     // MARK: Content
+
+    /// A crisis-flagged dream: the support screen replaces the reading, the image, the voice and
+    /// sharing (the backend generates neither image nor voice for it).
+    var support: SupportContent? {
+        guard dream?.interpretation?.safetyFlag == true else { return nil }
+        return supportContent.content(for: region)
+    }
 
     var mainLens: Lens { lensOverride ?? appState.preferredLens }
 

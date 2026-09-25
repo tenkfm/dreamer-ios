@@ -33,7 +33,7 @@ struct InterpretationView: View {
         } center: {
             EmptyView()
         } trailing: {
-            if viewModel.dream != nil {
+            if viewModel.dream != nil, viewModel.support == nil {
                 HStack(spacing: 10) {
                     GlassIconButton(systemImage: "arrow.down.to.line", accessibilityLabel: "Save image") {
                         Task { await viewModel.saveImage() }
@@ -57,33 +57,51 @@ struct InterpretationView: View {
     private func content(dream: Dream, topInset: CGFloat) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.section) {
-                DreamHero(dream: dream, dateText: viewModel.dateText, topInset: topInset)
-                if !dream.symbols.isEmpty {
-                    keySymbols(dream.symbols).enterUp(0.5)
-                }
-                Group {
-                    mainInterpretation.enterUp(0.65)
-                    otherPerspectives.enterUp(0.8)
-                    if let forYou = viewModel.forYou {
-                        InsightCard(overline: "For you, right now", text: forYou)
+                DreamHero(dream: dream, dateText: viewModel.dateText, topInset: topInset,
+                          showsImageBadge: viewModel.support == nil)
+                if let support = viewModel.support {
+                    Group {
+                        SupportCard(content: support).enterUp(0.5)
+                        thoughts
+                        disclaimer
                     }
-                    thoughts
-                    ShareLink(item: shareImage, preview: SharePreview(dream.title, image: shareImage)) {
-                        PrimaryButtonLabel(title: "Share my dream image", systemImage: "square.and.arrow.up")
-                    }
-                    .buttonStyle(PressableButtonStyle())
-                    Text("Dreamer offers reflection, not medical advice.")
-                        .textStyle(.label, color: DS.Palette.textTertiary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
+                    .padding(.horizontal, DS.Space.screen)
+                } else {
+                    reading(dream)
                 }
-                .padding(.horizontal, DS.Space.screen)
             }
             .padding(.bottom, 40)
         }
         .scrollIndicators(.hidden)
         .ignoresSafeArea(edges: .top)
         .scrollDismissesKeyboard(.interactively)
+    }
+
+    @ViewBuilder private func reading(_ dream: Dream) -> some View {
+        if !dream.symbols.isEmpty {
+            keySymbols(dream.symbols).enterUp(0.5)
+        }
+        Group {
+            mainInterpretation.enterUp(0.65)
+            otherPerspectives.enterUp(0.8)
+            if let forYou = viewModel.forYou {
+                InsightCard(overline: "For you, right now", text: forYou)
+            }
+            thoughts
+            ShareLink(item: shareImage, preview: SharePreview(dream.title, image: shareImage)) {
+                PrimaryButtonLabel(title: "Share my dream image", systemImage: "square.and.arrow.up")
+            }
+            .buttonStyle(PressableButtonStyle())
+            disclaimer
+        }
+        .padding(.horizontal, DS.Space.screen)
+    }
+
+    private var disclaimer: some View {
+        Text("Dreamer offers reflection, not medical advice.")
+            .textStyle(.label, color: DS.Palette.textTertiary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
     }
 
     private func keySymbols(_ symbols: [DreamSymbol]) -> some View {
@@ -190,6 +208,19 @@ private struct DreamHero: View {
     var dream: Dream
     var dateText: String
     var topInset: CGFloat
+    var showsImageBadge = true
+
+    private var imageBadge: some View {
+        Text("AI dream image")
+            .font(DreamerFont.fixed(11))
+            .foregroundStyle(DS.Palette.textPrimary)
+            .padding(.horizontal, 12)
+            .frame(height: 26)
+            .glassCapsule()
+            .padding(.top, topInset + DS.Space.headerTop + DS.Size.iconButton + 14)
+            .padding(.trailing, DS.Space.screen)
+            .enterUp(0.3)
+    }
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var revealed = false
@@ -231,15 +262,7 @@ private struct DreamHero: View {
         }
         .frame(height: DS.Size.heroHeight)
         .overlay(alignment: .topTrailing) {
-            Text("AI dream image")
-                .font(DreamerFont.fixed(11))
-                .foregroundStyle(DS.Palette.textPrimary)
-                .padding(.horizontal, 12)
-                .frame(height: 26)
-                .glassCapsule()
-                .padding(.top, topInset + DS.Space.headerTop + DS.Size.iconButton + 14)
-                .padding(.trailing, DS.Space.screen)
-                .enterUp(0.3)
+            if showsImageBadge { imageBadge }
         }
         .onAppear {
             withAnimation(.easeOut(duration: 1.6)) { revealed = true }

@@ -64,6 +64,8 @@ final class AnalysisViewModel {
                 case .writing(let text):
                     writtenText = text
                 case .finished(let dream):
+                    // A crisis-flagged dream gets the support screen: no reading stays in view.
+                    if dream.interpretation?.safetyFlag == true { writtenText = "" }
                     store.save(dream)
                     result = dream
                 }
