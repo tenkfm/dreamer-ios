@@ -151,6 +151,7 @@ struct PaywallTests {
         let appState = AppState(store: InMemoryPreferencesStore())
         appState.signedIn(userID: "user-1", isNewUser: true)
         let viewModel = PaywallViewModel(purchases: MockPurchaseService(delay: .zero), appState: appState)
+        await viewModel.loadProducts()
 
         viewModel.selectedPlan = .weekly
         #expect(viewModel.ctaTitle == "Subscribe for $6.99 a week")

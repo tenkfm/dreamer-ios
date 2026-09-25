@@ -20,6 +20,8 @@ struct PaywallView: View {
                 PrimaryButton(title: viewModel.ctaTitle, isLoading: viewModel.isPurchasing) {
                     Task { await viewModel.purchase() }
                 }
+                .disabled(viewModel.selectedProduct == nil)
+                .opacity(viewModel.selectedProduct == nil ? 0.6 : 1)
                 .padding(.horizontal, DS.Space.cta - DS.Space.screen)
                 .enterUp(0.9)
                 footer.enterUp(1)
@@ -34,6 +36,7 @@ struct PaywallView: View {
                 .enterUp(0.1)
             }
         }
+        .task { await viewModel.loadProducts() }
         .alert("Dreamer", isPresented: alertBinding) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -74,14 +77,35 @@ struct PaywallView: View {
         .glassCard(radius: DS.Radius.cardLarge)
     }
 
-    private var plans: some View {
-        VStack(spacing: DS.Space.stack) {
-            ForEach(Array(Plan.allCases.enumerated()), id: \.element) { index, plan in
-                PlanCard(title: plan.title, subtitle: plan.billingDescription, price: plan.displayPrice,
-                         badge: plan.badge, isSelected: viewModel.selectedPlan == plan) {
-                    viewModel.selectedPlan = plan
+    @ViewBuilder private var plans: some View {
+        switch viewModel.productsState {
+        case .loading:
+            VStack(spacing: DS.Space.stack) {
+                ForEach(0..<2, id: \.self) { _ in
+                    RoundedRectangle(cornerRadius: DS.Radius.option, style: .continuous)
+                        .fill(Color.white.opacity(0.001))
+                        .frame(height: 72)
+                        .glassCard(radius: DS.Radius.option, style: .option)
+                        .overlay { ProgressView().tint(DS.Palette.icon) }
                 }
-                .enterUp(0.55 + Double(index) * 0.15)
+            }
+            .accessibilityLabel("Loading plans")
+        case .failed:
+            ErrorStateCard(systemImage: "wifi.slash", title: "Plans didn’t load",
+                           message: "We couldn’t reach the App Store. Check your connection.",
+                           actionTitle: "Try again") {
+                Task { await viewModel.reloadProducts() }
+            }
+        case .loaded(let products):
+            VStack(spacing: DS.Space.stack) {
+                ForEach(Array(products.enumerated()), id: \.element.id) { index, product in
+                    PlanCard(title: product.plan.title, subtitle: viewModel.subtitle(for: product),
+                             price: product.displayPrice, badge: viewModel.badge(for: product),
+                             isSelected: viewModel.selectedPlan == product.plan) {
+                        viewModel.selectedPlan = product.plan
+                    }
+                    .enterUp(0.55 + Double(index) * 0.15)
+                }
             }
         }
     }

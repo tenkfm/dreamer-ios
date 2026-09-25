@@ -4,7 +4,15 @@ import Observation
 @MainActor
 @Observable
 final class PaywallViewModel {
+    enum ProductsState: Equatable {
+        case loading
+        case loaded([PaywallProduct])
+        /// The store did not answer: no prices can be shown, so nothing can be bought.
+        case failed
+    }
+
     var selectedPlan: Plan = .yearly
+    private(set) var productsState: ProductsState = .loading
     private(set) var isPurchasing = false
     private(set) var isRestoring = false
     var alertMessage: String?
@@ -29,24 +37,66 @@ final class PaywallViewModel {
         selectedPlan = appState.subscription.plan ?? .yearly
     }
 
-    var ctaTitle: String {
-        switch selectedPlan {
-        case .yearly: "Try 7 days free"
-        case .weekly: "Subscribe for $6.99 a week"
+    // MARK: Products
+
+    func loadProducts() async {
+        if case .loaded = productsState { return }
+        do {
+            let products = try await purchases.products()
+            productsState = products.isEmpty ? .failed : .loaded(products)
+            if !products.contains(where: { $0.plan == selectedPlan }), let first = products.first {
+                selectedPlan = first.plan
+            }
+        } catch {
+            productsState = .failed
         }
     }
 
+    func reloadProducts() async {
+        productsState = .loading
+        await loadProducts()
+    }
+
+    var products: [PaywallProduct] {
+        if case .loaded(let products) = productsState { return products }
+        return []
+    }
+
+    var selectedProduct: PaywallProduct? { products.first { $0.plan == selectedPlan } }
+
+    // MARK: Copy (App Review 3.1.2: price, period, trial and auto-renewal next to the button)
+
+    var ctaTitle: String {
+        guard let product = selectedProduct else { return "Continue" }
+        if let trial = product.trial { return "Try \(trial.period.trialPhrase) free" }
+        return "Subscribe for \(product.displayPrice) a \(product.period.phrase)"
+    }
+
     var termsText: String {
-        switch selectedPlan {
-        case .yearly: "Free for 7 days, then $39.99 a year. We remind you 2 days before it ends. Cancel anytime."
-        case .weekly: "Renews every week until you cancel. Cancel anytime."
+        guard let product = selectedProduct else { return "" }
+        let renewal = "Renews automatically until you cancel, at least 24 hours before the period ends. Cancel anytime in Settings."
+        if let trial = product.trial {
+            return "Free for \(trial.period.trialPhrase), then \(product.displayPrice) a \(product.period.phrase). " +
+                "We remind you 2 days before it ends. \(renewal)"
         }
+        return "\(product.displayPrice) a \(product.period.phrase). \(renewal)"
+    }
+
+    func subtitle(for product: PaywallProduct) -> String {
+        if let perMonth = product.displayPricePerMonth, product.period.unit == .year {
+            return "\(perMonth) a month, billed yearly"
+        }
+        return "Billed every \(product.period.phrase)"
+    }
+
+    func badge(for product: PaywallProduct) -> String? {
+        product.trial.map { "\($0.period.trialPhrase) free" }
     }
 
     var isBusy: Bool { isPurchasing || isRestoring }
 
     func purchase() async {
-        guard !isBusy else { return }
+        guard !isBusy, selectedProduct != nil else { return }
         isPurchasing = true
         defer { isPurchasing = false }
         do {
@@ -99,25 +149,5 @@ final class PaywallViewModel {
         } else {
             appState.enterMainForTesting()
         }
-    }
-}
-
-extension Plan {
-    var billingDescription: String {
-        switch self {
-        case .yearly: "$3.33 a month, billed yearly"
-        case .weekly: "Billed every week"
-        }
-    }
-
-    var displayPrice: String {
-        switch self {
-        case .yearly: "$39.99"
-        case .weekly: "$6.99"
-        }
-    }
-
-    var badge: String? {
-        self == .yearly ? "7 days free" : nil
     }
 }
