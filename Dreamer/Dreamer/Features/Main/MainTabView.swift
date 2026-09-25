@@ -106,7 +106,9 @@ private struct RouteDestination: View {
             ViewModelHost {
                 InterpretationViewModel(dreamID: id, store: dependencies.dreamStore, appState: appState,
                                         readAloud: dependencies.makeReadAloudService(), imageSaver: dependencies.imageSaver,
-                                        analytics: dependencies.analytics, notesService: dependencies.api)
+                                        analytics: dependencies.analytics, notesService: dependencies.api,
+                                        imageLoader: dependencies.imageLoader, imageActions: dependencies.imageActions,
+                                        imageGenerationEnabled: dependencies.featureFlags.isEnabled(.imageGenerationEnabled))
             } content: { viewModel in
                 InterpretationView(viewModel: viewModel)
             }

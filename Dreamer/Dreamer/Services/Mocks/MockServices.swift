@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import os
 
 /// Types the sample transcript in, ~2 characters every 80 ms, with a talking-like level.
 @MainActor
@@ -222,4 +223,42 @@ final class MockReadAloudService: ReadAloudService {
 
 struct MockImageSaver: ImageSaving {
     func saveImage(named assetName: String) async throws {}
+    func saveImage(data: Data) async throws {}
+}
+
+/// "Paints" one dream's image: pending on the first look, ready on the next, served from the
+/// asset catalog. For the debug screen and tests of the generating state.
+final class MockDreamImageService: DreamImageLoading, DreamImageActions, @unchecked Sendable {
+    private let state: OSAllocatedUnfairLock<Dream>
+
+    init(dream: Dream) {
+        state = OSAllocatedUnfairLock(initialState: dream)
+    }
+
+    func refreshDream(id: UUID) async throws(APIError) -> Dream {
+        state.withLock { dream in
+            if let image = dream.image, image.status == .pending {
+                dream.image = DreamImageInfo(status: .ready, url: URL(string: "https://media.mock/\(id).jpg"),
+                                             width: 1024, height: 1536, version: image.version)
+            }
+            return dream
+        }
+    }
+
+    func regenerateImage(id: UUID) async throws(APIError) -> Dream {
+        state.withLock { dream in
+            dream.image = DreamImageInfo(status: .pending, version: (dream.image?.version ?? 0) + 1)
+            return dream
+        }
+    }
+
+    func imageData(dreamID: UUID, image: DreamImageInfo, size: DreamImageSize) async throws(APIError) -> Data {
+        let name = state.withLock { $0.imageName }
+        guard let data = DreamImage.uiImage(named: name)?.jpegData(compressionQuality: 0.9) else {
+            throw APIError.invalidResponse(status: nil)
+        }
+        return data
+    }
+
+    func removeAll() async {}
 }

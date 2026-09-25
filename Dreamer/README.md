@@ -63,6 +63,18 @@ parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an
 `DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
 or the connection drops, and keeps polling through network gaps, so the result is never lost.
 
+Dream image (IOS-05.4, `Services/DreamImageLoader.swift`): while `image.status` is `pending`, the
+hero shows the sky with "Painting your dream…" and Interpretation polls `GET /v1/dreams/{id}` every
+3 s for up to 2 minutes. The ready image replaces the sky with the same reveal from blur. Images are
+cached in Caches/DreamImages with complete protection, keyed by dream, `version` and size, so
+expiring presigned links do not matter. A 403 on a link gets the dream again for fresh links, once,
+and a new version replaces the old files. A failed image gets "Try a new image", and a long press
+on the hero gives "Create a new image": both call `POST /v1/dreams/{id}/image/regenerate`, with the
+daily 429 explained. Both are hidden by the `imageGenerationEnabled` kill switch and for crisis
+dreams. Save to Photos writes the downloaded file. The cache is emptied at sign-out and account
+deletion. Journal thumbnails (`.thumbnail`) arrive with IOS-06. Debug: `-debugScreen interpretation
+-imagePending`.
+
 Lenses and notes (IOS-05.3): the main lens of every interpretation is the account's preferred lens
 (the backend reads it from the profile for each dream), so changing it in Settings updates dreams that
 are already open. "Make this my main lens" sets it for the whole account and tracks
@@ -297,7 +309,7 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
 interpretation support symbol record details analysis`. Debug screens use mock services (`-liveServices`
 to talk to the backend instead); `-mockServices` does the same for a normal launch,
-`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-night` or `-day` to force the appearance,
+`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.
 

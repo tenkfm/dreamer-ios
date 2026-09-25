@@ -101,6 +101,8 @@ extension SymbolCatalog {
 /// Saves a dream image to the user's photo library.
 protocol ImageSaving: Sendable {
     func saveImage(named assetName: String) async throws
+    /// The downloaded dream image, as the backend made it.
+    func saveImage(data: Data) async throws
 }
 
 /// Session-level preferences that survive relaunch.

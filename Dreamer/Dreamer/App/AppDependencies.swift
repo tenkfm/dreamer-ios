@@ -35,6 +35,9 @@ final class AppDependencies {
     let drafts: DraftQueue?
     /// Server speech-to-text for recordings the device gave no text for (nil: flag off, mock mode).
     let transcriber: (any RecordingTranscriber)?
+    /// Dream images from the backend (nil in mock mode: the asset catalog).
+    let imageLoader: (any DreamImageLoading)?
+    let imageActions: (any DreamImageActions)?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
     @ObservationIgnored let makeSpeechPermissions: @MainActor () -> any SpeechPermissions
@@ -56,6 +59,8 @@ final class AppDependencies {
          network: NetworkMonitor = NetworkMonitor(isOnline: true),
          drafts: DraftQueue? = nil,
          transcriber: (any RecordingTranscriber)? = nil,
+         imageLoader: (any DreamImageLoading)? = nil,
+         imageActions: (any DreamImageActions)? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
          makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() }) {
@@ -76,6 +81,8 @@ final class AppDependencies {
         self.network = network
         self.drafts = drafts
         self.transcriber = transcriber
+        self.imageLoader = imageLoader
+        self.imageActions = imageActions
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
         self.makeSpeechPermissions = makeSpeechPermissions
@@ -96,6 +103,7 @@ final class AppDependencies {
 
         guard mode(config: config, arguments: arguments) == .live, let baseURL = config.apiBaseURL else {
             let dreamStore = InMemoryDreamStore()
+            let images = mockImages(store: dreamStore)
             return AppDependencies(
                 mode: .mock,
                 dreamStore: dreamStore,
@@ -108,6 +116,8 @@ final class AppDependencies {
                 network: network,
                 drafts: container.map { DraftQueue(container: $0, submitter: MockDreamSubmitter(), store: dreamStore) },
                 transcriber: mockTranscriber(),
+                imageLoader: images,
+                imageActions: images,
                 makeSpeechService: { MockSpeechService(liveText: mockTranscriber() == nil) },
                 makeReadAloudService: { SpeechSynthesizerReadAloudService() }
             )
@@ -138,6 +148,8 @@ final class AppDependencies {
             network: network,
             drafts: container.map { DraftQueue(container: $0, submitter: api, store: dreamStore) },
             transcriber: serverSpeech ? APIRecordingTranscriber(client: api) : nil,
+            imageLoader: RemoteDreamImageLoader(actions: api),
+            imageActions: api,
             makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
             makeReadAloudService: { SpeechSynthesizerReadAloudService() },
             makeSpeechPermissions: { SystemSpeechPermissions() }
@@ -192,6 +204,19 @@ final class AppDependencies {
         return nil
     }
 
+    /// Debug `-imagePending`: the first dream's image is "painted" in a few seconds, to see the
+    /// generating state and the reveal without the backend.
+    private static func mockImages(store: InMemoryDreamStore) -> MockDreamImageService? {
+        #if DEBUG
+        guard ProcessInfo.processInfo.arguments.contains("-imagePending"), var dream = store.dreams.first else { return nil }
+        dream.image = DreamImageInfo(status: .pending, version: 1)
+        store.save(dream)
+        return MockDreamImageService(dream: dream)
+        #else
+        return nil
+        #endif
+    }
+
     private static func liveNetworkMonitor() -> NetworkMonitor {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-offline") { return NetworkMonitor(isOnline: false) }
@@ -232,6 +257,7 @@ extension AppDependencies {
 
     /// After sign-out, account deletion or a revoked session.
     func unlinkAccount() async {
+        await imageLoader?.removeAll()
         await purchases.logOut()
         analytics.reset()
         crashReporter.setUserID(nil)

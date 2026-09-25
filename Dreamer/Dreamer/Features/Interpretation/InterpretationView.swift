@@ -22,6 +22,7 @@ struct InterpretationView: View {
             }
         }
         .toast($viewModel.toastMessage)
+        .task(id: viewModel.imageRequest) { await viewModel.loadImage() }
         .onDisappear {
             viewModel.stopPlayback()
             Task { await viewModel.flushNotes() }
@@ -53,7 +54,9 @@ struct InterpretationView: View {
         .enterUp(0.1)
     }
 
-    private var shareImage: Image { DreamImage.image(named: viewModel.imageName) }
+    private var shareImage: Image {
+        viewModel.loadedImage.map(Image.init(uiImage:)) ?? DreamImage.image(named: viewModel.imageName)
+    }
 
     // MARK: Content
 
@@ -61,7 +64,11 @@ struct InterpretationView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.section) {
                 DreamHero(dream: dream, dateText: viewModel.dateText, topInset: topInset,
-                          showsImageBadge: viewModel.support == nil)
+                          showsImageBadge: viewModel.support == nil,
+                          loadedImage: viewModel.loadedImage,
+                          phase: viewModel.support == nil ? viewModel.imagePhase : .asset,
+                          canRegenerate: viewModel.canRegenerateImage,
+                          onRegenerate: { Task { await viewModel.regenerateImage() } })
                 if let support = viewModel.support {
                     Group {
                         SupportCard(content: support).enterUp(0.5)
@@ -212,17 +219,48 @@ private struct DreamHero: View {
     var dateText: String
     var topInset: CGFloat
     var showsImageBadge = true
+    var loadedImage: UIImage?
+    var phase: InterpretationViewModel.ImagePhase = .asset
+    var canRegenerate = false
+    var onRegenerate: () -> Void = {}
 
-    private var imageBadge: some View {
-        Text("AI dream image")
+    /// "AI dream image" on a shown image; while painting, what is happening; after a failure, a retry.
+    @ViewBuilder private var imageBadge: some View {
+        Group {
+            switch phase {
+            case .asset, .ready:
+                badgeCapsule { Text("AI dream image") }
+            case .generating, .loading:
+                badgeCapsule {
+                    HStack(spacing: 6) {
+                        ProgressView().controlSize(.mini).tint(DS.Palette.textPrimary)
+                        Text(phase == .generating ? "Painting your dream…" : "Loading image…")
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            case .failed:
+                if canRegenerate {
+                    PillButton(title: "Try a new image", action: onRegenerate)
+                }
+            }
+        }
+        .padding(.top, topInset + DS.Space.headerTop + DS.Size.iconButton + 14)
+        .padding(.trailing, DS.Space.screen)
+        .enterUp(0.3)
+        .animation(.soft(0.4), value: phase)
+    }
+
+    private func badgeCapsule(@ViewBuilder _ label: () -> some View) -> some View {
+        label()
             .font(DreamerFont.fixed(11))
             .foregroundStyle(DS.Palette.textPrimary)
             .padding(.horizontal, 12)
             .frame(height: 26)
             .glassCapsule()
-            .padding(.top, topInset + DS.Space.headerTop + DS.Size.iconButton + 14)
-            .padding(.trailing, DS.Space.screen)
-            .enterUp(0.3)
+    }
+
+    private var heroImage: Image {
+        loadedImage.map(Image.init(uiImage:)) ?? DreamImage.image(named: dream.imageName)
     }
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -231,7 +269,7 @@ private struct DreamHero: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             GeometryReader { geo in
-                DreamImage.image(named: dream.imageName)
+                heroImage
                     .resizable()
                     .scaledToFill()
                     .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
@@ -241,6 +279,11 @@ private struct DreamHero: View {
                     .clipped()
             }
             .accessibilityHidden(true)
+            .contextMenu {
+                if canRegenerate {
+                    Button("Create a new image", systemImage: "sparkles", action: onRegenerate)
+                }
+            }
 
             LinearGradient(colors: [DS.Palette.background.opacity(0), DS.Palette.background],
                            startPoint: .top, endPoint: .bottom)
@@ -268,6 +311,12 @@ private struct DreamHero: View {
             if showsImageBadge { imageBadge }
         }
         .onAppear {
+            withAnimation(.easeOut(duration: 1.6)) { revealed = true }
+        }
+        .onChange(of: loadedImage) { _, image in
+            // A painted image arrives after the screen opened: the same reveal from blur.
+            guard image != nil else { return }
+            revealed = false
             withAnimation(.easeOut(duration: 1.6)) { revealed = true }
         }
     }

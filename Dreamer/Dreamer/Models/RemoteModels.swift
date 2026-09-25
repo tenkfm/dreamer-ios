@@ -77,6 +77,17 @@ struct DreamImageInfo: Sendable, Equatable, Hashable, Codable {
     var height: Int?
     /// Grows with every regeneration; part of the image cache key.
     var version: Int
+
+    init(status: MediaStatus, url: URL? = nil, previewURL: URL? = nil, thumbnailURL: URL? = nil,
+         width: Int? = nil, height: Int? = nil, version: Int) {
+        self.status = status
+        self.url = url
+        self.previewURL = previewURL
+        self.thumbnailURL = thumbnailURL
+        self.width = width
+        self.height = height
+        self.version = version
+    }
 }
 
 struct WordTiming: Sendable, Equatable, Hashable, Codable {
