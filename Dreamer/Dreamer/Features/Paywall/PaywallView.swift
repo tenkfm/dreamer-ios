@@ -27,10 +27,12 @@ struct PaywallView: View {
             .padding(.horizontal, DS.Space.screen)
         }
         .overlay(alignment: .topTrailing) {
-            GlassIconButton(systemImage: "xmark", accessibilityLabel: "Close") { viewModel.close() }
+            if viewModel.showsCloseButton {
+                GlassIconButton(systemImage: "xmark", accessibilityLabel: "Close") { viewModel.close() }
                 .padding(.trailing, DS.Space.screen)
                 .padding(.top, DS.Space.headerTop)
                 .enterUp(0.1)
+            }
         }
         .alert("Dreamer", isPresented: alertBinding) {
             Button("OK", role: .cancel) {}

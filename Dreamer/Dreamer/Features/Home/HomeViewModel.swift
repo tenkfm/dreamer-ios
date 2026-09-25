@@ -30,7 +30,8 @@ final class HomeViewModel {
         case 12..<18: "Good afternoon"
         default: "Good evening"
         }
-        return "\(partOfDay), \(appState.userName)"
+        let name = appState.userName.trimmingCharacters(in: .whitespaces)
+        return name.isEmpty ? partOfDay : "\(partOfDay), \(name)"
     }
 
     let subtitle = "Tap to tell last night’s dream"

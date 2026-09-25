@@ -97,6 +97,13 @@ that warns the App Store subscription is separate (with Manage subscription), ca
 `DELETE /v1/me`, and only then resets the device to a fresh install; a failure leaves everything
 in place and explains why. Debug: `-debugScreen deleteAccount`.
 
+Profile sync (`Services/ProfileSync.swift`): after a first sign-in the quiz answers and settings
+made on this device go to `PATCH /v1/me` (goal, lens, reminder, IANA time zone, night mode);
+after signing in to an existing account, and at every launch with a session, `GET /v1/me` wins
+over the local copy (another device may have changed it) and a changed time zone is sent back.
+Failed syncs stay pending and retry at the next launch. The paywall close button that skips to
+Main exists in Debug builds only.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

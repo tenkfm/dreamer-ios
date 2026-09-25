@@ -273,7 +273,9 @@ struct JournalAndLibraryTests {
 
     @Test func homeInsightFindsTheRepeatedSymbol() {
         let store = InMemoryDreamStore(seed: MockData.seedDreams(now: now, calendar: calendar))
-        let viewModel = HomeViewModel(appState: AppState(store: InMemoryPreferencesStore()), store: store,
+        let appState = AppState(store: InMemoryPreferencesStore())
+        appState.userName = "Anna"
+        let viewModel = HomeViewModel(appState: appState, store: store,
                                       catalog: MockSymbolCatalog(), now: { now }, calendar: calendar)
 
         #expect(viewModel.greeting == "Good morning, Anna")

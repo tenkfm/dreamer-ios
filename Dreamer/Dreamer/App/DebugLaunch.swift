@@ -46,7 +46,9 @@ enum DebugLaunch {
     /// Prepares app state for the requested screen. Returns nil when no debug screen was asked for.
     static func makeAppState(dependencies: AppDependencies) -> AppState? {
         guard let screen else { return nil }
-        let state = AppState(store: InMemoryPreferencesStore())
+        var preferences = UserPreferences()
+        preferences.userName = "Anna"
+        let state = AppState(store: InMemoryPreferencesStore(preferences))
         if let forcedNightMode, forcedNightMode != state.isNightMode { state.toggleNightMode() }
         if screen == .paywall { state.signedIn(userID: "debug-user", isNewUser: true) }
         guard onboardingStep == nil else { return state }

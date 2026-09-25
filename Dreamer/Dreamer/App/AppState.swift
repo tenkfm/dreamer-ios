@@ -26,6 +26,8 @@ final class AppState {
     var isRecordFlowPresented = false
     /// A link the app was opened with, waiting for the screen that handles it (cold start included).
     var pendingDeepLink: DeepLink?
+    /// Profile sync to run for the current account (set on sign-in and at launch).
+    private(set) var pendingProfileSync: ProfileSyncDirection?
 
     // MARK: Night mode
 
@@ -56,11 +58,21 @@ final class AppState {
     /// back in (returning users); then the hard paywall until there is a subscription.
     var rootScreen: RootScreen {
         guard isSignedIn, onboardingCompleted else { return .onboarding }
-        if subscription == .none && !paywallBypassed { return .paywall }
+        if subscription == .none && !isPaywallBypassed { return .paywall }
         return .main
     }
 
     var isSignedIn: Bool { userID != nil }
+
+    /// The paywall close button reaches Main only in Debug builds (testing); App Store builds keep
+    /// the hard paywall.
+    private var isPaywallBypassed: Bool {
+        #if DEBUG
+        paywallBypassed
+        #else
+        false
+        #endif
+    }
 
     // MARK: Deep links
 
@@ -86,12 +98,36 @@ final class AppState {
     func signedIn(userID: String, isNewUser: Bool) {
         self.userID = userID
         if !isNewUser { onboardingCompleted = true }
+        pendingProfileSync = isNewUser ? .push : .pull
+    }
+
+    /// A restored session at launch refreshes the profile from the server.
+    func requestProfilePull() {
+        if isSignedIn { pendingProfileSync = .pull }
+    }
+
+    func profileSynced() {
+        pendingProfileSync = nil
+    }
+
+    /// The server's profile wins over the local copy (another device may have changed it).
+    func apply(_ profile: UserProfile) {
+        if let name = profile.name?.split(separator: " ").first.map(String.init) { userName = name }
+        if let goal = profile.goal { self.goal = goal }
+        preferredLens = profile.preferredLens
+        var updated = reminders
+        updated.morningReminder = profile.reminder.enabled
+        let parts = profile.reminder.time.split(separator: ":").compactMap { Int($0) }
+        if parts.count == 2 { updated.reminderMinutes = parts[0] * 60 + parts[1] }
+        updated.nightModeAfter9 = profile.nightMode
+        reminders = updated
     }
 
     /// The session ended (signed out, or the backend revoked it): back to sign-in, keeping the
     /// device's preferences.
     func signedOut() {
         userID = nil
+        pendingProfileSync = nil
         subscription = .none
         selectedTab = .today
         paths = [:]
@@ -144,7 +180,7 @@ final class AppState {
         onboardingCompleted = true
     }
 
-    /// Phase 1: the paywall close button goes straight to Main.
+    /// Debug builds: the paywall close button goes straight to Main (ignored in Release).
     func enterMainForTesting() {
         paywallBypassed = true
         onboardingCompleted = true

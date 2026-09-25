@@ -51,6 +51,11 @@ struct RootView: View {
             // Every sign-in (and a session restored at launch) links the account in the SDKs.
             if let userID = appState.userID { await dependencies.linkAccount(userID: userID) }
         }
+        .task(id: appState.pendingProfileSync) {
+            // New account: quiz answers and settings go up; existing one: the server's profile comes down.
+            guard let direction = appState.pendingProfileSync else { return }
+            await ProfileSync(appState: appState, profiles: dependencies.profiles).run(direction)
+        }
         .task {
             // The backend ended the session (refresh refused): back to sign-in.
             guard let tokens = dependencies.tokens else { return }

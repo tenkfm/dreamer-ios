@@ -74,7 +74,16 @@ final class PaywallViewModel {
         }
     }
 
-    /// Hard paywall in production; in phase 1 the close button still reaches Main for testing.
+    /// The hard paywall has no way around it in App Store builds. Presented as a sheet (Settings ->
+    /// Subscription) it can always be closed; Debug builds keep a close button for testing.
+    var showsCloseButton: Bool {
+        #if DEBUG
+        true
+        #else
+        onFinish != nil
+        #endif
+    }
+
     func close() {
         if let onFinish {
             onFinish()

@@ -16,6 +16,8 @@ struct DreamerApp: App {
             appState = debugState
         } else if case .some(let stored) = AppDependencies.storedUserID(mode: dependencies.mode) {
             appState.reconcileSession(storedUserID: stored)
+            // Settings may have changed on another device since the last launch.
+            appState.requestProfilePull()
         }
         _dependencies = State(initialValue: dependencies)
         _appState = State(initialValue: appState)

@@ -84,7 +84,8 @@ struct UserPreferences: Codable, Hashable, Sendable {
     }
 
     var onboardingCompleted = false
-    var userName = "Anna"
+    /// First name from the account (Apple shares it once); empty = greet without a name.
+    var userName = ""
     var goal: Goal?
     var preferredLens: Lens = .psychology
     var subscription: SubscriptionStatus = .none

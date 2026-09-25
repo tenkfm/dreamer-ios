@@ -19,6 +19,7 @@ final class AppDependencies {
     /// Nil in mock mode.
     let tokens: TokenManager?
     let auth: any AuthService
+    let profiles: any ProfileService
     let analytics: any Analytics
     let dreamStore: any DreamStore
     let analysis: any DreamAnalysisService
@@ -36,6 +37,7 @@ final class AppDependencies {
          api: APIClient? = nil,
          tokens: TokenManager? = nil,
          auth: any AuthService = MockAuthService(),
+         profiles: any ProfileService = MockProfileService(),
          analytics: any Analytics = NoopAnalytics(),
          dreamStore: any DreamStore,
          analysis: any DreamAnalysisService,
@@ -51,6 +53,7 @@ final class AppDependencies {
         self.api = api
         self.tokens = tokens
         self.auth = auth
+        self.profiles = profiles
         self.analytics = analytics
         self.dreamStore = dreamStore
         self.analysis = analysis
@@ -100,6 +103,7 @@ final class AppDependencies {
             api: api,
             tokens: tokens,
             auth: APIAuthService(client: api, tokens: tokens),
+            profiles: APIProfileService(client: api),
             dreamStore: InMemoryDreamStore(),
             analysis: APIDreamAnalysisService(client: api),
             purchases: MockPurchaseService(),
@@ -180,7 +184,9 @@ extension AppDependencies {
 
 extension AppState {
     static func preview(onboardingCompleted: Bool = true) -> AppState {
-        let state = AppState(store: InMemoryPreferencesStore())
+        var preferences = UserPreferences()
+        preferences.userName = "Anna"
+        let state = AppState(store: InMemoryPreferencesStore(preferences))
         if onboardingCompleted {
             state.signedIn(userID: "preview-user", isNewUser: false)
             state.activateSubscription(.yearly)
