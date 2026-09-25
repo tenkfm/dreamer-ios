@@ -41,13 +41,16 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { appState.refreshClock() }
         }
+        .task(id: appState.userID) {
+            // Every sign-in (and a session restored at launch) links the account in the SDKs.
+            if let userID = appState.userID { await dependencies.linkAccount(userID: userID) }
+        }
         .task {
             // The backend ended the session (refresh refused): back to sign-in.
             guard let tokens = dependencies.tokens else { return }
             for await _ in tokens.signedOutEvents {
                 appState.signedOut()
-                dependencies.analytics.reset()
-                dependencies.crashReporter.setUserID(nil)
+                await dependencies.unlinkAccount()
             }
         }
     }

@@ -29,6 +29,11 @@ protocol PurchaseService: Sendable {
     func purchase(_ plan: Plan) async throws
     /// Returns the restored plan, or nil when there is nothing to restore.
     func restore() async throws -> Plan?
+    /// Ties purchases to the backend user id (RevenueCat app user id), so a subscription follows
+    /// the account across reinstalls and devices.
+    func logIn(userID: String) async
+    /// Back to an anonymous purchaser after sign-out.
+    func logOut() async
 }
 
 enum ReadAloudState: Equatable, Sendable { case idle, playing, paused }

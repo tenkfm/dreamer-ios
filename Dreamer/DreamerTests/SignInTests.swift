@@ -97,3 +97,30 @@ struct SignInViewModelTests {
         #expect(AppleSignIn.randomNonce() != AppleSignIn.randomNonce())
     }
 }
+
+@MainActor
+struct AccountLinkTests {
+    actor RecordingPurchases: PurchaseService {
+        private(set) var logins: [String?] = []
+        func purchase(_ plan: Plan) async throws {}
+        func restore() async throws -> Plan? { nil }
+        func logIn(userID: String) async { logins.append(userID) }
+        func logOut() async { logins.append(nil) }
+    }
+
+    @Test func signInAndOutReachEverySDK() async {
+        let purchases = RecordingPurchases()
+        let analytics = RecordingAnalytics()
+        let dependencies = AppDependencies(analytics: analytics, dreamStore: InMemoryDreamStore(seed: []),
+                                           analysis: MockDreamAnalysisService(), purchases: purchases,
+                                           catalog: MockSymbolCatalog(), imageSaver: MockImageSaver(),
+                                           makeSpeechService: { MockSpeechService() },
+                                           makeReadAloudService: { MockReadAloudService() })
+
+        await dependencies.linkAccount(userID: "user-1")
+        await dependencies.unlinkAccount()
+
+        #expect(await purchases.logins == ["user-1", nil])
+        #expect(analytics.identified == ["user-1", nil])
+    }
+}

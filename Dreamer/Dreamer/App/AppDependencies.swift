@@ -155,6 +155,21 @@ final class AppDependencies {
 }
 
 extension AppDependencies {
+    /// Tells every identity-aware SDK who the user is: RevenueCat (the subscription follows the
+    /// account), analytics and crash reports (the same id the backend uses; never an email).
+    func linkAccount(userID: String) async {
+        await purchases.logIn(userID: userID)
+        analytics.identify(userID: userID)
+        crashReporter.setUserID(userID)
+    }
+
+    /// After sign-out, account deletion or a revoked session.
+    func unlinkAccount() async {
+        await purchases.logOut()
+        analytics.reset()
+        crashReporter.setUserID(nil)
+    }
+
     /// The signed-in user id stored with the tokens (Keychain), read at launch. In mock mode the
     /// session lives in the preferences only.
     nonisolated static func storedUserID(mode: Mode, store: any SecureStore = KeychainStore()) -> String?? {

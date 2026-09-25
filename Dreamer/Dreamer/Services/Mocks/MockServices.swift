@@ -72,6 +72,9 @@ struct MockPurchaseService: PurchaseService {
         try await Task.sleep(for: delay)
         return restoredPlan
     }
+
+    func logIn(userID: String) async {}
+    func logOut() async {}
 }
 
 /// In-memory store seeded with the Journal dreams.
