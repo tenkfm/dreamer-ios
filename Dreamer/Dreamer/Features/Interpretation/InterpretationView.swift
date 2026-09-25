@@ -23,6 +23,7 @@ struct InterpretationView: View {
         }
         .toast($viewModel.toastMessage)
         .task(id: viewModel.imageRequest) { await viewModel.loadImage() }
+        .task(id: viewModel.mainLens) { viewModel.prepareVoice() }
         .onDisappear {
             viewModel.stopPlayback()
             Task { await viewModel.flushNotes() }
@@ -170,6 +171,7 @@ struct InterpretationView: View {
     private var playerState: VoicePlayer.State {
         switch viewModel.readAloud.state {
         case .idle: .idle
+        case .loading: .loading
         case .playing: .playing
         case .paused: .paused
         }

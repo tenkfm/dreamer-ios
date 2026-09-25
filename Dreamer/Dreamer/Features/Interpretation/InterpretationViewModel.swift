@@ -118,7 +118,7 @@ final class InterpretationViewModel {
     var imageName: String { dream?.imageName ?? Dream.placeholderImageName }
 
     var durationText: String {
-        let seconds = Int(dream?.interpretation?.readDurations[mainLens] ?? 0)
+        let seconds = Int(dream?.audio[mainLens]?.duration ?? dream?.interpretation?.readDurations[mainLens] ?? 0)
         return String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
 
@@ -127,11 +127,22 @@ final class InterpretationViewModel {
     // MARK: Actions
 
     func togglePlayback() {
-        if readAloud.state == .playing {
-            readAloud.pause()
-        } else {
-            readAloud.play(text(for: mainLens))
+        switch readAloud.state {
+        case .playing: readAloud.pause()
+        // A second tap while the voice is fetched gives up on it.
+        case .loading: readAloud.stop()
+        case .idle, .paused: readAloud.play(readAloudItem(for: mainLens))
         }
+    }
+
+    /// The main lens voice starts loading when the screen opens, so Listen plays at once.
+    func prepareVoice() {
+        guard support == nil else { return }
+        readAloud.prepare(readAloudItem(for: mainLens))
+    }
+
+    func readAloudItem(for lens: Lens) -> ReadAloudItem {
+        ReadAloudItem(text: text(for: lens), lens: lens, dreamID: dream?.id, audio: dream?.audio[lens])
     }
 
     func toggleExpanded(_ lens: Lens) {

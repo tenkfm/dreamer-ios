@@ -131,6 +131,9 @@ final class AppDependencies {
         let api = APIClient(baseURL: baseURL, tokens: tokens)
         let dreamStore = InMemoryDreamStore()
         let serverSpeech = featureFlags.isEnabled(.serverSttFallback)
+        let ttsEnabled = featureFlags.isEnabled(.ttsEnabled)
+        // PostHog replaces this with IOS-08.1.
+        let analytics: any Analytics = NoopAnalytics()
         return AppDependencies(
             mode: .live,
             api: api,
@@ -138,6 +141,7 @@ final class AppDependencies {
             auth: APIAuthService(client: api, tokens: tokens),
             profiles: APIProfileService(client: api),
             subscriptionStatus: APISubscriptionStatusService(client: api),
+            analytics: analytics,
             dreamStore: dreamStore,
             analysis: APIDreamAnalysisService(client: api),
             purchases: livePurchases(config: config),
@@ -151,7 +155,10 @@ final class AppDependencies {
             imageLoader: RemoteDreamImageLoader(actions: api),
             imageActions: api,
             makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
-            makeReadAloudService: { SpeechSynthesizerReadAloudService() },
+            makeReadAloudService: {
+                BackendReadAloudService(source: api, fallback: SpeechSynthesizerReadAloudService(), playback: AVVoicePlayback(),
+                                        analytics: analytics, ttsEnabled: ttsEnabled)
+            },
             makeSpeechPermissions: { SystemSpeechPermissions() }
         )
     }

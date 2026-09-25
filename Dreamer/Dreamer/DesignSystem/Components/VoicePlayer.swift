@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Read-out player: play/pause circle, waveform over a progress bar, and a duration / status label.
 struct VoicePlayer: View {
-    enum State: Equatable { case idle, playing, paused }
+    enum State: Equatable { case idle, loading, playing, paused }
 
     var state: State
     var progress: Double
@@ -53,6 +53,7 @@ struct VoicePlayer: View {
     private var statusText: String {
         switch state {
         case .idle: durationText
+        case .loading: "Loading"
         case .playing: "Playing"
         case .paused: "Paused"
         }
@@ -71,11 +72,15 @@ struct VoicePlayer: View {
                 }
                 Circle().fill(DS.Palette.cta)
                     .shadow(color: DS.Palette.ctaShadow.opacity(0.3), radius: 8, x: 0, y: 6)
-                Image(systemName: state == .playing ? "pause.fill" : "play.fill")
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(DS.Palette.white)
-                    .offset(x: state == .playing ? 0 : 1.5)
-                    .contentTransition(.symbolEffect(.replace))
+                if state == .loading {
+                    ProgressView().tint(DS.Palette.white)
+                } else {
+                    Image(systemName: state == .playing ? "pause.fill" : "play.fill")
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(DS.Palette.white)
+                        .offset(x: state == .playing ? 0 : 1.5)
+                        .contentTransition(.symbolEffect(.replace))
+                }
             }
             .frame(width: 44, height: 44)
         }

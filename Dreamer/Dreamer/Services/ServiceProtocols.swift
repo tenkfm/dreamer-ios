@@ -74,7 +74,23 @@ protocol PurchaseService: Sendable {
     func logOut() async
 }
 
-enum ReadAloudState: Equatable, Sendable { case idle, playing, paused }
+enum ReadAloudState: Equatable, Sendable {
+    case idle
+    /// Getting the voice from the backend (a lens that was not voiced yet).
+    case loading
+    case playing
+    case paused
+}
+
+/// What to read aloud: the text for the on-device voice, and where the backend voice is.
+struct ReadAloudItem: Equatable, Sendable {
+    var text: String
+    var lens: Lens
+    /// Nil for text that is not a dream on the backend (previews).
+    var dreamID: UUID?
+    /// The voice the dream came with (the main lens is voiced with the interpretation).
+    var audio: DreamAudio?
+}
 
 /// Voice read-out of the interpretation.
 @MainActor
@@ -82,10 +98,18 @@ protocol ReadAloudService: AnyObject {
     var state: ReadAloudState { get }
     /// 0...1 through the current text.
     var progress: Double { get }
-    /// Starts reading `text`, or resumes if the same text is paused.
-    func play(_ text: String)
+    /// Called when a read-out plays to its end.
+    var onFinish: (@MainActor () -> Void)? { get set }
+    /// Starts reading, or resumes if the same item is paused.
+    func play(_ item: ReadAloudItem)
+    /// Gets the voice ready before the tap, so Listen starts at once.
+    func prepare(_ item: ReadAloudItem)
     func pause()
     func stop()
+}
+
+extension ReadAloudService {
+    func prepare(_ item: ReadAloudItem) {}
 }
 
 /// Library content.

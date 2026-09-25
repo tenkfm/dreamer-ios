@@ -7,6 +7,7 @@ import Observation
 final class SpeechSynthesizerReadAloudService: NSObject, ReadAloudService {
     private(set) var state: ReadAloudState = .idle
     private(set) var progress: Double = 0
+    @ObservationIgnored var onFinish: (@MainActor () -> Void)?
 
     @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
     @ObservationIgnored private var currentText: String?
@@ -15,6 +16,10 @@ final class SpeechSynthesizerReadAloudService: NSObject, ReadAloudService {
     override init() {
         super.init()
         synthesizer.delegate = self
+    }
+
+    func play(_ item: ReadAloudItem) {
+        play(item.text)
     }
 
     func play(_ text: String) {
@@ -67,6 +72,7 @@ final class SpeechSynthesizerReadAloudService: NSObject, ReadAloudService {
         state = .idle
         currentText = nil
         currentUtterance = nil
+        onFinish?()
     }
 }
 

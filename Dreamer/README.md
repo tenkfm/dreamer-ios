@@ -63,6 +63,16 @@ parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an
 `DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
 or the connection drops, and keeps polling through network gaps, so the result is never lost.
 
+Read aloud (IOS-05.5, `Services/BackendReadAloudService.swift`): Listen plays the backend's
+ElevenLabs voice with AVPlayer, using the `playback` / `spokenAudio` session. The main lens comes
+with the dream (`DreamDetail.audio[lens]`) and is buffered as soon as Interpretation opens, so it
+starts at once. For another lens the app calls `POST /v1/dreams/{id}/audio?lens=`; on 202 it polls
+`GET` of the same path every second for up to 30 s, and the button shows a spinner meanwhile.
+Progress follows the word timings. An expired link is fetched again once. The on-device voice
+(`SpeechSynthesizerReadAloudService`) reads instead when `ttsEnabled` is off, on `TTS_UNAVAILABLE`,
+a failed job, a timeout, no connection, or a link that fails twice. Events: `read_aloud_played`
+and `read_aloud_completed` (`fallback` true/false), and `read_aloud_fallback {reason}`.
+
 Dream image (IOS-05.4, `Services/DreamImageLoader.swift`): while `image.status` is `pending`, the
 hero shows the sky with "Painting your dream…" and Interpretation polls `GET /v1/dreams/{id}` every
 3 s for up to 2 minutes. The ready image replaces the sky with the same reveal from blur. Images are

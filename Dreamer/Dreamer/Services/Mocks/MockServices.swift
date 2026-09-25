@@ -203,11 +203,21 @@ final class MockReadAloudService: ReadAloudService {
     private(set) var state: ReadAloudState = .idle
     private(set) var progress: Double = 0
     private(set) var lastText: String?
+    private(set) var lastItem: ReadAloudItem?
+    var onFinish: (@MainActor () -> Void)?
 
-    func play(_ text: String) {
-        if lastText != text { progress = 0 }
-        lastText = text
+    func play(_ item: ReadAloudItem) {
+        if lastText != item.text { progress = 0 }
+        lastText = item.text
+        lastItem = item
         state = .playing
+    }
+
+    /// Tests: the read-out reached its end.
+    func finish() {
+        state = .idle
+        progress = 1
+        onFinish?()
     }
 
     func pause() {
