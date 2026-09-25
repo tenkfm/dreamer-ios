@@ -19,8 +19,8 @@ escape_url() { printf '%s' "$1" | sed 's#://#:/$()/#'; }
       echo "set: $name" >&2
     fi
   done
-  if [[ -n "${API_BASE_URL_RELEASE:-}" ]]; then
-    echo "API_BASE_URL[config=Release] = $(escape_url "$API_BASE_URL_RELEASE")"
-    echo "set: API_BASE_URL_RELEASE" >&2
+  if [[ -n "${API_HOST_RELEASE:-}" ]]; then
+    echo "API_HOST[config=Release] = $API_HOST_RELEASE"
+    echo "set: API_HOST_RELEASE" >&2
   fi
 } > "$OUT"

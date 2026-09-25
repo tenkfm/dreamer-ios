@@ -28,7 +28,10 @@ struct AppConfig: Sendable, Equatable {
         }
 
         environment = value("DreamerEnvironment").flatMap(Environment.init(rawValue:)) ?? .debug
-        apiBaseURL = value("DreamerAPIBaseURL").flatMap(URL.init(string:))
+        // Release has no host until the production domain exists, which leaves a bare "https://".
+        apiBaseURL = value("DreamerAPIBaseURL")
+            .flatMap(URL.init(string:))
+            .flatMap { $0.host()?.isEmpty == false ? $0 : nil }
         revenueCatAPIKey = value("DreamerRevenueCatAPIKey")
         postHogAPIKey = value("DreamerPostHogAPIKey")
         postHogHost = value("DreamerPostHogHost").flatMap(URL.init(string:))

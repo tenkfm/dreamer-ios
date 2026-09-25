@@ -20,7 +20,7 @@ struct AppConfigTests {
     @Test func emptyAndUnexpandedValuesAreMissing() {
         let config = AppConfig(infoDictionary: [
             "DreamerEnvironment": "production",
-            "DreamerAPIBaseURL": "",
+            "DreamerAPIBaseURL": "https://",
             "DreamerSentryDSN": "$(SENTRY_DSN)",
             "DreamerPostHogAPIKey": "   "
         ])

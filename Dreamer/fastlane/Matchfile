@@ -1,0 +1,8 @@
+# Certificates and profiles shared by every developer and CI (fastlane match).
+# The storage and its password come from the environment:
+#   MATCH_GIT_URL   private repository for the encrypted certificates
+#   MATCH_PASSWORD  passphrase of that repository (read by match itself)
+git_url(ENV.fetch("MATCH_GIT_URL", ""))
+storage_mode("git")
+team_id(ENV["APPLE_TEAM_ID"])
+app_identifier(["com.braincode.dreamer", "com.braincode.dreamer.staging"])

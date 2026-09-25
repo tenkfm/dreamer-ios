@@ -45,6 +45,24 @@ Options: device (simulator name)
 
 Compile the Release configuration for devices without signing (CI check that the App Store build builds)
 
+### ios certificates
+
+```sh
+[bundle exec] fastlane ios certificates
+```
+
+Download (or, with readonly:false, create) certificates and profiles with match
+
+Needs MATCH_GIT_URL, MATCH_PASSWORD, APPLE_TEAM_ID and the App Store Connect API key variables
+
+### ios signed_build
+
+```sh
+[bundle exec] fastlane ios signed_build
+```
+
+Archive a signed build with match profiles: configuration Staging (default) or Release
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

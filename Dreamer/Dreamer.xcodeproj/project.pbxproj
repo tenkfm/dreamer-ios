@@ -30,6 +30,7 @@
 		D7A000000000000000000012 /* Exceptions for "Dreamer" folder in "Dreamer" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Dreamer.entitlements,
 				Info.plist,
 			);
 			target = D7A000000000000000000020 /* Dreamer */;
@@ -321,6 +322,7 @@
 			baseConfigurationReference = D7A000000000000000000061 /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
+				CODE_SIGN_ENTITLEMENTS = Dreamer/Dreamer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -350,6 +352,7 @@
 			baseConfigurationReference = D7A000000000000000000062 /* Staging.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
+				CODE_SIGN_ENTITLEMENTS = Dreamer/Dreamer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -379,6 +382,7 @@
 			baseConfigurationReference = D7A000000000000000000063 /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
+				CODE_SIGN_ENTITLEMENTS = Dreamer/Dreamer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

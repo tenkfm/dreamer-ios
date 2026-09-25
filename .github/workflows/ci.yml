@@ -68,7 +68,7 @@ jobs:
           POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          API_BASE_URL_RELEASE: ${{ secrets.API_BASE_URL_RELEASE }}
+          API_HOST_RELEASE: ${{ secrets.API_HOST_RELEASE }}
         run: ../scripts/write-secrets-xcconfig.sh
 
       - name: Unit tests

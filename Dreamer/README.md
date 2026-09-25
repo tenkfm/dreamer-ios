@@ -36,6 +36,23 @@ Ruby 3.3.5 (`.tool-versions`) and Bundler; the first run installs the gems.
 `run.sh` wraps `bundle exec fastlane sim` / `bundle exec fastlane test` (see `fastlane/Fastfile`).
 Build products go to `build/DerivedData` (git-ignored).
 
+## Signing
+
+Certificates and profiles are shared through fastlane match (`fastlane/Matchfile`), App Store
+Connect access through an API key, all from the environment: `APPLE_TEAM_ID`, `MATCH_GIT_URL`,
+`MATCH_PASSWORD`, `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_CONTENT` (base64 of the .p8).
+
+```
+bundle exec fastlane certificates                        # fetch signing assets (readonly)
+bundle exec fastlane certificates readonly:false         # create / renew them (admin only)
+bundle exec fastlane signed_build configuration:Staging  # signed App Store build into build/archive
+```
+
+Capabilities live in `Dreamer/Dreamer.entitlements` and follow the configuration: Sign in with
+Apple, Push (`aps-environment`), Associated Domains (`applinks:` + the API host) and App Attest.
+Debug uses the development APNs / App Attest environments, Staging and Release production.
+In-App Purchase needs no entitlement, only the capability on the App ID.
+
 ## CI
 
 `.github/workflows/ci.yml` runs on every pull request and on `main` (macOS 26 runner, Xcode 26):

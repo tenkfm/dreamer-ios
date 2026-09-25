@@ -5,6 +5,9 @@
 MARKETING_VERSION = 1.0.0
 CURRENT_PROJECT_VERSION = 1
 
+// Every environment is https on API_HOST. "//" starts a comment in xcconfig, hence the $().
+API_BASE_URL = https:/$()/$(API_HOST)
+
 REVENUECAT_API_KEY =
 POSTHOG_API_KEY =
 POSTHOG_HOST =
