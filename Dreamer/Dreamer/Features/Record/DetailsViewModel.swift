@@ -6,12 +6,14 @@ import Observation
 @Observable
 final class DetailsViewModel {
     let transcript: String
+    let clientId: String
     private(set) var emotions: Set<Emotion> = [.anxiety, .confusion]
     var recurrence: Recurrence = .sometimes
     var someoneSpecific = true
 
-    init(transcript: String) {
+    init(transcript: String, clientId: String = UUID().uuidString.lowercased()) {
         self.transcript = transcript
+        self.clientId = clientId
     }
 
     func isSelected(_ emotion: Emotion) -> Bool { emotions.contains(emotion) }
@@ -25,7 +27,8 @@ final class DetailsViewModel {
     }
 
     var draft: DreamDraft {
-        DreamDraft(transcript: transcript,
+        DreamDraft(clientId: clientId,
+                   transcript: transcript,
                    emotions: Emotion.allCases.filter(emotions.contains),
                    recurrence: recurrence,
                    someoneSpecific: someoneSpecific)

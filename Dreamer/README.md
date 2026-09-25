@@ -63,6 +63,13 @@ parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an
 `DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
 or the connection drops, and keeps polling through network gaps, so the result is never lost.
 
+Mock or live: `AppDependencies.live()` talks to the build's backend (`APIClient` + `TokenManager`
+with the Keychain) when the configuration has an API host. `-mockServices` (Debug and Staging
+builds) keeps every service local, as do previews, unit tests and Release until the production
+domain exists. Live today: the dream analysis (`APIDreamAnalysisService`); speech, journal,
+library, purchases and voice switch as their stories land. Without a session the live analysis
+answers "sign in again" - sign-in arrives with IOS-02.
+
 Tests use `DreamerTests/Support/StubURLProtocol.swift`; `LiveAPITests` hit staging when run with
 `TEST_RUNNER_DREAMER_LIVE_TESTS=1`.
 
@@ -159,7 +166,8 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 ```
 
 Names: `welcome recordIntro understand quizGoal quizLens paywall home journal library settings
-interpretation symbol record details analysis`. Add `-night` or `-day` to force the appearance,
+interpretation symbol record details analysis`. Add `-mockServices` for local data only,
+`-offline` to show the offline banner, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.
 

@@ -11,6 +11,8 @@ final class AnalysisViewModel {
     private(set) var completed: Set<AnalysisStep> = []
     private(set) var result: Dream?
     private(set) var errorMessage: String?
+    /// Set when the failure came from the backend (paywall, limit, sign-in...).
+    private(set) var errorState: ErrorState?
 
     private let draft: DreamDraft
     private let service: any DreamAnalysisService
@@ -33,6 +35,7 @@ final class AnalysisViewModel {
     func run() async {
         guard result == nil else { return }
         errorMessage = nil
+        errorState = nil
         completed = []
         do {
             for try await progress in service.analyze(draft) {
@@ -46,6 +49,9 @@ final class AnalysisViewModel {
             }
         } catch is CancellationError {
             return
+        } catch let error as APIError {
+            errorState = ErrorState(error)
+            errorMessage = errorState?.message
         } catch {
             errorMessage = "We couldn’t read this dream right now. Please try again."
         }

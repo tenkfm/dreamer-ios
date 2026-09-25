@@ -152,10 +152,16 @@ struct Dream: Identifiable, Codable, Hashable, Sendable {
 
 /// What the user told us before analysis.
 struct DreamDraft: Hashable, Sendable {
+    /// Generated once per dream on the device; sending the same draft again (retry, relaunch)
+    /// returns the same dream from the backend instead of creating a second one.
+    var clientId: String = UUID().uuidString.lowercased()
     var transcript: String = ""
     var emotions: [Emotion] = []
     var recurrence: Recurrence? = nil
     var someoneSpecific: Bool? = nil
+    var recordedAt: Date? = nil
+    /// Server transcription upload (IOS-04.5), when on-device recognition gave no text.
+    var recordingId: String? = nil
 }
 
 enum AnalysisStep: Int, CaseIterable, Sendable {

@@ -14,6 +14,9 @@ final class RecordFlowViewModel {
 
     private let analysisService: any DreamAnalysisService
     private let store: any DreamStore
+    /// One id for this dream across retries, so the backend never creates it twice.
+    private let clientId = UUID().uuidString.lowercased()
+    private let recordedAt = Date.now
     private let onFinish: (Dream.ID) -> Void
     private let onCancel: () -> Void
 
@@ -42,15 +45,16 @@ final class RecordFlowViewModel {
     /// "I’m done".
     func finishRecording() {
         record.stop()
-        details = DetailsViewModel(transcript: record.trimmedTranscript)
+        details = DetailsViewModel(transcript: record.trimmedTranscript, clientId: clientId)
         step = .details
     }
 
     /// "Interpret my dream" (with details) or "Skip" (without).
     func interpret(includeDetails: Bool) {
-        let draft = includeDetails
-            ? details?.draft ?? DreamDraft(transcript: record.trimmedTranscript)
-            : DreamDraft(transcript: record.trimmedTranscript)
+        var draft = includeDetails
+            ? details?.draft ?? DreamDraft(clientId: clientId, transcript: record.trimmedTranscript)
+            : DreamDraft(clientId: clientId, transcript: record.trimmedTranscript)
+        draft.recordedAt = recordedAt
         analysis = AnalysisViewModel(draft: draft, service: analysisService, store: store)
         step = .analysis
     }
