@@ -146,3 +146,73 @@ struct MicrophonePermissionTests {
         #expect(SystemSpeechPermissions.combine(microphone: .granted, speech: .restricted) == .restricted)
     }
 }
+
+@MainActor
+struct RecordingInterruptionTests {
+    /// Each start() emits the next script.
+    final class RunsSpeech: SpeechService {
+        var runs: [[SpeechEvent]]
+        private(set) var starts = 0
+        init(runs: [[SpeechEvent]]) { self.runs = runs }
+        func start() -> AsyncThrowingStream<SpeechEvent, any Error> {
+            let events = starts < runs.count ? runs[starts] : []
+            starts += 1
+            return AsyncThrowingStream { continuation in
+                for event in events { continuation.yield(event) }
+            }
+        }
+        func stop() {}
+    }
+
+    private func settle() async throws { try await Task.sleep(for: .milliseconds(40)) }
+
+    @Test func aCallPausesAndContinuingAddsToTheText() async throws {
+        let speech = RunsSpeech(runs: [[.transcript("I was in a house"), .interrupted],
+                                       [.transcript("and then the stairs")]])
+        let viewModel = RecordViewModel(speech: speech, permissions: MockSpeechPermissions())
+        viewModel.appeared()
+        try await settle()
+
+        #expect(!viewModel.isRecording)
+        #expect(viewModel.pauseReason == .interruption)
+        #expect(viewModel.pauseMessage == "Paused for a call. Your words are saved.")
+        #expect(viewModel.canContinue)
+
+        viewModel.resume()
+        try await settle()
+        #expect(viewModel.transcript == "I was in a house and then the stairs")
+        #expect(speech.starts == 2)
+        viewModel.stop()
+    }
+
+    @Test func goingToTheBackgroundKeepsTheText() async throws {
+        let viewModel = RecordViewModel(speech: RunsSpeech(runs: [[.transcript("Half told")]]),
+                                        permissions: MockSpeechPermissions())
+        viewModel.appeared()
+        try await settle()
+
+        viewModel.enteredBackground()
+        #expect(viewModel.pauseReason == .background)
+        #expect(viewModel.transcript == "Half told")
+        #expect(viewModel.canContinue)
+    }
+
+    @Test func fiveMinutesStopTheRecordingWithAWarningBefore() async throws {
+        let viewModel = RecordViewModel(speech: RunsSpeech(runs: [[.transcript("A very long dream")]]),
+                                        permissions: MockSpeechPermissions(), tick: .milliseconds(1))
+        viewModel.appeared()
+
+        var sawWarning = false
+        for _ in 0..<400 where viewModel.isRecording {
+            if viewModel.isNearTimeLimit { sawWarning = true }
+            try await Task.sleep(for: .milliseconds(2))
+        }
+
+        #expect(sawWarning)
+        #expect(!viewModel.isRecording)
+        #expect(viewModel.pauseReason == .timeLimit)
+        #expect(viewModel.elapsedSeconds == RecordViewModel.timeLimit)
+        #expect(!viewModel.canContinue)
+        #expect(viewModel.transcript == "A very long dream")
+    }
+}

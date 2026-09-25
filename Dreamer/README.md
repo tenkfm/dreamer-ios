@@ -146,6 +146,16 @@ Permissions: the first time, Record shows its own card ("Tell your dream out lou
 shows "The microphone is off" with Type it instead and Open Settings, so a dream can always be
 written. Debug: `-micPermission notDetermined|denied|restricted` with `-debugScreen record`.
 
+Interruptions never lose words: a call, Siri or an alarm (audio session interruption), the app going
+to the background or the lock screen pause the recording with the text so far, explain why, and
+"Continue recording" (or a tap on the orb) adds to it. A dream is capped at 5 minutes: the pill
+counts down the last 30 seconds, then the recording stops and the text is kept. Start and stop
+have haptics.
+
+Manual interruption checklist (device): incoming call mid-sentence; Siri; alarm; Home button /
+swipe up; lock button; Control Center (keeps recording); airplane mode on the Record screen
+(keeps recognizing on devices with the on-device model); 5-minute limit.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

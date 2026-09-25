@@ -63,9 +63,29 @@ private final class SpeechSession: @unchecked Sendable {
         var ended = false
     }
 
+    private var observers: [NSObjectProtocol] = []
+
     init(recognizer: SFSpeechRecognizer, continuation: AsyncThrowingStream<SpeechEvent, any Error>.Continuation) {
         self.recognizer = recognizer
         self.continuation = continuation
+    }
+
+    /// A call, Siri or an alarm takes the audio session: the text so far is kept (it was already
+    /// sent), the recording ends and the screen offers to continue.
+    private func observeInterruptions() {
+        let center = NotificationCenter.default
+        let stopForInterruption: @Sendable (Notification) -> Void = { [weak self] notification in
+            if notification.name == AVAudioSession.interruptionNotification {
+                let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+                guard raw.flatMap(AVAudioSession.InterruptionType.init(rawValue:)) == .began else { return }
+            }
+            self?.continuation.yield(.interrupted)
+            self?.end()
+        }
+        observers = [
+            center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: nil, using: stopForInterruption),
+            center.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification, object: nil, queue: nil, using: stopForInterruption)
+        ]
     }
 
     func begin() throws {
@@ -82,6 +102,7 @@ private final class SpeechSession: @unchecked Sendable {
         }
         engine.prepare()
         try engine.start()
+        observeInterruptions()
     }
 
     func end() {
@@ -92,6 +113,8 @@ private final class SpeechSession: @unchecked Sendable {
             return (state.task, state.request)
         }
         guard task != nil || request != nil || engine.isRunning else { return }
+        observers.forEach(NotificationCenter.default.removeObserver)
+        observers = []
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         request?.endAudio()

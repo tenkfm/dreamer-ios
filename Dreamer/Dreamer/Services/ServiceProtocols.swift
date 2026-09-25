@@ -9,6 +9,8 @@ enum SpeechEvent: Sendable, Equatable {
     case transcript(String)
     /// Microphone level, 0...1, about 20 times a second (drives the waveform).
     case level(Float)
+    /// The system took the microphone (a call, Siri, an alarm). The stream ends after this.
+    case interrupted
 }
 
 enum SpeechError: Error, Equatable {

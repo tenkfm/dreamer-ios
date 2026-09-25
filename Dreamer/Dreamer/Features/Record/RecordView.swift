@@ -6,13 +6,19 @@ struct RecordView: View {
     var onClose: () -> Void
     var onDone: () -> Void
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some View {
         VStack(spacing: 0) {
             header.enterUp(0.1)
             OrbView(glyph: .mic, size: .record, isActive: viewModel.isRecording)
+                .contentShape(Circle())
+                .onTapGesture { viewModel.resume() }
                 .padding(.top, 30)
                 .enterUp(0.25)
-                .accessibilityHidden(true)
+                .accessibilityHidden(!viewModel.canContinue)
+                .accessibilityLabel("Continue recording")
+                .accessibilityAddTraits(.isButton)
             WaveformBars(count: RecordViewModel.barCount, barWidth: 4, height: 40, spacing: 5, color: DS.Palette.iconSoft,
                          isAnimating: viewModel.isRecording, levels: viewModel.levels)
                 .padding(.top, 34)
@@ -33,10 +39,18 @@ struct RecordView: View {
             .padding(.top, 22)
             .enterUp(0.5)
             .accessibilityLabel(viewModel.transcript.isEmpty ? "Listening" : viewModel.transcript)
+            pauseNote
             bottomBar
                 .opacity(viewModel.access == .listening || viewModel.access == .unknown ? 1 : 0)
                 .enterUp(0.9)
         }
+        .onChange(of: scenePhase) { _, phase in
+            // Home, lock screen or app switcher: stop listening and keep the words.
+            if phase == .background { viewModel.enteredBackground() }
+        }
+        .sensoryFeedback(.start, trigger: viewModel.isRecording) { _, recording in recording }
+        .sensoryFeedback(.stop, trigger: viewModel.isRecording) { _, recording in !recording }
+        .sensoryFeedback(.warning, trigger: viewModel.isNearTimeLimit) { _, near in near }
         .overlay {
             switch viewModel.access {
             case .prePrompt:
@@ -68,15 +82,40 @@ struct RecordView: View {
                     .opacity(viewModel.isRecording ? 1 : 0.4)
                 Text(viewModel.isRecording ? "Recording" : "Paused")
                     .font(DreamerFont.fixed(12))
-                Text(viewModel.timerText)
-                    .font(DreamerFont.fixed(12))
-                    .monospacedDigit()
+                if viewModel.isNearTimeLimit {
+                    Text("\(viewModel.secondsLeft) s left")
+                        .font(DreamerFont.fixed(12, .medium))
+                        .foregroundStyle(DS.Palette.recordDot)
+                        .monospacedDigit()
+                        .contentTransition(.numericText(countsDown: true))
+                } else {
+                    Text(viewModel.timerText)
+                        .font(DreamerFont.fixed(12))
+                        .monospacedDigit()
+                }
             }
             .foregroundStyle(DS.Palette.textPrimary)
             .padding(.horizontal, 16)
             .frame(height: 34)
             .glassCapsule()
             .accessibilityElement(children: .combine)
+        }
+    }
+
+    /// Why the recording stopped, and the way to go on.
+    @ViewBuilder private var pauseNote: some View {
+        if let message = viewModel.pauseMessage {
+            VStack(spacing: 6) {
+                Text(message)
+                    .textStyle(.secondary, color: DS.Palette.textSecondary)
+                    .multilineTextAlignment(.center)
+                if viewModel.canContinue {
+                    PillButton(title: "Continue recording") { viewModel.resume() }
+                }
+            }
+            .padding(.horizontal, DS.Space.cta)
+            .padding(.bottom, 10)
+            .transition(.opacity)
         }
     }
 
