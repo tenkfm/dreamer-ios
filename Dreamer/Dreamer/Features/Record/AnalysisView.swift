@@ -5,6 +5,10 @@ struct AnalysisView: View {
     var viewModel: AnalysisViewModel
     var onContinue: () -> Void
 
+    @Environment(AppDependencies.self) private var dependencies
+    @Environment(AppState.self) private var appState
+    @State private var isPaywallPresented = false
+
     var body: some View {
         FillingScrollView {
             VStack(spacing: 0) {
@@ -27,7 +31,15 @@ struct AnalysisView: View {
                     .padding(.horizontal, 40 - DS.Space.screen)
                     .enterUp(0.5)
 
-                if let error = viewModel.errorMessage {
+                if let state = viewModel.errorState {
+                    VStack(spacing: 4) {
+                        Text(state.title).textStyle(.bodyStrong)
+                        Text(state.message).textStyle(.secondary, color: DS.Palette.textSecondary)
+                    }
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 16)
+                } else if let error = viewModel.errorMessage {
                     Text(error)
                         .textStyle(.secondary, color: DS.Palette.textSecondary)
                         .multilineTextAlignment(.center)
@@ -41,7 +53,12 @@ struct AnalysisView: View {
                         .padding(.horizontal, DS.Space.cta - DS.Space.screen)
                         .padding(.bottom, 8)
                         .transition(.opacity.combined(with: .offset(y: 18)))
-                } else if viewModel.errorMessage != nil {
+                } else if viewModel.errorState?.action == .openPaywall {
+                    // PREMIUM_REQUIRED: the dream stays; after buying, it is read at once.
+                    PrimaryButton(title: "See plans", systemImage: "sparkle") { isPaywallPresented = true }
+                        .padding(.horizontal, DS.Space.cta - DS.Space.screen)
+                        .padding(.bottom, 8)
+                } else if viewModel.errorMessage != nil, viewModel.canRetry {
                     PrimaryButton(title: "Try again") { Task { await viewModel.run() } }
                         .padding(.horizontal, DS.Space.cta - DS.Space.screen)
                         .padding(.bottom, 8)
@@ -51,6 +68,20 @@ struct AnalysisView: View {
         }
         .animation(.soft(0.6), value: viewModel.isFinished)
         .task { await viewModel.run() }
+        .sheet(isPresented: $isPaywallPresented) {
+            ZStack {
+                SkyBackground(kind: .full)
+                PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState) {
+                    isPaywallPresented = false
+                })
+            }
+            .scrollEdgeEffectsHidden()
+        }
+        .onChange(of: appState.subscription) { _, subscription in
+            if subscription != .none, viewModel.errorState?.action == .openPaywall {
+                Task { await viewModel.run() }
+            }
+        }
         .sensoryFeedback(.success, trigger: viewModel.isFinished) { _, finished in finished }
     }
 

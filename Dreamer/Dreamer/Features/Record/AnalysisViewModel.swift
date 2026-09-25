@@ -26,6 +26,12 @@ final class AnalysisViewModel {
 
     var isFinished: Bool { result != nil }
 
+    /// "Try again" makes sense unless the answer is "wait until later" or "sign in".
+    var canRetry: Bool {
+        guard let errorState else { return true }
+        return errorState.action == .retry && errorState.retryAfter == nil
+    }
+
     func status(of step: AnalysisStep) -> StepStatus {
         if completed.contains(step) { return .done }
         let firstPending = steps.first { !completed.contains($0) }

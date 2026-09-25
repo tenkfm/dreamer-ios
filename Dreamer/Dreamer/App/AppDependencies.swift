@@ -20,6 +20,7 @@ final class AppDependencies {
     let tokens: TokenManager?
     let auth: any AuthService
     let profiles: any ProfileService
+    let subscriptionStatus: any SubscriptionStatusService
     let analytics: any Analytics
     let dreamStore: any DreamStore
     let analysis: any DreamAnalysisService
@@ -38,6 +39,7 @@ final class AppDependencies {
          tokens: TokenManager? = nil,
          auth: any AuthService = MockAuthService(),
          profiles: any ProfileService = MockProfileService(),
+         subscriptionStatus: any SubscriptionStatusService = MockSubscriptionStatusService(),
          analytics: any Analytics = NoopAnalytics(),
          dreamStore: any DreamStore,
          analysis: any DreamAnalysisService,
@@ -54,6 +56,7 @@ final class AppDependencies {
         self.tokens = tokens
         self.auth = auth
         self.profiles = profiles
+        self.subscriptionStatus = subscriptionStatus
         self.analytics = analytics
         self.dreamStore = dreamStore
         self.analysis = analysis
@@ -104,6 +107,7 @@ final class AppDependencies {
             tokens: tokens,
             auth: APIAuthService(client: api, tokens: tokens),
             profiles: APIProfileService(client: api),
+            subscriptionStatus: APISubscriptionStatusService(client: api),
             dreamStore: InMemoryDreamStore(),
             analysis: APIDreamAnalysisService(client: api),
             purchases: livePurchases(config: config),

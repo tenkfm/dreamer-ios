@@ -51,6 +51,16 @@ struct RootView: View {
             // Every sign-in (and a session restored at launch) links the account in the SDKs.
             if let userID = appState.userID { await dependencies.linkAccount(userID: userID) }
         }
+        .task(id: appState.userID) {
+            // Store access for the whole session: renewals, expiries and refunds apply at once.
+            guard appState.isSignedIn else { return }
+            appState.requestSubscriptionRefresh(afterPurchase: false)
+            await subscriptionSync.followEntitlements()
+        }
+        .task(id: appState.subscriptionRefresh) {
+            guard let request = appState.subscriptionRefresh, appState.isSignedIn else { return }
+            await subscriptionSync.refreshBackend(expectPremium: request.afterPurchase)
+        }
         .task(id: appState.pendingProfileSync) {
             // New account: quiz answers and settings go up; existing one: the server's profile comes down.
             guard let direction = appState.pendingProfileSync else { return }
@@ -64,6 +74,10 @@ struct RootView: View {
                 await dependencies.unlinkAccount()
             }
         }
+    }
+
+    private var subscriptionSync: SubscriptionSync {
+        SubscriptionSync(appState: appState, purchases: dependencies.purchases, backend: dependencies.subscriptionStatus)
     }
 
     private var initialOnboardingStep: OnboardingViewModel.Step {

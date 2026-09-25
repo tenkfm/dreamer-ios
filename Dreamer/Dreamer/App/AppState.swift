@@ -28,6 +28,10 @@ final class AppState {
     var pendingDeepLink: DeepLink?
     /// Profile sync to run for the current account (set on sign-in and at launch).
     private(set) var pendingProfileSync: ProfileSyncDirection?
+    /// The backend's subscription record (paywall variant, free interpretations left).
+    var serverSubscription: SubscriptionInfo?
+    /// Bumped to ask for a fresh backend subscription record; true = a purchase just happened.
+    private(set) var subscriptionRefresh: SubscriptionRefreshRequest?
 
     // MARK: Night mode
 
@@ -128,6 +132,7 @@ final class AppState {
     func signedOut() {
         userID = nil
         pendingProfileSync = nil
+        serverSubscription = nil
         subscription = .none
         selectedTab = .today
         paths = [:]
@@ -178,7 +183,28 @@ final class AppState {
     func activateSubscription(_ plan: Plan) {
         subscription = .active(plan)
         onboardingCompleted = true
+        requestSubscriptionRefresh(afterPurchase: true)
     }
+
+    /// The store's word on access. Only for a signed-in account: purchases belong to it.
+    func applyEntitlement(_ entitlement: EntitlementState) {
+        guard isSignedIn else { return }
+        if entitlement.isPremium {
+            let plan = entitlement.plan ?? subscription.plan ?? .yearly
+            if subscription != .active(plan) { subscription = .active(plan) }
+            onboardingCompleted = true
+        } else if subscription != .none {
+            // Expired, refunded or revoked: back to the paywall, no relaunch needed.
+            subscription = .none
+        }
+    }
+
+    func requestSubscriptionRefresh(afterPurchase: Bool) {
+        subscriptionRefresh = SubscriptionRefreshRequest(afterPurchase: afterPurchase)
+    }
+
+    /// Paywall variant assigned by the backend at sign-up (hard until it says otherwise).
+    var paywallVariant: PaywallVariant { serverSubscription?.paywallVariant ?? .hard }
 
     /// Debug builds: the paywall close button goes straight to Main (ignored in Release).
     func enterMainForTesting() {
@@ -242,4 +268,10 @@ final class AppState {
         preferences.userID = userID
         store.save(preferences)
     }
+}
+
+/// A request to reload the backend's subscription record; a new value re-runs the refresh.
+struct SubscriptionRefreshRequest: Equatable, Sendable {
+    let id = UUID()
+    var afterPurchase: Bool
 }

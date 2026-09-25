@@ -116,6 +116,13 @@ sandbox account. `StoreKitPurchaseTests` use it through SKTestSession and are op
 (`TEST_RUNNER_DREAMER_STOREKIT_TESTS=1` or from Xcode): the command-line simulator of Xcode 26.2
 serves no products to test sessions.
 
+Access (`Services/SubscriptionSync.swift`): for the whole signed-in session the store's
+entitlement stream drives `AppState.subscription`, so a renewal, an expiry or a refund applies at
+once (an expired user lands on the paywall without a relaunch). `GET /v1/subscription` is read at
+launch and, after a purchase, polled for a few seconds until the backend agrees (its webhook can
+lag); it also brings the paywall variant and the free interpretations left. `PREMIUM_REQUIRED`
+during analysis shows "See plans"; buying reads the same dream at once.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
