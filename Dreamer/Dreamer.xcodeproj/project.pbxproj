@@ -12,6 +12,7 @@
 		D7A0000000000000000000BF /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000097 /* OpenAPIRuntime */; };
 		D7A0000000000000000000BF /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000099 /* OpenAPIURLSession */; };
 		D7A0000000000000000000BF /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009B /* HTTPTypes */; };
+		D7A0000000000000000000BF /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009D /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,7 @@
 				D7A0000000000000000000BF /* OpenAPIRuntime in Frameworks */,
 				D7A0000000000000000000BF /* OpenAPIURLSession in Frameworks */,
 				D7A0000000000000000000BF /* HTTPTypes in Frameworks */,
+				D7A0000000000000000000BF /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,6 +143,7 @@
 				D7A000000000000000000097 /* OpenAPIRuntime */,
 				D7A000000000000000000099 /* OpenAPIURLSession */,
 				D7A00000000000000000009B /* HTTPTypes */,
+				D7A00000000000000000009D /* RevenueCat */,
 			);
 			productName = Dreamer;
 			productReference = D7A000000000000000000002 /* Dreamer.app */;
@@ -204,6 +207,7 @@
 				D7A000000000000000000096 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
 				D7A000000000000000000098 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
 				D7A00000000000000000009A /* XCRemoteSwiftPackageReference "swift-http-types" */,
+				D7A00000000000000000009C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7A000000000000000000007 /* Products */;
@@ -573,6 +577,14 @@
 				minimumVersion = 1.8.0;
 			};
 		};
+		D7A00000000000000000009C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.91.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -605,6 +617,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D7A00000000000000000009A;
 			productName = "HTTPTypes";
+		};
+		D7A00000000000000000009D /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A00000000000000000009C;
+			productName = "RevenueCat";
 		};
 /* End XCSwiftPackageProductDependency section */
 

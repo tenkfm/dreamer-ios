@@ -102,8 +102,10 @@ struct SignInViewModelTests {
 struct AccountLinkTests {
     actor RecordingPurchases: PurchaseService {
         private(set) var logins: [String?] = []
-        func purchase(_ plan: Plan) async throws {}
-        func restore() async throws -> Plan? { nil }
+        func products() async throws -> [PaywallProduct] { [] }
+        func purchase(_ plan: Plan) async throws -> PurchaseOutcome { .cancelled }
+        func restore() async throws -> EntitlementState { .none }
+        nonisolated func entitlementUpdates() -> AsyncStream<EntitlementState> { AsyncStream { $0.finish() } }
         func logIn(userID: String) async { logins.append(userID) }
         func logOut() async { logins.append(nil) }
     }

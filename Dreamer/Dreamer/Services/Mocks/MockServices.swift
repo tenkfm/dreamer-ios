@@ -59,18 +59,37 @@ struct MockDreamAnalysisService: DreamAnalysisService {
     }
 }
 
-/// Always succeeds after a short delay.
+/// Always succeeds after a short delay, with the design's US prices.
 struct MockPurchaseService: PurchaseService {
     var delay: Duration = .milliseconds(800)
     var restoredPlan: Plan? = .yearly
+    /// The user already used the yearly trial.
+    var trialEligible = true
 
-    func purchase(_ plan: Plan) async throws {
-        try await Task.sleep(for: delay)
+    func products() async throws -> [PaywallProduct] {
+        [
+            PaywallProduct(plan: .yearly, productID: Plan.yearly.productID, displayPrice: "$39.99", price: 39.99,
+                           currencyCode: "USD", period: .init(value: 1, unit: .year), displayPricePerMonth: "$3.33",
+                           trial: trialEligible ? .init(period: .init(value: 1, unit: .week)) : nil),
+            PaywallProduct(plan: .weekly, productID: Plan.weekly.productID, displayPrice: "$6.99", price: 6.99,
+                           currencyCode: "USD", period: .init(value: 1, unit: .week), displayPricePerMonth: nil, trial: nil)
+        ]
     }
 
-    func restore() async throws -> Plan? {
+    func purchase(_ plan: Plan) async throws -> PurchaseOutcome {
         try await Task.sleep(for: delay)
-        return restoredPlan
+        return .purchased(EntitlementState(isPremium: true, plan: plan, expiresAt: nil, willRenew: true))
+    }
+
+    func restore() async throws -> EntitlementState {
+        try await Task.sleep(for: delay)
+        guard let restoredPlan else { return .none }
+        return EntitlementState(isPremium: true, plan: restoredPlan, expiresAt: nil, willRenew: true)
+    }
+
+    func entitlementUpdates() -> AsyncStream<EntitlementState> {
+        // Mock access lives in AppState (preferences); nothing changes behind the app's back.
+        AsyncStream { $0.finish() }
     }
 
     func logIn(userID: String) async {}

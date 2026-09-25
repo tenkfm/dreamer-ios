@@ -106,7 +106,7 @@ final class AppDependencies {
             profiles: APIProfileService(client: api),
             dreamStore: InMemoryDreamStore(),
             analysis: APIDreamAnalysisService(client: api),
-            purchases: MockPurchaseService(),
+            purchases: livePurchases(config: config),
             catalog: MockSymbolCatalog(),
             imageSaver: PhotoLibraryImageSaver(),
             featureFlags: featureFlags,
@@ -127,6 +127,15 @@ final class AppDependencies {
         if arguments.contains("-mockServices") || arguments.contains("-debugScreen") { return .mock }
         #endif
         return .live
+    }
+
+    /// RevenueCat with a key (every real build); StoreKit 2 on the local configuration otherwise, so
+    /// purchases can be tried in the simulator before the RevenueCat project exists.
+    private static func livePurchases(config: AppConfig) -> any PurchaseService {
+        if let key = config.revenueCatAPIKey {
+            return RevenueCatPurchaseService(apiKey: key, debugLogs: config.environment != .production)
+        }
+        return StoreKitPurchaseService()
     }
 
     private static func liveNetworkMonitor() -> NetworkMonitor {

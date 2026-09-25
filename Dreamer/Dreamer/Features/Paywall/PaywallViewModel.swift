@@ -50,9 +50,17 @@ final class PaywallViewModel {
         isPurchasing = true
         defer { isPurchasing = false }
         do {
-            try await purchases.purchase(selectedPlan)
-            appState.activateSubscription(selectedPlan)
-            onFinish?()
+            switch try await purchases.purchase(selectedPlan) {
+            case .purchased(let entitlement) where entitlement.isPremium:
+                appState.activateSubscription(entitlement.plan ?? selectedPlan)
+                onFinish?()
+            case .purchased:
+                alertMessage = "The purchase went through but access isn’t active yet. Try Restore in a moment."
+            case .cancelled:
+                break
+            case .pending:
+                alertMessage = "Your purchase is waiting for approval. Dreamer unlocks as soon as it’s approved."
+            }
         } catch {
             alertMessage = "The purchase didn’t go through. Please try again."
         }
@@ -63,8 +71,9 @@ final class PaywallViewModel {
         isRestoring = true
         defer { isRestoring = false }
         do {
-            if let plan = try await purchases.restore() {
-                appState.activateSubscription(plan)
+            let entitlement = try await purchases.restore()
+            if entitlement.isPremium {
+                appState.activateSubscription(entitlement.plan ?? .yearly)
                 onFinish?()
             } else {
                 alertMessage = "We couldn’t find a previous purchase."

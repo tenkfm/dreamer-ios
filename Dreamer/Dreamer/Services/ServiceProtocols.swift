@@ -25,10 +25,16 @@ protocol DreamStore: AnyObject {
     func deleteAll()
 }
 
+/// Subscriptions through the App Store. The store (RevenueCat, entitlement `premium`) is the only
+/// source of truth for access; the backend mirrors it.
 protocol PurchaseService: Sendable {
-    func purchase(_ plan: Plan) async throws
-    /// Returns the restored plan, or nil when there is nothing to restore.
-    func restore() async throws -> Plan?
+    /// The plans with this user's prices and trial eligibility.
+    func products() async throws -> [PaywallProduct]
+    func purchase(_ plan: Plan) async throws -> PurchaseOutcome
+    /// Restores earlier purchases on this Apple ID.
+    func restore() async throws -> EntitlementState
+    /// Current access, then every change (renewal, expiry, refund) while the app runs.
+    func entitlementUpdates() -> AsyncStream<EntitlementState>
     /// Ties purchases to the backend user id (RevenueCat app user id), so a subscription follows
     /// the account across reinstalls and devices.
     func logIn(userID: String) async

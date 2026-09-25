@@ -92,7 +92,9 @@ final class SettingsViewModel {
         isRestoring = true
         defer { isRestoring = false }
         do {
-            if let plan = try await purchases.restore() {
+            let entitlement = try await purchases.restore()
+            if entitlement.isPremium {
+                let plan = entitlement.plan ?? .yearly
                 appState.activateSubscription(plan)
                 alertMessage = "Your \(plan.title.lowercased()) subscription is restored."
             } else {

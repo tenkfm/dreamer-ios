@@ -104,6 +104,18 @@ over the local copy (another device may have changed it) and a changed time zone
 Failed syncs stay pending and retry at the next launch. The paywall close button that skips to
 Main exists in Debug builds only.
 
+## Purchases
+
+`PurchaseService` has three implementations: `RevenueCatPurchaseService` (RevenueCat SDK over
+StoreKit 2, entitlement `premium`, app user id = backend user id) when `REVENUECAT_API_KEY` is
+set; `StoreKitPurchaseService` (StoreKit 2 directly) otherwise, so purchases can be tried before
+the RevenueCat project exists; `MockPurchaseService` in mock mode. `StoreKit/Dreamer.storekit`
+holds `dreamer.yearly` ($39.99, 7-day free trial) and `dreamer.weekly` ($6.99) and is the Run
+action's StoreKit configuration of the Dreamer scheme: running from Xcode buys locally, with no
+sandbox account. `StoreKitPurchaseTests` use it through SKTestSession and are opt-in
+(`TEST_RUNNER_DREAMER_STOREKIT_TESTS=1` or from Xcode): the command-line simulator of Xcode 26.2
+serves no products to test sessions.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
