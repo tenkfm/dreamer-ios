@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D7A0000000000000000000BF /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000091 /* PostHog */; };
+		D7A0000000000000000000BF /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000093 /* Sentry-Dynamic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D7A0000000000000000000BF /* PostHog in Frameworks */,
+				D7A0000000000000000000BF /* Sentry-Dynamic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,6 +130,7 @@
 			name = Dreamer;
 			packageProductDependencies = (
 				D7A000000000000000000091 /* PostHog */,
+				D7A000000000000000000093 /* Sentry-Dynamic */,
 			);
 			productName = Dreamer;
 			productReference = D7A000000000000000000002 /* Dreamer.app */;
@@ -186,6 +189,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D7A000000000000000000090 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+				D7A000000000000000000092 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7A000000000000000000007 /* Products */;
@@ -511,6 +515,14 @@
 				minimumVersion = 3.84.1;
 			};
 		};
+		D7A000000000000000000092 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.29.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -518,6 +530,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D7A000000000000000000090;
 			productName = "PostHog";
+		};
+		D7A000000000000000000093 /* Sentry-Dynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A000000000000000000092;
+			productName = "Sentry-Dynamic";
 		};
 /* End XCSwiftPackageProductDependency section */
 

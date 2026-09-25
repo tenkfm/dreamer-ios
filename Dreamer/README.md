@@ -46,6 +46,18 @@ and refreshes the cache in the background, so a change applies on the next launc
 a feature mid-use. Debug builds accept overrides: `-featureFlag ttsEnabled=false`.
 The paywall variant is not a flag: the backend assigns it (`GET /v1/subscription.paywallVariant`).
 
+## Crash reporting
+
+Sentry (`Services/CrashReporter.swift`, SPM product `Sentry-Dynamic`: the static product drops
+the Objective-C categories Sentry relies on and crashes on the first event). It starts first in
+`AppDependencies.live()` when `SENTRY_DSN` is set; without it a no-op reporter is used. Reports
+carry error codes, tags and the anonymous user id only: screenshots, view hierarchies, network
+breadcrumbs, failed-request capture and default PII are off, so no dream text, note or email
+leaves the device. Debug and Staging builds accept `-crashTestNonFatal` and `-crashTestCrash` to
+check the console. `bundle exec fastlane upload_dsyms` (also run by `signed_build` when
+`SENTRY_AUTH_TOKEN` is set) uploads the archive's dSYMs; it needs `sentry-cli`, `SENTRY_ORG` and
+`SENTRY_PROJECT`.
+
 ## Signing
 
 Certificates and profiles are shared through fastlane match (`fastlane/Matchfile`), App Store

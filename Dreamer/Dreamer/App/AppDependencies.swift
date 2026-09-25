@@ -12,6 +12,7 @@ final class AppDependencies {
     let imageSaver: any ImageSaving
     /// Remote switches for this session (see FeatureFlags).
     let featureFlags: FeatureFlags
+    let crashReporter: any CrashReporter
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
 
@@ -21,6 +22,7 @@ final class AppDependencies {
          catalog: any SymbolCatalog,
          imageSaver: any ImageSaving,
          featureFlags: FeatureFlags = .defaults,
+         crashReporter: any CrashReporter = NoopCrashReporter(),
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService) {
         self.dreamStore = dreamStore
@@ -29,19 +31,23 @@ final class AppDependencies {
         self.catalog = catalog
         self.imageSaver = imageSaver
         self.featureFlags = featureFlags
+        self.crashReporter = crashReporter
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
     }
 
     /// Phase 1 app: mocked data, speech and purchases; real on-device read-out and photo saving.
     static func live() -> AppDependencies {
-        AppDependencies(
+        // First, so a crash anywhere later in the launch is still reported.
+        let crashReporter = CrashReporting.makeReporter(config: .current)
+        return AppDependencies(
             dreamStore: InMemoryDreamStore(),
             analysis: MockDreamAnalysisService(),
             purchases: MockPurchaseService(),
             catalog: MockSymbolCatalog(),
             imageSaver: PhotoLibraryImageSaver(),
             featureFlags: liveFeatureFlags(),
+            crashReporter: crashReporter,
             makeSpeechService: { MockSpeechService() },
             makeReadAloudService: { SpeechSynthesizerReadAloudService() }
         )

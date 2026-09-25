@@ -6,6 +6,7 @@
 #   bundle exec fastlane build_release                        # unsigned Release build (CI)
 #   bundle exec fastlane certificates                         # match: fetch signing assets
 #   bundle exec fastlane signed_build configuration:Staging   # signed .ipa with match profiles
+#   bundle exec fastlane upload_dsyms                         # dSYMs of the last archive to Sentry
 
 default_platform(:ios)
 
@@ -111,6 +112,17 @@ platform :ios do
       derived_data_path: DERIVED_DATA,
       output_directory: File.expand_path("../build/archive", __dir__),
       export_method: "app-store"
+    )
+    upload_dsyms if ENV["SENTRY_AUTH_TOKEN"]
+  end
+
+  desc "Upload the dSYMs of the last build to Sentry (SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT; needs sentry-cli)"
+  lane :upload_dsyms do
+    sentry_debug_files_upload(
+      auth_token: ENV.fetch("SENTRY_AUTH_TOKEN"),
+      org_slug: ENV.fetch("SENTRY_ORG"),
+      project_slug: ENV.fetch("SENTRY_PROJECT"),
+      path: File.expand_path("../build/archive", __dir__)
     )
   end
 

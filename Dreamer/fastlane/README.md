@@ -63,6 +63,14 @@ Needs MATCH_GIT_URL, MATCH_PASSWORD, APPLE_TEAM_ID and the App Store Connect API
 
 Archive a signed build with match profiles: configuration Staging (default) or Release
 
+### ios upload_dsyms
+
+```sh
+[bundle exec] fastlane ios upload_dsyms
+```
+
+Upload the dSYMs of the last build to Sentry (SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT; needs sentry-cli)
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
