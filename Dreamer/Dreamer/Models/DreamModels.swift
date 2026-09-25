@@ -93,12 +93,16 @@ struct Interpretation: Codable, Hashable, Sendable {
     var texts: [Lens: String]
     var forYou: String
     var readDurations: [Lens: TimeInterval]
+    /// A crisis-flagged dream shows the support screen instead of a mystical reading.
+    var safetyFlag: Bool = false
 
     func text(for lens: Lens) -> String { texts[lens] ?? "" }
 }
 
 struct Dream: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
+    /// Id the device generated for the idempotent `POST /v1/dreams`.
+    var clientId: String?
     var createdAt: Date
     var title: String
     var transcript: String
@@ -112,6 +116,17 @@ struct Dream: Identifiable, Codable, Hashable, Sendable {
     /// Small image for lists; falls back to `imageName`.
     var thumbnailName: String?
     var notes: String
+    /// Backend processing state; local mock dreams are always ready.
+    var status: DreamStatus = .ready
+    /// 0...4, the Analysis checklist.
+    var analysisStep: Int = 4
+    var errorCode: APIErrorCode?
+    /// The lens the backend wrote first (the user's preferred lens when the dream was read).
+    var mainLens: Lens?
+    /// Generated image from the backend (URLs); `imageName` stays the asset used by mocks.
+    var image: DreamImageInfo?
+    var audio: [Lens: DreamAudio] = [:]
+    var updatedAt: Date?
 
     /// Shown until the generated image is available. Light only: a dream image does not follow night mode.
     static let placeholderImageName = "DreamPlaceholder"

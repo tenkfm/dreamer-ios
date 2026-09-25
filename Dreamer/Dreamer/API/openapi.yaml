@@ -1,0 +1,4719 @@
+# Normalized copy of the Dreamer API contract 1.0.0 (dreamer-platform openapi.yaml).
+# Written by scripts/sync-openapi.sh - do not edit. Only change: nullable `anyOf [X, null]`
+# values became optional `X` (see scripts/normalize_openapi.py).
+openapi: 3.1.0
+info:
+  title: Dreamer API
+  version: 1.0.0
+  description: 'API of the Dreamer iOS app (phase 1, app2app). Generated from the zod schemas in packages/shared - do not
+    edit by hand; run `pnpm contract`.
+
+
+    Errors always have the shape `{ "error": { "code", "message", "details" } }`; branch on `code`.
+
+    `RATE_LIMITED` (429) comes with a `Retry-After` header and `RateLimitDetails`; a daily AI limit (N interpretations a day)
+    names the `limit` and its `resetAt`.
+
+    Breaking changes go to `/v2` only. `info.version` is the contract version (semver): minor for additions, patch for descriptions.
+
+    The guide - auth, pagination, the event stream, idempotency, limits, webhooks: docs/api.md.'
+servers:
+- url: https://{host}
+  description: Production or staging
+  variables:
+    host:
+      default: api.example.com
+      description: api.<domain> or staging-api.<domain>
+- url: http://localhost:3100
+  description: Local API (pnpm dev:api)
+- url: http://localhost:4010
+  description: Mock server on these examples (pnpm mock:api)
+tags:
+- name: System
+  description: Liveness for probes and the deploy script
+- name: Auth
+  description: Sign in with Apple or an email link; JWT access (15 min) + rotating refresh (60 days)
+- name: Profile
+  description: Quiz answers, lens, reminders; account deletion and data export
+- name: Dreams
+  description: Telling a dream, its interpretation, the journal
+- name: Audio
+  description: Voice-over of the interpretation (ElevenLabs through the API)
+- name: Recordings
+  description: Server-side speech-to-text fallback
+- name: Insights
+  description: Patterns for Home and Journal
+- name: Library
+  description: The dream-symbol library
+- name: Subscription
+  description: Premium status
+- name: Devices
+  description: APNs tokens
+- name: Webhooks
+  description: Called by RevenueCat and kie.ai, not by the app
+paths:
+  /health:
+    get:
+      operationId: health
+      tags:
+      - System
+      summary: Status of the API, the database and Redis
+      security: []
+      responses:
+        '200':
+          description: Everything is up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: ok
+                version: 0.1.0
+                uptimeSec: 3600
+                services:
+                  database: up
+                  redis: up
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+        '503':
+          description: A dependency is down
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: degraded
+                version: 0.1.0
+                uptimeSec: 3600
+                services:
+                  database: down
+                  redis: up
+  /v1/auth/apple:
+    post:
+      operationId: signInWithApple
+      tags:
+      - Auth
+      summary: Sign in (or sign up) with Apple
+      description: Verifies the identity token against Apple (JWKS), links or creates the account and returns tokens.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppleSignIn'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
+                accessExpiresAt: 2026-10-01 07:27:00+00:00
+                refreshToken: rt_example_refresh_token_value_0123456789
+                refreshExpiresAt: 2026-11-30 07:12:00+00:00
+                user:
+                  id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+                  isNew: true
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_INVALID_TOKEN
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/auth/email/request:
+    post:
+      operationId: requestEmailLink
+      tags:
+      - Auth
+      summary: Email a single-use sign-in link
+      description: Always answers the same, whether or not the address has an account. The link opens the app (universal link).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailSignInRequest'
+            example:
+              email: anna@example.com
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailSent'
+              example:
+                sent: true
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/auth/email/verify:
+    post:
+      operationId: verifyEmailLink
+      tags:
+      - Auth
+      summary: Sign in with the token from the email link
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailSignInVerify'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
+                accessExpiresAt: 2026-10-01 07:27:00+00:00
+                refreshToken: rt_example_refresh_token_value_0123456789
+                refreshExpiresAt: 2026-11-30 07:12:00+00:00
+                user:
+                  id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+                  isNew: true
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_LINK_EXPIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_LINK_EXPIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/auth/refresh:
+    post:
+      operationId: refreshTokens
+      tags:
+      - Auth
+      summary: Rotate the tokens
+      description: 'The refresh token is single-use: the response carries a new pair. Reusing an old one revokes the session.'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
+                accessExpiresAt: 2026-10-01 07:27:00+00:00
+                refreshToken: rt_example_refresh_token_value_0123456789
+                refreshExpiresAt: 2026-11-30 07:12:00+00:00
+                user:
+                  id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+                  isNew: false
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_INVALID_TOKEN
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/auth/logout:
+    post:
+      operationId: logout
+      tags:
+      - Auth
+      summary: Sign out this device
+      description: Revokes the given refresh token and its descendants. Without a refreshToken, every device is signed out.
+      security:
+      - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '204':
+          description: Done, no body
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/me:
+    get:
+      operationId: getProfile
+      tags:
+      - Profile
+      summary: The signed-in profile
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              example:
+                id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+                email: anna@example.com
+                name: Anna
+                goal: understand
+                preferredLens: psychology
+                reminder:
+                  enabled: true
+                  time: 07:30
+                timezone: America/New_York
+                nightMode: true
+                createdAt: 2026-09-20 07:00:00+00:00
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+    patch:
+      operationId: updateProfile
+      tags:
+      - Profile
+      summary: Update the profile (quiz answers, lens, reminder, time zone)
+      security:
+      - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfile'
+            example:
+              goal: understand
+              preferredLens: psychology
+              timezone: America/New_York
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+              example:
+                id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+                email: anna@example.com
+                name: Anna
+                goal: understand
+                preferredLens: psychology
+                reminder:
+                  enabled: true
+                  time: 07:30
+                timezone: America/New_York
+                nightMode: true
+                createdAt: 2026-09-20 07:00:00+00:00
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+    delete:
+      operationId: deleteAccount
+      tags:
+      - Profile
+      summary: Delete the account and every dream
+      description: Irreversible. Removes all data and files, revokes the Apple grant, deletes the RevenueCat and PostHog records.
+        The App Store subscription itself is cancelled by the user in iOS settings.
+      security:
+      - bearer: []
+      responses:
+        '204':
+          description: Done, no body
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/me/export:
+    get:
+      operationId: exportData
+      tags:
+      - Profile
+      summary: Export all personal data (GDPR)
+      description: 'One JSON file (Content-Disposition: attachment): account, profile, subscription, devices, every dream
+        with its text, notes and interpretation, links to its image and voice-overs (valid 1 hour), and AI usage counts. At
+        most 3 an hour.'
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: The export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataExport'
+              example:
+                format: dreamer-export-v1
+                exportedAt: 2026-09-25 09:00:00+00:00
+                account:
+                  id: 7d0f3c2a-5b1e-4c8d-9a6f-2e4b8c1d3f5a
+                  email: anna@example.com
+                  createdAt: 2026-09-01 08:00:00+00:00
+                  signInMethods:
+                  - apple
+                  paywallVariant: hard
+                  freeInterpretationsUsed: 0
+                profile:
+                  id: 7d0f3c2a-5b1e-4c8d-9a6f-2e4b8c1d3f5a
+                  email: anna@example.com
+                  name: Anna
+                  goal: understand
+                  preferredLens: psychology
+                  reminder:
+                    enabled: true
+                    time: 07:30
+                  timezone: Europe/Warsaw
+                  nightMode: true
+                  createdAt: 2026-09-01 08:00:00+00:00
+                subscription:
+                  status: trialing
+                  plan: yearly
+                  store: appStore
+                  expiresAt: 2026-10-01 07:12:00+00:00
+                  willRenew: true
+                devices:
+                - platform: ios
+                  environment: production
+                  tokenEnding: a1b2c3
+                  registeredAt: 2026-09-01 08:01:00+00:00
+                  lastSeenAt: 2026-09-25 06:58:00+00:00
+                dreams: []
+                aiUsage:
+                - kind: interpret
+                  calls: 12
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams:
+    post:
+      operationId: createDream
+      tags:
+      - Dreams
+      summary: Tell a dream - starts the interpretation
+      description: 'Idempotent by `clientId`: a retried request returns the dream already created (200) instead of creating
+        another (201). Follow progress with /events or /status. Needs premium, or a free interpretation left (paywall variant
+        `oneFree`): otherwise 402 PREMIUM_REQUIRED with `{ paywallVariant, freeInterpretationsLeft: 0 }`. At most `AI_LIMIT_INTERPRETATIONS_PER_DAY`
+        new dreams per local day (default 10): over it, 429 RATE_LIMITED with `RateLimitDetails` (limit, max, resetAt); a
+        replay never counts.'
+      security:
+      - bearer: []
+      parameters:
+      - name: X-App-Attest-Key-Id
+        in: header
+        required: false
+        description: The App Attest key registered with POST /v1/attest/keys.
+        schema:
+          type: string
+      - name: X-App-Attest-Assertion
+        in: header
+        required: false
+        description: base64 of generateAssertion(keyId, SHA256("<METHOD> <path with query>\n" + the exact body bytes)) (BE-10.3).
+          Checked and logged now; once enforced, missing or invalid -> 403 ATTESTATION_REQUIRED.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDream'
+            example:
+              clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
+              text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
+                staircase going down, and someone was calling my name from below.
+              details:
+                emotions:
+                - anxiety
+                - confusion
+                recurrence: sometimes
+                someoneSpecific: true
+      responses:
+        '200':
+          description: Already created with this clientId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamDetail'
+              example:
+                id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
+                clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
+                title: The house with endless stairs
+                text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
+                  staircase going down, and someone was calling my name from below.
+                emotions:
+                - anxiety
+                - confusion
+                recurrence: sometimes
+                someoneSpecific: true
+                status: ready
+                analysisStep: 4
+                errorCode: null
+                mainLens: psychology
+                interpretation:
+                  lenses:
+                    psychology: Endless stairs in a familiar house often appear when you are working through something slowly,
+                      one step at a time, without seeing where it ends. Your grandmother’s house points to roots and safety.
+                      The voice calling from below is a part of you asking for attention - a feeling or a decision you keep
+                      postponing.
+                    spiritual: 'Going down stairs is a classic image of a journey inward, toward memory and intuition. A house
+                      that keeps growing suggests your inner world is larger than you let yourself explore. The calling voice
+                      is often read as guidance: something from your past holds wisdom for your present.'
+                    dreamBook: 'Stairs going down: a time of reflection before a change. An old family house: news from family,
+                      or a return to an old question. Hearing your name called: an important message is near, so listen to
+                      the people close to you this week.'
+                  forYou: You mentioned stress at work. Dreams like this often come when a decision feels unfinished. What
+                    is the one step you keep putting off?
+                  symbols:
+                  - name: Staircase down
+                    meaning: Progress you can’t see yet
+                    icon: stairs
+                    keyword: stairs
+                  - name: Grandmother’s house
+                    meaning: Roots and safety
+                    icon: house
+                    keyword: house
+                  - name: A voice calling
+                    meaning: A part of you asking for attention
+                    icon: person
+                    keyword: voice
+                  safetyFlag: false
+                image:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1.webp
+                  previewUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-540.webp
+                  thumbnailUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-270.webp
+                  width: 1080
+                  height: 1920
+                  version: 1
+                audio:
+                  psychology:
+                    status: ready
+                    url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/audio-psychology.mp3
+                    durationSec: 72
+                  spiritual: null
+                  dreamBook: null
+                notes: ''
+                updatedAt: 2026-09-24 11:12:30+00:00
+        '201':
+          description: Created, interpretation queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamDetail'
+              example:
+                id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
+                clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
+                title: null
+                text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
+                  staircase going down, and someone was calling my name from below.
+                emotions:
+                - anxiety
+                - confusion
+                recurrence: sometimes
+                someoneSpecific: true
+                status: analyzing
+                analysisStep: 0
+                errorCode: null
+                mainLens: psychology
+                interpretation: null
+                image: null
+                audio:
+                  psychology: null
+                  spiritual: null
+                  dreamBook: null
+                notes: ''
+                updatedAt: 2026-09-24 11:12:30+00:00
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '402':
+          description: 'Error: PREMIUM_REQUIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: PREMIUM_REQUIRED
+                  message: See the code
+        '403':
+          description: 'Error: ATTESTATION_REQUIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: ATTESTATION_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED, LIMIT_REACHED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+    get:
+      operationId: listDreams
+      tags:
+      - Dreams
+      summary: The journal, newest first
+      description: Pages of `limit` (default 20), newest first; pass `nextCursor` back as `cursor` (null on the last page).
+        New dreams never shift the pages being read. `emotion` keeps dreams with that emotion; `q` searches titles, symbols,
+        the text and the interpretation, every word as a prefix ("stai" finds stairs), and fills `snippet` with the matched
+        words in `**`. Group rows by `weekOf` (Monday, user time zone).
+      security:
+      - bearer: []
+      parameters:
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+      - name: emotion
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - fear
+          - joy
+          - anxiety
+          - calm
+          - confusion
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+      - name: limit
+        in: query
+        required: false
+        schema:
+          default: 20
+          type: integer
+          minimum: 1
+          maximum: 50
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamList'
+              example:
+                items:
+                - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e20
+                  createdAt: 2026-09-24 11:12:00+00:00
+                  weekOf: 2026-09-21
+                  title: The house with endless stairs
+                  status: ready
+                  emotions:
+                  - anxiety
+                  - confusion
+                  thumbnailUrl: https://media.example.com/dreams/example-1/image-v1-270.webp
+                  symbols:
+                  - stairs
+                  - house
+                  - voice
+                  snippet: null
+                - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e21
+                  createdAt: 2026-09-22 10:48:00+00:00
+                  weekOf: 2026-09-21
+                  title: Flying over a frozen lake
+                  status: ready
+                  emotions:
+                  - joy
+                  thumbnailUrl: https://media.example.com/dreams/example-2/image-v1-270.webp
+                  symbols:
+                  - flying
+                  - lake
+                  - stairs
+                  snippet: null
+                - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e22
+                  createdAt: 2026-09-21 11:30:00+00:00
+                  weekOf: 2026-09-21
+                  title: Late for an exam I never took
+                  status: ready
+                  emotions:
+                  - anxiety
+                  thumbnailUrl: https://media.example.com/dreams/example-3/image-v1-270.webp
+                  symbols:
+                  - exam
+                  - stairs
+                  - school
+                  snippet: null
+                - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e23
+                  createdAt: 2026-09-17 10:55:00+00:00
+                  weekOf: 2026-09-14
+                  title: My old dog came back
+                  status: ready
+                  emotions:
+                  - calm
+                  thumbnailUrl: https://media.example.com/dreams/example-4/image-v1-270.webp
+                  symbols:
+                  - dog
+                  - garden
+                  - home
+                  snippet: null
+                - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e24
+                  createdAt: 2026-09-15 09:40:00+00:00
+                  weekOf: 2026-09-14
+                  title: Chased through a night market
+                  status: ready
+                  emotions:
+                  - fear
+                  thumbnailUrl: https://media.example.com/dreams/example-5/image-v1-270.webp
+                  symbols:
+                  - chase
+                  - market
+                  - lanterns
+                  snippet: null
+                nextCursor: null
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams/{id}:
+    get:
+      operationId: getDream
+      tags:
+      - Dreams
+      summary: A dream with its interpretation, image and audio
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamDetail'
+              example:
+                id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
+                clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
+                title: The house with endless stairs
+                text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
+                  staircase going down, and someone was calling my name from below.
+                emotions:
+                - anxiety
+                - confusion
+                recurrence: sometimes
+                someoneSpecific: true
+                status: ready
+                analysisStep: 4
+                errorCode: null
+                mainLens: psychology
+                interpretation:
+                  lenses:
+                    psychology: Endless stairs in a familiar house often appear when you are working through something slowly,
+                      one step at a time, without seeing where it ends. Your grandmother’s house points to roots and safety.
+                      The voice calling from below is a part of you asking for attention - a feeling or a decision you keep
+                      postponing.
+                    spiritual: 'Going down stairs is a classic image of a journey inward, toward memory and intuition. A house
+                      that keeps growing suggests your inner world is larger than you let yourself explore. The calling voice
+                      is often read as guidance: something from your past holds wisdom for your present.'
+                    dreamBook: 'Stairs going down: a time of reflection before a change. An old family house: news from family,
+                      or a return to an old question. Hearing your name called: an important message is near, so listen to
+                      the people close to you this week.'
+                  forYou: You mentioned stress at work. Dreams like this often come when a decision feels unfinished. What
+                    is the one step you keep putting off?
+                  symbols:
+                  - name: Staircase down
+                    meaning: Progress you can’t see yet
+                    icon: stairs
+                    keyword: stairs
+                  - name: Grandmother’s house
+                    meaning: Roots and safety
+                    icon: house
+                    keyword: house
+                  - name: A voice calling
+                    meaning: A part of you asking for attention
+                    icon: person
+                    keyword: voice
+                  safetyFlag: false
+                image:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1.webp
+                  previewUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-540.webp
+                  thumbnailUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-270.webp
+                  width: 1080
+                  height: 1920
+                  version: 1
+                audio:
+                  psychology:
+                    status: ready
+                    url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/audio-psychology.mp3
+                    durationSec: 72
+                  spiritual: null
+                  dreamBook: null
+                notes: ''
+                updatedAt: 2026-09-24 11:12:30+00:00
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+    patch:
+      operationId: updateDream
+      tags:
+      - Dreams
+      summary: Save notes ("Your thoughts") or a title of the user’s own
+      description: Any subset of `notes` (up to 4000 characters, saved as the user types) and `title` (1-80). Answers the
+        whole dream. Another user’s dream is 404.
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDream'
+            example:
+              notes: Work stress, for sure.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamDetail'
+              example:
+                id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
+                clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
+                title: The house with endless stairs
+                text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
+                  staircase going down, and someone was calling my name from below.
+                emotions:
+                - anxiety
+                - confusion
+                recurrence: sometimes
+                someoneSpecific: true
+                status: ready
+                analysisStep: 4
+                errorCode: null
+                mainLens: psychology
+                interpretation:
+                  lenses:
+                    psychology: Endless stairs in a familiar house often appear when you are working through something slowly,
+                      one step at a time, without seeing where it ends. Your grandmother’s house points to roots and safety.
+                      The voice calling from below is a part of you asking for attention - a feeling or a decision you keep
+                      postponing.
+                    spiritual: 'Going down stairs is a classic image of a journey inward, toward memory and intuition. A house
+                      that keeps growing suggests your inner world is larger than you let yourself explore. The calling voice
+                      is often read as guidance: something from your past holds wisdom for your present.'
+                    dreamBook: 'Stairs going down: a time of reflection before a change. An old family house: news from family,
+                      or a return to an old question. Hearing your name called: an important message is near, so listen to
+                      the people close to you this week.'
+                  forYou: You mentioned stress at work. Dreams like this often come when a decision feels unfinished. What
+                    is the one step you keep putting off?
+                  symbols:
+                  - name: Staircase down
+                    meaning: Progress you can’t see yet
+                    icon: stairs
+                    keyword: stairs
+                  - name: Grandmother’s house
+                    meaning: Roots and safety
+                    icon: house
+                    keyword: house
+                  - name: A voice calling
+                    meaning: A part of you asking for attention
+                    icon: person
+                    keyword: voice
+                  safetyFlag: false
+                image:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1.webp
+                  previewUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-540.webp
+                  thumbnailUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-270.webp
+                  width: 1080
+                  height: 1920
+                  version: 1
+                audio:
+                  psychology:
+                    status: ready
+                    url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/audio-psychology.mp3
+                    durationSec: 72
+                  spiritual: null
+                  dreamBook: null
+                notes: Work stress, for sure.
+                updatedAt: 2026-09-24 11:12:30+00:00
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+    delete:
+      operationId: deleteDream
+      tags:
+      - Dreams
+      summary: Delete a dream and its files
+      description: 'Irreversible: the dream, its interpretation, image and voice-overs go at once; their files follow within
+        a minute (cleanup queue).'
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: Done, no body
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams/{id}/events:
+    get:
+      operationId: dreamEvents
+      tags:
+      - Dreams
+      summary: Live progress of the interpretation (Server-Sent Events)
+      description: 'The first event is a snapshot of the current state (`step`, or at once `ready`/`error` for a finished
+        dream), so reconnecting never loses anything. Then: `step` {analysisStep}, `text` {lens, delta} (main lens as it is
+        written; `reset: true` means drop what was shown - the provider restarted), `ready` {dream}, `error` {code, message}.
+        Comment lines (`: keep-alive`) every 15 s. The stream ends after `ready`/`error` or after 120 s; if it drops or ends
+        early, poll /status every 2 s.'
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: text/event-stream of DreamEvent
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              example: 'event: step
+
+                data: {"type":"step","analysisStep":1}
+
+
+                '
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams/{id}/status:
+    get:
+      operationId: dreamStatus
+      tags:
+      - Dreams
+      summary: Interpretation progress (polling fallback)
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamStatusResponse'
+              example:
+                id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
+                status: analyzing
+                analysisStep: 2
+                title: null
+                errorCode: null
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams/{id}/retry:
+    post:
+      operationId: retryDream
+      tags:
+      - Dreams
+      summary: Try the interpretation again after a failure
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-App-Attest-Key-Id
+        in: header
+        required: false
+        description: The App Attest key registered with POST /v1/attest/keys.
+        schema:
+          type: string
+      - name: X-App-Attest-Assertion
+        in: header
+        required: false
+        description: base64 of generateAssertion(keyId, SHA256("<METHOD> <path with query>\n" + the exact body bytes)) (BE-10.3).
+          Checked and logged now; once enforced, missing or invalid -> 403 ATTESTATION_REQUIRED.
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Queued again
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamStatusResponse'
+              example:
+                id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
+                status: analyzing
+                analysisStep: 0
+                title: null
+                errorCode: null
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '409':
+          description: 'Error: CONFLICT'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: CONFLICT
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED, LIMIT_REACHED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams/{id}/image/regenerate:
+    post:
+      operationId: regenerateImage
+      tags:
+      - Dreams
+      summary: Generate the dream image again (daily limit)
+      description: Premium. At most `AI_LIMIT_IMAGE_REGEN_PER_DAY` a day (429 RATE_LIMITED with `RateLimitDetails`). Answers
+        the dream with the new version pending; the previous image stays shown until it is ready. 409 CONFLICT while the interpretation
+        or another image is not finished, or for a dream without an image (safety).
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-App-Attest-Key-Id
+        in: header
+        required: false
+        description: The App Attest key registered with POST /v1/attest/keys.
+        schema:
+          type: string
+      - name: X-App-Attest-Assertion
+        in: header
+        required: false
+        description: base64 of generateAssertion(keyId, SHA256("<METHOD> <path with query>\n" + the exact body bytes)) (BE-10.3).
+          Checked and logged now; once enforced, missing or invalid -> 403 ATTESTATION_REQUIRED.
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamDetail'
+              example:
+                id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
+                clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
+                title: The house with endless stairs
+                text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
+                  staircase going down, and someone was calling my name from below.
+                emotions:
+                - anxiety
+                - confusion
+                recurrence: sometimes
+                someoneSpecific: true
+                status: ready
+                analysisStep: 4
+                errorCode: null
+                mainLens: psychology
+                interpretation:
+                  lenses:
+                    psychology: Endless stairs in a familiar house often appear when you are working through something slowly,
+                      one step at a time, without seeing where it ends. Your grandmother’s house points to roots and safety.
+                      The voice calling from below is a part of you asking for attention - a feeling or a decision you keep
+                      postponing.
+                    spiritual: 'Going down stairs is a classic image of a journey inward, toward memory and intuition. A house
+                      that keeps growing suggests your inner world is larger than you let yourself explore. The calling voice
+                      is often read as guidance: something from your past holds wisdom for your present.'
+                    dreamBook: 'Stairs going down: a time of reflection before a change. An old family house: news from family,
+                      or a return to an old question. Hearing your name called: an important message is near, so listen to
+                      the people close to you this week.'
+                  forYou: You mentioned stress at work. Dreams like this often come when a decision feels unfinished. What
+                    is the one step you keep putting off?
+                  symbols:
+                  - name: Staircase down
+                    meaning: Progress you can’t see yet
+                    icon: stairs
+                    keyword: stairs
+                  - name: Grandmother’s house
+                    meaning: Roots and safety
+                    icon: house
+                    keyword: house
+                  - name: A voice calling
+                    meaning: A part of you asking for attention
+                    icon: person
+                    keyword: voice
+                  safetyFlag: false
+                image:
+                  status: pending
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1.webp
+                  previewUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-540.webp
+                  thumbnailUrl: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/image-v1-270.webp
+                  width: 1080
+                  height: 1920
+                  version: 2
+                audio:
+                  psychology:
+                    status: ready
+                    url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/audio-psychology.mp3
+                    durationSec: 72
+                  spiritual: null
+                  dreamBook: null
+                notes: ''
+                updatedAt: 2026-09-24 11:12:30+00:00
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '402':
+          description: 'Error: PREMIUM_REQUIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: PREMIUM_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '409':
+          description: 'Error: CONFLICT'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: CONFLICT
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams/{id}/share-card:
+    get:
+      operationId: shareCard
+      tags:
+      - Dreams
+      summary: The 9:16 share card image
+      description: '1080x1920 PNG for Stories. 202 (empty body, `Retry-After: 1`) while it is rendered or the first image
+        is still coming - ask again. Cached: asking again is free; a new title or image makes a new card. 409 CONFLICT for
+        an unfinished or safety-flagged dream.'
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareCard'
+              example:
+                url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/share-card.png
+                width: 1080
+                height: 1920
+        '202':
+          description: Being rendered - retry in a moment
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '409':
+          description: 'Error: CONFLICT'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: CONFLICT
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/dreams/{id}/audio:
+    get:
+      operationId: getDreamAudio
+      tags:
+      - Audio
+      summary: Voice-over of a lens
+      description: 'Play `url` (MP3) and drive the progress bar with `wordTimings` / `durationSec`. The main lens is voiced
+        ahead of time: `pending` means it is on its way - poll every second. An alternative lens nobody asked for is 404 (POST
+        first). `failed`, or 503 TTS_UNAVAILABLE (voice-overs switched off or not configured): read the text with the system
+        voice (AVSpeechSynthesizer) - not an error for the user.'
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: lens
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - psychology
+          - spiritual
+          - dreamBook
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamAudio'
+              example:
+                lens: psychology
+                status: ready
+                url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/audio-psychology.mp3
+                durationSec: 72
+                wordTimings:
+                - word: Endless
+                  startSec: 0
+                  endSec: 0.52
+                - word: stairs
+                  startSec: 0.52
+                  endSec: 1.01
+                - word: in
+                  startSec: 1.01
+                  endSec: 1.13
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+        '503':
+          description: 'Error: TTS_UNAVAILABLE'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: TTS_UNAVAILABLE
+                  message: See the code
+    post:
+      operationId: requestDreamAudio
+      tags:
+      - Audio
+      summary: Ask for the voice-over of an alternative lens
+      description: Premium. 200 when the lens is already voiced (free, any number of times), 202 while it is being made -
+        poll GET until `ready`. A new voice-over of an alternative lens counts against `AI_LIMIT_TTS_ALT_PER_DAY` (429 RATE_LIMITED
+        with `RateLimitDetails`); the main lens never does. A `failed` lens is tried again. 409 CONFLICT for an unfinished
+        or safety-flagged dream; 503 TTS_UNAVAILABLE -> use the system voice.
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: lens
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - psychology
+          - spiritual
+          - dreamBook
+      - name: X-App-Attest-Key-Id
+        in: header
+        required: false
+        description: The App Attest key registered with POST /v1/attest/keys.
+        schema:
+          type: string
+      - name: X-App-Attest-Assertion
+        in: header
+        required: false
+        description: base64 of generateAssertion(keyId, SHA256("<METHOD> <path with query>\n" + the exact body bytes)) (BE-10.3).
+          Checked and logged now; once enforced, missing or invalid -> 403 ATTESTATION_REQUIRED.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Already available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamAudio'
+              example:
+                lens: psychology
+                status: ready
+                url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/audio-psychology.mp3
+                durationSec: 72
+                wordTimings:
+                - word: Endless
+                  startSec: 0
+                  endSec: 0.52
+                - word: stairs
+                  startSec: 0.52
+                  endSec: 1.01
+                - word: in
+                  startSec: 1.01
+                  endSec: 1.13
+        '202':
+          description: Queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DreamAudio'
+              example:
+                lens: spiritual
+                status: pending
+                url: null
+                durationSec: null
+                wordTimings: []
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '402':
+          description: 'Error: PREMIUM_REQUIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: PREMIUM_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '409':
+          description: 'Error: CONFLICT'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: CONFLICT
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+        '503':
+          description: 'Error: TTS_UNAVAILABLE'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: TTS_UNAVAILABLE
+                  message: See the code
+  /v1/recordings/upload-url:
+    post:
+      operationId: recordingUploadUrl
+      tags:
+      - Recordings
+      summary: Presigned URL to upload the audio of a dream
+      description: Only when on-device recognition gave no text. PUT the file to `uploadUrl` within 10 minutes with the same
+        Content-Type and exactly `sizeBytes` bytes (the length is signed), then call transcribe.
+      security:
+      - bearer: []
+      parameters:
+      - name: X-App-Attest-Key-Id
+        in: header
+        required: false
+        description: The App Attest key registered with POST /v1/attest/keys.
+        schema:
+          type: string
+      - name: X-App-Attest-Assertion
+        in: header
+        required: false
+        description: base64 of generateAssertion(keyId, SHA256("<METHOD> <path with query>\n" + the exact body bytes)) (BE-10.3).
+          Checked and logged now; once enforced, missing or invalid -> 403 ATTESTATION_REQUIRED.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordingUploadRequest'
+            example:
+              contentType: audio/m4a
+              sizeBytes: 480000
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordingUpload'
+              example:
+                recordingId: a3c1e5f7-2b4d-4f6a-8c0e-1f3a5c7e9b2d
+                uploadUrl: https://account.r2.cloudflarestorage.com/dreamer-media/recordings/a3c1e5f7.m4a?X-Amz-Signature=example
+                expiresAt: 2026-09-25 07:27:00+00:00
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/recordings/{id}/transcribe:
+    post:
+      operationId: transcribeRecording
+      tags:
+      - Recordings
+      summary: Transcribe an uploaded recording (the audio is deleted right after)
+      description: 'Waits for the text (usually a few seconds, at most ~25). The audio is deleted as soon as it is heard,
+        whatever the outcome - a second call is 404. PROVIDER_UNAVAILABLE: let the user type the dream. At most 20 a day per
+        user (429).'
+      security:
+      - bearer: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-App-Attest-Key-Id
+        in: header
+        required: false
+        description: The App Attest key registered with POST /v1/attest/keys.
+        schema:
+          type: string
+      - name: X-App-Attest-Assertion
+        in: header
+        required: false
+        description: base64 of generateAssertion(keyId, SHA256("<METHOD> <path with query>\n" + the exact body bytes)) (BE-10.3).
+          Checked and logged now; once enforced, missing or invalid -> 403 ATTESTATION_REQUIRED.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transcript'
+              example:
+                recordingId: a3c1e5f7-2b4d-4f6a-8c0e-1f3a5c7e9b2d
+                text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
+                  staircase going down, and someone was calling my name from below.
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+        '503':
+          description: 'Error: PROVIDER_UNAVAILABLE'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: PROVIDER_UNAVAILABLE
+                  message: See the code
+  /v1/insights/week:
+    get:
+      operationId: weekInsight
+      tags:
+      - Insights
+      summary: 'Home: the week strip'
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeekInsight'
+              example:
+                days:
+                - date: 2026-09-21
+                  letter: M
+                  caught: true
+                  isToday: false
+                - date: 2026-09-22
+                  letter: T
+                  caught: true
+                  isToday: false
+                - date: 2026-09-23
+                  letter: W
+                  caught: false
+                  isToday: false
+                - date: 2026-09-24
+                  letter: T
+                  caught: true
+                  isToday: false
+                - date: 2026-09-25
+                  letter: F
+                  caught: false
+                  isToday: true
+                - date: 2026-09-26
+                  letter: S
+                  caught: false
+                  isToday: false
+                - date: 2026-09-27
+                  letter: S
+                  caught: false
+                  isToday: false
+                count: 3
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/insights/morning:
+    get:
+      operationId: morningInsight
+      tags:
+      - Insights
+      summary: 'Home: the morning insight (null when there is no pattern yet)'
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MorningInsight'
+              example:
+                symbol: stairs
+                count: 3
+                text: Stairs appeared in 3 of your dreams this week.
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/insights/month:
+    get:
+      operationId: monthInsight
+      tags:
+      - Insights
+      summary: 'Journal: the month summary'
+      security:
+      - bearer: []
+      parameters:
+      - name: month
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^\d{4}-\d{2}$
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthInsight'
+              example:
+                month: 2026-09
+                monthName: September
+                dreamCount: 12
+                nightsSoFar: 25
+                topSymbol: stairs
+                emotions:
+                - emotion: anxiety
+                  share: 0.38
+                - emotion: calm
+                  share: 0.24
+                - emotion: joy
+                  share: 0.18
+                - emotion: confusion
+                  share: 0.12
+                - emotion: fear
+                  share: 0.08
+                recurringSymbols:
+                - keyword: stairs
+                  count: 4
+                - keyword: house
+                  count: 3
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/library/symbols:
+    get:
+      operationId: listLibrarySymbols
+      tags:
+      - Library
+      summary: 'Library: search and categories'
+      description: Most popular first (the Popular shelf opens on the design’s eight). `category` picks a shelf; `q` searches
+        titles, meanings and synonyms ("staircase" finds Stairs) across all shelves - with `q` the category is ignored. Pages
+        of `limit` with `nextCursor`.
+      security:
+      - bearer: []
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 60
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - popular
+          - love
+          - fear
+          - animals
+          - places
+          - people
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 200
+      - name: limit
+        in: query
+        required: false
+        schema:
+          default: 50
+          type: integer
+          minimum: 1
+          maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibrarySymbolList'
+              example:
+                items:
+                - slug: teeth-falling-out
+                  title: Teeth falling out
+                  meaning: Control and self-image
+                  icon: person
+                  imageUrl: https://media.example.com/library/teeth-falling-out.webp
+                  categories:
+                  - popular
+                  - fear
+                - slug: falling
+                  title: Falling
+                  meaning: Losing your footing
+                  icon: bird
+                  imageUrl: https://media.example.com/library/falling.webp
+                  categories:
+                  - popular
+                  - fear
+                - slug: your-ex
+                  title: Your ex
+                  meaning: Unfinished feelings
+                  icon: heart
+                  imageUrl: https://media.example.com/library/your-ex.webp
+                  categories:
+                  - popular
+                  - love
+                  - people
+                - slug: being-chased
+                  title: Being chased
+                  meaning: Avoiding something
+                  icon: person
+                  imageUrl: https://media.example.com/library/being-chased.webp
+                  categories:
+                  - popular
+                  - fear
+                  - people
+                nextCursor: null
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/library/symbols/{slug}:
+    get:
+      operationId: getLibrarySymbol
+      tags:
+      - Library
+      summary: A library symbol
+      security:
+      - bearer: []
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-z0-9-]+$
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibrarySymbol'
+              example:
+                slug: teeth-falling-out
+                title: Teeth falling out
+                meaning: Control and self-image
+                icon: person
+                imageUrl: https://media.example.com/library/teeth-falling-out.webp
+                categories:
+                - popular
+                - fear
+                description: One of the most common dreams there is. Teeth are how we bite into the world and how we smile
+                  at it, so losing them often shows up when you feel you are losing grip on a situation, or worry about how
+                  others see you.
+                question: Where in your life do you feel less in control than you would like?
+                lenses:
+                  psychology: 'Losing teeth tends to appear in periods of pressure about control or appearance: a new job,
+                    a conflict, a moment of being watched. The anxiety is real, but it is about confidence, not about your
+                    health.'
+                  spiritual: Teeth falling away can mark the end of an old way of holding on. Something you gripped tightly
+                    is ready to be released, making room for a softer, more honest way of meeting the world.
+                  dreamBook: 'Teeth falling out: worry that will pass. One tooth: news from a relative. Teeth growing back:
+                    recovery after a loss. Painless loss: a change you will be glad of later.'
+                related:
+                - falling
+                - naked-in-public
+                - hair
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/subscription:
+    get:
+      operationId: getSubscription
+      tags:
+      - Subscription
+      summary: Premium status (RevenueCat is the source of truth)
+      description: Call it after a purchase and on launch. When the server has not had the webhook yet it asks RevenueCat
+        itself (answer cached 60 s), so a fresh purchase unlocks at once. Premium-only endpoints answer 402 PREMIUM_REQUIRED
+        otherwise.
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+              example:
+                status: trialing
+                isPremium: true
+                plan: yearly
+                store: appStore
+                expiresAt: 2026-10-01 07:12:00+00:00
+                willRenew: true
+                freeInterpretationsLeft: 0
+                paywallVariant: hard
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/devices:
+    post:
+      operationId: registerDevice
+      tags:
+      - Devices
+      summary: Register the APNs token of this device
+      description: 'Call on every launch with notification permission (tokens rotate). A token belongs to one account: registering
+        it moves it from whoever had it. `environment` is the APNs environment of the build (sandbox for Xcode/TestFlight
+        debug, production for the App Store). Pushes carry `dreamId` and `type` (`interpretation_ready`, `image_ready`) to
+        open the dream; both use the collapse id `dream-<id>`.'
+      security:
+      - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDevice'
+            example:
+              token: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+              environment: production
+      responses:
+        '204':
+          description: Done, no body
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+    delete:
+      operationId: unregisterDevice
+      tags:
+      - Devices
+      summary: Stop sending push to this device
+      security:
+      - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnregisterDevice'
+      responses:
+        '204':
+          description: Done, no body
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/attest/challenge:
+    post:
+      operationId: attestChallenge
+      tags:
+      - Devices
+      summary: A one-time challenge to attest a new App Attest key
+      description: Valid 5 minutes, for this user only. Then attestKey(keyId, SHA256(challenge)) and POST /v1/attest/keys.
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttestChallenge'
+              example:
+                challenge: b3JhbmdlLWx1bmFyLXN0YWlycy1kcmVhbQ
+                expiresAt: 2026-09-25 09:05:00+00:00
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/attest/keys:
+    post:
+      operationId: registerAttestKey
+      tags:
+      - Devices
+      summary: Register an attested App Attest key
+      description: Once per key (a reinstall makes a new one). The attestation is verified against Apple’s root; from then
+        on the costly endpoints take assertions signed with this key.
+      security:
+      - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterAttestKey'
+            example:
+              keyId: tU7gR9d8x2Qm1w0yZcVbN3aL5sKpE6hJ4fGiOqRtYuI=
+              attestation: o2NmbXRvYXBwbGUtYXBwYXR0ZXN0...
+              challenge: b3JhbmdlLWx1bmFyLXN0YWlycy1kcmVhbQ
+      responses:
+        '204':
+          description: Done, no body
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '403':
+          description: 'Error: ATTESTATION_REQUIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: ATTESTATION_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/webhooks/revenuecat:
+    post:
+      operationId: revenuecatWebhook
+      tags:
+      - Webhooks
+      summary: RevenueCat subscription events
+      description: 'Authorized by the shared Authorization header configured in RevenueCat (REVENUECAT_WEBHOOK_AUTH). Idempotent
+        by event id: a redelivery answers `duplicate` and changes nothing; an event older than the last applied one answers
+        `stale`. Unknown types and users are journaled and answered 200, so RevenueCat does not retry them.'
+      security:
+      - revenuecatWebhook: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevenueCatWebhook'
+            example:
+              api_version: '1.0'
+              event:
+                id: CD489E0E-5D52-4E0D-9D2F-3B0E7F9A6C11
+                type: INITIAL_PURCHASE
+                app_user_id: 7d0f3c2a-5b1e-4c8d-9a6f-2e4b8c1d3f5a
+                original_app_user_id: 7d0f3c2a-5b1e-4c8d-9a6f-2e4b8c1d3f5a
+                product_id: dreamer.yearly
+                entitlement_ids:
+                - premium
+                period_type: TRIAL
+                purchased_at_ms: 1778569920000
+                expiration_at_ms: 1779174720000
+                event_timestamp_ms: 1778569921000
+                store: APP_STORE
+                environment: SANDBOX
+      responses:
+        '200':
+          description: Accepted (also duplicates, stale and ignored events)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevenueCatWebhookResult'
+              example:
+                outcome: applied
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/webhooks/kie:
+    post:
+      operationId: kieCallback
+      tags:
+      - Webhooks
+      summary: kie.ai task callbacks (images, voice)
+      description: 'Called by kie.ai when a task ends; the secret is in the query (added to KIE_CALLBACK_URL by the API).
+        Only `data.taskId` is read - the result is fetched from kie.ai, never taken from the body. A repeated callback changes
+        nothing; an unknown task answers `accepted: false`.'
+      security:
+      - kieCallback: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KieCallback'
+            example:
+              code: 200
+              msg: Playground task completed successfully.
+              data:
+                taskId: e989621f54392584b05867f87b160672
+                state: success
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KieCallbackResult'
+              example:
+                accepted: true
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_REQUIRED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token, 15 minutes
+    revenuecatWebhook:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: The value configured in RevenueCat for the webhook
+    kieCallback:
+      type: apiKey
+      in: query
+      name: secret
+      description: KIE_CALLBACK_SECRET
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              $ref: '#/components/schemas/ApiErrorCode'
+            message:
+              type: string
+            details:
+              type: object
+              propertyNames:
+                type: string
+              additionalProperties: {}
+          required:
+          - code
+          - message
+          additionalProperties: false
+      required:
+      - error
+      additionalProperties: false
+    ApiErrorCode:
+      type: string
+      enum:
+      - VALIDATION_FAILED
+      - AUTH_REQUIRED
+      - AUTH_INVALID_TOKEN
+      - AUTH_LINK_EXPIRED
+      - PREMIUM_REQUIRED
+      - RATE_LIMITED
+      - ATTESTATION_REQUIRED
+      - NOT_FOUND
+      - CONFLICT
+      - DREAM_FAILED
+      - TTS_UNAVAILABLE
+      - PROVIDER_UNAVAILABLE
+      - LIMIT_REACHED
+      - INTERNAL_ERROR
+    AppleSignIn:
+      type: object
+      properties:
+        identityToken:
+          type: string
+          minLength: 20
+        authorizationCode:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+        fullName:
+          type: object
+          properties:
+            givenName:
+              type:
+              - string
+              - 'null'
+            familyName:
+              type:
+              - string
+              - 'null'
+      required:
+      - identityToken
+    AttestChallenge:
+      type: object
+      properties:
+        challenge:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - challenge
+      - expiresAt
+      additionalProperties: false
+    AuthTokens:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        accessExpiresAt:
+          type: string
+          format: date-time
+        refreshToken:
+          type: string
+        refreshExpiresAt:
+          type: string
+          format: date-time
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            isNew:
+              type: boolean
+          required:
+          - id
+          - isNew
+          additionalProperties: false
+      required:
+      - accessToken
+      - accessExpiresAt
+      - refreshToken
+      - refreshExpiresAt
+      - user
+      additionalProperties: false
+    CreateDream:
+      type: object
+      properties:
+        clientId:
+          type: string
+          minLength: 8
+          maxLength: 64
+        text:
+          type: string
+          minLength: 3
+          maxLength: 6000
+        details:
+          type: object
+          properties:
+            emotions:
+              maxItems: 5
+              type: array
+              items:
+                $ref: '#/components/schemas/Emotion'
+            recurrence:
+              $ref: '#/components/schemas/Recurrence'
+            someoneSpecific:
+              type: boolean
+          required:
+          - emotions
+          - recurrence
+          - someoneSpecific
+        recordedAt:
+          type: string
+          format: date-time
+        recordingId:
+          type: string
+          format: uuid
+      required:
+      - clientId
+      - text
+    DataExport:
+      type: object
+      properties:
+        format:
+          type: string
+          const: dreamer-export-v1
+        exportedAt:
+          type: string
+          format: date-time
+        account:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type:
+              - string
+              - 'null'
+            createdAt:
+              type: string
+              format: date-time
+            signInMethods:
+              type: array
+              items:
+                type: string
+                enum:
+                - apple
+                - email
+            paywallVariant:
+              type:
+              - string
+              - 'null'
+            freeInterpretationsUsed:
+              type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+          required:
+          - id
+          - email
+          - createdAt
+          - signInMethods
+          - paywallVariant
+          - freeInterpretationsUsed
+          additionalProperties: false
+        profile:
+          $ref: '#/components/schemas/Profile'
+        subscription:
+          type: object
+          properties:
+            status:
+              $ref: '#/components/schemas/SubscriptionStatus'
+            plan:
+              $ref: '#/components/schemas/PlanId'
+            store:
+              $ref: '#/components/schemas/Store'
+            expiresAt:
+              type: string
+              format: date-time
+            willRenew:
+              type: boolean
+          required:
+          - status
+          - willRenew
+          additionalProperties: false
+        devices:
+          type: array
+          items:
+            type: object
+            properties:
+              platform:
+                type: string
+              environment:
+                type: string
+              tokenEnding:
+                type: string
+              registeredAt:
+                type: string
+                format: date-time
+              lastSeenAt:
+                type: string
+                format: date-time
+            required:
+            - platform
+            - environment
+            - tokenEnding
+            - registeredAt
+            - lastSeenAt
+            additionalProperties: false
+        dreams:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              createdAt:
+                type: string
+                format: date-time
+              recordedAt:
+                type: string
+                format: date-time
+              title:
+                type:
+                - string
+                - 'null'
+              text:
+                type: string
+              emotions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Emotion'
+              recurrence:
+                $ref: '#/components/schemas/Recurrence'
+              someoneSpecific:
+                type:
+                - boolean
+                - 'null'
+              notes:
+                type: string
+              interpretation:
+                type: object
+                properties:
+                  lenses:
+                    anyOf:
+                    - type: object
+                      properties:
+                        psychology:
+                          type: string
+                        spiritual:
+                          type: string
+                        dreamBook:
+                          type: string
+                      required:
+                      - psychology
+                      - spiritual
+                      - dreamBook
+                      additionalProperties: false
+                    - type: object
+                      propertyNames:
+                        type: string
+                      additionalProperties:
+                        type: string
+                  forYou:
+                    type: string
+                  symbols:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        meaning:
+                          type: string
+                        icon:
+                          $ref: '#/components/schemas/Glyph'
+                        keyword:
+                          type: string
+                      required:
+                      - name
+                      - meaning
+                      - icon
+                      - keyword
+                      additionalProperties: false
+                  safetyFlag:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                required:
+                - lenses
+                - forYou
+                - symbols
+                - safetyFlag
+                - createdAt
+                additionalProperties: false
+              images:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    version:
+                      type: integer
+                      minimum: -9007199254740991
+                      maximum: 9007199254740991
+                    url:
+                      type: string
+                      format: uri
+                    createdAt:
+                      type: string
+                      format: date-time
+                  required:
+                  - version
+                  - url
+                  - createdAt
+                  additionalProperties: false
+              voiceOvers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    lens:
+                      $ref: '#/components/schemas/Lens'
+                    url:
+                      type: string
+                      format: uri
+                    durationSec:
+                      type:
+                      - number
+                      - 'null'
+                  required:
+                  - lens
+                  - url
+                  - durationSec
+                  additionalProperties: false
+            required:
+            - id
+            - createdAt
+            - title
+            - text
+            - emotions
+            - someoneSpecific
+            - notes
+            - images
+            - voiceOvers
+            additionalProperties: false
+        aiUsage:
+          type: array
+          items:
+            type: object
+            properties:
+              kind:
+                type: string
+                enum:
+                - interpret
+                - image
+                - tts
+                - stt
+                - library
+                - eval
+              calls:
+                type: integer
+                minimum: -9007199254740991
+                maximum: 9007199254740991
+            required:
+            - kind
+            - calls
+            additionalProperties: false
+      required:
+      - format
+      - exportedAt
+      - account
+      - profile
+      - devices
+      - dreams
+      - aiUsage
+      additionalProperties: false
+    DreamAudio:
+      type: object
+      properties:
+        lens:
+          $ref: '#/components/schemas/Lens'
+        status:
+          $ref: '#/components/schemas/MediaStatus'
+        url:
+          type: string
+          format: uri
+        durationSec:
+          type: number
+          exclusiveMinimum: 0
+        wordTimings:
+          type: array
+          items:
+            type: object
+            properties:
+              word:
+                type: string
+              startSec:
+                type: number
+                minimum: 0
+              endSec:
+                type: number
+                minimum: 0
+            required:
+            - word
+            - startSec
+            - endSec
+            additionalProperties: false
+      required:
+      - lens
+      - status
+      - wordTimings
+      additionalProperties: false
+    DreamDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        recordedAt:
+          type: string
+          format: date-time
+        title:
+          type:
+          - string
+          - 'null'
+        text:
+          type: string
+        emotions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Emotion'
+        recurrence:
+          $ref: '#/components/schemas/Recurrence'
+        someoneSpecific:
+          type:
+          - boolean
+          - 'null'
+        status:
+          $ref: '#/components/schemas/DreamStatus'
+        analysisStep:
+          type: integer
+          minimum: 0
+          maximum: 4
+        errorCode:
+          $ref: '#/components/schemas/ApiErrorCode'
+        mainLens:
+          $ref: '#/components/schemas/Lens'
+        interpretation:
+          type: object
+          properties:
+            lenses:
+              type: object
+              properties:
+                psychology:
+                  type: string
+                spiritual:
+                  type: string
+                dreamBook:
+                  type: string
+              required:
+              - psychology
+              - spiritual
+              - dreamBook
+              additionalProperties: false
+            forYou:
+              type: string
+            symbols:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  meaning:
+                    type: string
+                  icon:
+                    $ref: '#/components/schemas/Glyph'
+                  keyword:
+                    type: string
+                required:
+                - name
+                - meaning
+                - icon
+                - keyword
+                additionalProperties: false
+            safetyFlag:
+              type: boolean
+          required:
+          - lenses
+          - forYou
+          - symbols
+          - safetyFlag
+          additionalProperties: false
+        image:
+          type: object
+          properties:
+            status:
+              $ref: '#/components/schemas/MediaStatus'
+            url:
+              type: string
+              format: uri
+            previewUrl:
+              type: string
+              format: uri
+            thumbnailUrl:
+              type: string
+              format: uri
+            width:
+              type: integer
+              exclusiveMinimum: 0
+              maximum: 9007199254740991
+            height:
+              type: integer
+              exclusiveMinimum: 0
+              maximum: 9007199254740991
+            version:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+          required:
+          - status
+          - version
+          additionalProperties: false
+        audio:
+          type: object
+          properties:
+            psychology:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/MediaStatus'
+                url:
+                  type: string
+                  format: uri
+                durationSec:
+                  type: number
+                  exclusiveMinimum: 0
+              required:
+              - status
+              additionalProperties: false
+            spiritual:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/MediaStatus'
+                url:
+                  type: string
+                  format: uri
+                durationSec:
+                  type: number
+                  exclusiveMinimum: 0
+              required:
+              - status
+              additionalProperties: false
+            dreamBook:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/MediaStatus'
+                url:
+                  type: string
+                  format: uri
+                durationSec:
+                  type: number
+                  exclusiveMinimum: 0
+              required:
+              - status
+              additionalProperties: false
+          additionalProperties: false
+        notes:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - clientId
+      - createdAt
+      - title
+      - text
+      - emotions
+      - someoneSpecific
+      - status
+      - analysisStep
+      - mainLens
+      - audio
+      - notes
+      - updatedAt
+      additionalProperties: false
+    DreamList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              createdAt:
+                type: string
+                format: date-time
+              weekOf:
+                type: string
+                format: date
+              title:
+                type:
+                - string
+                - 'null'
+              status:
+                $ref: '#/components/schemas/DreamStatus'
+              emotions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Emotion'
+              thumbnailUrl:
+                type: string
+                format: uri
+              symbols:
+                type: array
+                items:
+                  type: string
+              snippet:
+                type:
+                - string
+                - 'null'
+            required:
+            - id
+            - createdAt
+            - weekOf
+            - title
+            - status
+            - emotions
+            - symbols
+            - snippet
+            additionalProperties: false
+        nextCursor:
+          type: string
+          minLength: 1
+          maxLength: 200
+      required:
+      - items
+      additionalProperties: false
+    DreamStatus:
+      type: string
+      enum:
+      - analyzing
+      - ready
+      - failed
+    DreamStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/DreamStatus'
+        analysisStep:
+          type: integer
+          minimum: 0
+          maximum: 4
+        title:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          $ref: '#/components/schemas/ApiErrorCode'
+      required:
+      - id
+      - status
+      - analysisStep
+      - title
+      additionalProperties: false
+    EmailSent:
+      type: object
+      properties:
+        sent:
+          type: boolean
+          const: true
+      required:
+      - sent
+      additionalProperties: false
+    EmailSignInRequest:
+      type: object
+      properties:
+        email:
+          type: string
+      required:
+      - email
+    EmailSignInVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 20
+          maxLength: 200
+      required:
+      - token
+    Emotion:
+      type: string
+      enum:
+      - fear
+      - joy
+      - anxiety
+      - calm
+      - confusion
+    Glyph:
+      type: string
+      enum:
+      - sparkle
+      - stairs
+      - heart
+      - moon
+      - house
+      - person
+      - water
+      - bird
+      - leaf
+      - eye
+    Goal:
+      type: string
+      enum:
+      - understand
+      - recurring
+      - someone
+      - remember
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+          - degraded
+        version:
+          type: string
+        uptimeSec:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        services:
+          type: object
+          properties:
+            database:
+              type: string
+              enum:
+              - up
+              - down
+            redis:
+              type: string
+              enum:
+              - up
+              - down
+          required:
+          - database
+          - redis
+          additionalProperties: false
+      required:
+      - status
+      - version
+      - uptimeSec
+      - services
+      additionalProperties: false
+    KieCallback:
+      type: object
+      properties:
+        code:
+          type: number
+        msg:
+          type: string
+        data:
+          type: object
+          properties:
+            taskId:
+              type: string
+              minLength: 1
+              maxLength: 200
+          required:
+          - taskId
+          additionalProperties: {}
+      required:
+      - data
+      additionalProperties: {}
+    KieCallbackResult:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+      required:
+      - accepted
+      additionalProperties: false
+    Lens:
+      type: string
+      enum:
+      - psychology
+      - spiritual
+      - dreamBook
+    LibraryCategory:
+      type: string
+      enum:
+      - popular
+      - love
+      - fear
+      - animals
+      - places
+      - people
+    LibrarySymbol:
+      type: object
+      properties:
+        slug:
+          type: string
+          pattern: ^[a-z0-9-]+$
+        title:
+          type: string
+        meaning:
+          type: string
+        icon:
+          $ref: '#/components/schemas/Glyph'
+        imageUrl:
+          type: string
+          format: uri
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryCategory'
+        description:
+          type: string
+        question:
+          type: string
+        lenses:
+          type: object
+          properties:
+            psychology:
+              type: string
+              minLength: 1
+            spiritual:
+              type: string
+              minLength: 1
+            dreamBook:
+              type: string
+              minLength: 1
+          required:
+          - psychology
+          - spiritual
+          - dreamBook
+          additionalProperties: false
+        related:
+          type: array
+          items:
+            type: string
+      required:
+      - slug
+      - title
+      - meaning
+      - icon
+      - categories
+      - description
+      - question
+      - lenses
+      - related
+      additionalProperties: false
+    LibrarySymbolList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              slug:
+                type: string
+                pattern: ^[a-z0-9-]+$
+              title:
+                type: string
+              meaning:
+                type: string
+              icon:
+                $ref: '#/components/schemas/Glyph'
+              imageUrl:
+                type: string
+                format: uri
+              categories:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LibraryCategory'
+            required:
+            - slug
+            - title
+            - meaning
+            - icon
+            - categories
+            additionalProperties: false
+        nextCursor:
+          type: string
+          minLength: 1
+          maxLength: 200
+      required:
+      - items
+      additionalProperties: false
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 20
+          maxLength: 200
+    MediaStatus:
+      type: string
+      enum:
+      - pending
+      - ready
+      - failed
+    MonthInsight:
+      type: object
+      properties:
+        month:
+          type: string
+          pattern: ^\d{4}-\d{2}$
+        monthName:
+          type: string
+        dreamCount:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        nightsSoFar:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        topSymbol:
+          type:
+          - string
+          - 'null'
+        emotions:
+          type: array
+          items:
+            type: object
+            properties:
+              emotion:
+                $ref: '#/components/schemas/Emotion'
+              share:
+                type: number
+                minimum: 0
+                maximum: 1
+            required:
+            - emotion
+            - share
+            additionalProperties: false
+        recurringSymbols:
+          type: array
+          items:
+            type: object
+            properties:
+              keyword:
+                type: string
+              count:
+                type: integer
+                minimum: 2
+                maximum: 9007199254740991
+            required:
+            - keyword
+            - count
+            additionalProperties: false
+      required:
+      - month
+      - monthName
+      - dreamCount
+      - nightsSoFar
+      - topSymbol
+      - emotions
+      - recurringSymbols
+      additionalProperties: false
+    MorningInsight:
+      type: object
+      properties:
+        symbol:
+          type: string
+        count:
+          type: integer
+          minimum: 2
+          maximum: 9007199254740991
+        text:
+          type: string
+      required:
+      - symbol
+      - count
+      - text
+      additionalProperties: false
+    PlanId:
+      type: string
+      enum:
+      - yearly
+      - weekly
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type:
+          - string
+          - 'null'
+        goal:
+          $ref: '#/components/schemas/Goal'
+        preferredLens:
+          $ref: '#/components/schemas/Lens'
+        reminder:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            time:
+              type: string
+              pattern: ^([01]\d|2[0-3]):[0-5]\d$
+          required:
+          - enabled
+          - time
+          additionalProperties: false
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: ^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$|^UTC$
+        nightMode:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - preferredLens
+      - reminder
+      - timezone
+      - nightMode
+      - createdAt
+      additionalProperties: false
+    RateLimitDetails:
+      type: object
+      properties:
+        retryAfterSec:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        limit:
+          type: string
+          enum:
+          - interpretations_per_day
+          - image_regen_per_day
+          - tts_alt_per_day
+        max:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        resetAt:
+          type: string
+          format: date-time
+      required:
+      - retryAfterSec
+      additionalProperties: false
+    RecordingUpload:
+      type: object
+      properties:
+        recordingId:
+          type: string
+          format: uuid
+        uploadUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - recordingId
+      - uploadUrl
+      - expiresAt
+      additionalProperties: false
+    RecordingUploadRequest:
+      type: object
+      properties:
+        contentType:
+          type: string
+          enum:
+          - audio/m4a
+          - audio/mp4
+          - audio/aac
+          - audio/mpeg
+          - audio/wav
+          - audio/webm
+        sizeBytes:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 20971520
+      required:
+      - contentType
+      - sizeBytes
+    Recurrence:
+      type: string
+      enum:
+      - never
+      - sometimes
+      - often
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 20
+          maxLength: 200
+      required:
+      - refreshToken
+    RegisterAttestKey:
+      type: object
+      properties:
+        keyId:
+          type: string
+          minLength: 1
+          maxLength: 100
+        attestation:
+          type: string
+          minLength: 1
+          maxLength: 20000
+        challenge:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - keyId
+      - attestation
+      - challenge
+    RegisterDevice:
+      type: object
+      properties:
+        token:
+          type: string
+          pattern: ^[0-9a-fA-F]{64,200}$
+        environment:
+          type: string
+          enum:
+          - sandbox
+          - production
+        platform:
+          default: ios
+          type: string
+          const: ios
+      required:
+      - token
+      - environment
+    RevenueCatWebhook:
+      type: object
+      properties:
+        api_version:
+          type: string
+        event:
+          type: object
+          properties:
+            id:
+              type: string
+              minLength: 1
+              maxLength: 200
+            type:
+              type: string
+              minLength: 1
+              maxLength: 60
+            app_user_id:
+              type: string
+              maxLength: 200
+            original_app_user_id:
+              type: string
+              maxLength: 200
+            aliases:
+              type: array
+              items:
+                type: string
+            transferred_from:
+              type: array
+              items:
+                type: string
+            transferred_to:
+              type: array
+              items:
+                type: string
+            product_id:
+              type:
+              - string
+              - 'null'
+            new_product_id:
+              type:
+              - string
+              - 'null'
+            entitlement_ids:
+              type: array
+              items:
+                type: string
+            period_type:
+              type:
+              - string
+              - 'null'
+            purchased_at_ms:
+              type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            expiration_at_ms:
+              type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            grace_period_expiration_at_ms:
+              type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            event_timestamp_ms:
+              type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            store:
+              type:
+              - string
+              - 'null'
+            environment:
+              default: PRODUCTION
+              type: string
+              enum:
+              - SANDBOX
+              - PRODUCTION
+            cancel_reason:
+              type:
+              - string
+              - 'null'
+            expiration_reason:
+              type:
+              - string
+              - 'null'
+            is_trial_conversion:
+              type:
+              - boolean
+              - 'null'
+          required:
+          - id
+          - type
+          - event_timestamp_ms
+          - environment
+          additionalProperties: {}
+      required:
+      - event
+      additionalProperties: {}
+    RevenueCatWebhookResult:
+      type: object
+      properties:
+        outcome:
+          type: string
+          enum:
+          - applied
+          - stale
+          - ignored
+          - unknown_user
+          - duplicate
+      required:
+      - outcome
+      additionalProperties: false
+    ShareCard:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        width:
+          type: number
+          const: 1080
+        height:
+          type: number
+          const: 1920
+      required:
+      - url
+      - width
+      - height
+      additionalProperties: false
+    Store:
+      type: string
+      enum:
+      - appStore
+      - playStore
+      - web
+      - promotional
+    Subscription:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/SubscriptionStatus'
+        isPremium:
+          type: boolean
+        plan:
+          $ref: '#/components/schemas/PlanId'
+        store:
+          $ref: '#/components/schemas/Store'
+        expiresAt:
+          type: string
+          format: date-time
+        willRenew:
+          type: boolean
+        freeInterpretationsLeft:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        paywallVariant:
+          type: string
+          enum:
+          - hard
+          - oneFree
+      required:
+      - status
+      - isPremium
+      - willRenew
+      - freeInterpretationsLeft
+      - paywallVariant
+      additionalProperties: false
+    SubscriptionStatus:
+      type: string
+      enum:
+      - none
+      - trialing
+      - active
+      - gracePeriod
+      - billingIssue
+      - cancelled
+      - expired
+    Transcript:
+      type: object
+      properties:
+        recordingId:
+          type: string
+          format: uuid
+        text:
+          type: string
+      required:
+      - recordingId
+      - text
+      additionalProperties: false
+    UnregisterDevice:
+      type: object
+      properties:
+        token:
+          type: string
+          pattern: ^[0-9a-fA-F]{64,200}$
+      required:
+      - token
+    UpdateDream:
+      type: object
+      properties:
+        notes:
+          type: string
+          maxLength: 4000
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+    UpdateProfile:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        goal:
+          $ref: '#/components/schemas/Goal'
+        preferredLens:
+          $ref: '#/components/schemas/Lens'
+        reminder:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            time:
+              type: string
+              pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: ^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$|^UTC$
+        nightMode:
+          type: boolean
+    WeekInsight:
+      type: object
+      properties:
+        days:
+          minItems: 7
+          maxItems: 7
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              letter:
+                type: string
+                minLength: 1
+                maxLength: 1
+              caught:
+                type: boolean
+              isToday:
+                type: boolean
+            required:
+            - date
+            - letter
+            - caught
+            - isToday
+            additionalProperties: false
+        count:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+      - days
+      - count
+      additionalProperties: false

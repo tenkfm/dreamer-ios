@@ -50,13 +50,23 @@ enum SymbolCategory: String, CaseIterable, Codable, Sendable, Identifiable {
 
 /// A dream symbol in the Library.
 struct LibrarySymbol: Identifiable, Hashable, Sendable {
+    /// The backend slug (`teeth-falling-out`).
     let id: String
     var title: String
     var meaning: String
     var detail: String
     var categories: Set<SymbolCategory>
+    /// Asset name used by the mock catalog.
     var imageName: String
     var glyph: Glyph
+    /// Image from the backend; wins over `imageName` when set.
+    var imageURL: URL? = nil
+    /// A question to reflect on (detail screen).
+    var question: String? = nil
+    /// Meaning in each lens (detail only).
+    var lenses: [Lens: String] = [:]
+    /// Slugs of related symbols (detail only).
+    var related: [String] = []
 }
 
 enum AppTab: String, CaseIterable, Hashable, Sendable {

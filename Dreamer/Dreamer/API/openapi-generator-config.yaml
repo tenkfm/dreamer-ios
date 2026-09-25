@@ -1,0 +1,47 @@
+# swift-openapi-generator: types and client for the Dreamer API, generated at build time.
+# The generated code stays inside API/ (internal); the rest of the app sees domain models only.
+generate:
+  - types
+  - client
+accessModifier: internal
+namingStrategy: idiomatic
+# Allowlist of the operations the app calls. scripts/sync-openapi.sh reports contract operations
+# missing here. Left out on purpose:
+#   morningInsight: top-level nullable schema, not supported by the generator - called by hand in APIClient
+#   revenuecatWebhook: server to server
+#   kieCallback: server to server
+filter:
+  operations:
+    - health
+    - signInWithApple
+    - requestEmailLink
+    - verifyEmailLink
+    - refreshTokens
+    - logout
+    - getProfile
+    - updateProfile
+    - deleteAccount
+    - exportData
+    - createDream
+    - listDreams
+    - getDream
+    - updateDream
+    - deleteDream
+    - dreamEvents
+    - dreamStatus
+    - retryDream
+    - regenerateImage
+    - shareCard
+    - getDreamAudio
+    - requestDreamAudio
+    - recordingUploadUrl
+    - transcribeRecording
+    - weekInsight
+    - monthInsight
+    - listLibrarySymbols
+    - getLibrarySymbol
+    - getSubscription
+    - registerDevice
+    - unregisterDevice
+    - attestChallenge
+    - registerAttestKey

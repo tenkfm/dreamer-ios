@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		D7A0000000000000000000BF /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000091 /* PostHog */; };
 		D7A0000000000000000000BF /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000093 /* Sentry-Dynamic */; };
+		D7A0000000000000000000BF /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000097 /* OpenAPIRuntime */; };
+		D7A0000000000000000000BF /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000099 /* OpenAPIURLSession */; };
+		D7A0000000000000000000BF /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009B /* HTTPTypes */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +68,9 @@
 			files = (
 				D7A0000000000000000000BF /* PostHog in Frameworks */,
 				D7A0000000000000000000BF /* Sentry-Dynamic in Frameworks */,
+				D7A0000000000000000000BF /* OpenAPIRuntime in Frameworks */,
+				D7A0000000000000000000BF /* OpenAPIURLSession in Frameworks */,
+				D7A0000000000000000000BF /* HTTPTypes in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,6 +129,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				D7A0000000000000000000DE /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				D7A000000000000000000004 /* Dreamer */,
@@ -131,6 +138,9 @@
 			packageProductDependencies = (
 				D7A000000000000000000091 /* PostHog */,
 				D7A000000000000000000093 /* Sentry-Dynamic */,
+				D7A000000000000000000097 /* OpenAPIRuntime */,
+				D7A000000000000000000099 /* OpenAPIURLSession */,
+				D7A00000000000000000009B /* HTTPTypes */,
 			);
 			productName = Dreamer;
 			productReference = D7A000000000000000000002 /* Dreamer.app */;
@@ -190,6 +200,10 @@
 			packageReferences = (
 				D7A000000000000000000090 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 				D7A000000000000000000092 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				D7A000000000000000000094 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
+				D7A000000000000000000096 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
+				D7A000000000000000000098 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
+				D7A00000000000000000009A /* XCRemoteSwiftPackageReference "swift-http-types" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7A000000000000000000007 /* Products */;
@@ -237,6 +251,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		D7A0000000000000000000DE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = D7A000000000000000000095 /* plugin:OpenAPIGenerator */;
+		};
 		D7A000000000000000000013 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D7A000000000000000000020 /* Dreamer */;
@@ -523,6 +541,38 @@
 				minimumVersion = 9.29.1;
 			};
 		};
+		D7A000000000000000000094 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-generator";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.13.1;
+			};
+		};
+		D7A000000000000000000096 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-runtime";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.12.1;
+			};
+		};
+		D7A000000000000000000098 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.1;
+			};
+		};
+		D7A00000000000000000009A /* XCRemoteSwiftPackageReference "swift-http-types" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-http-types";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -535,6 +585,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D7A000000000000000000092;
 			productName = "Sentry-Dynamic";
+		};
+		D7A000000000000000000095 /* plugin:OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A000000000000000000094;
+			productName = "plugin:OpenAPIGenerator";
+		};
+		D7A000000000000000000097 /* OpenAPIRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A000000000000000000096;
+			productName = "OpenAPIRuntime";
+		};
+		D7A000000000000000000099 /* OpenAPIURLSession */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A000000000000000000098;
+			productName = "OpenAPIURLSession";
+		};
+		D7A00000000000000000009B /* HTTPTypes */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A00000000000000000009A;
+			productName = "HTTPTypes";
 		};
 /* End XCSwiftPackageProductDependency section */
 

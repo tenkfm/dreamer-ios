@@ -36,6 +36,24 @@ Ruby 3.3.5 (`.tool-versions`) and Bundler; the first run installs the gems.
 `run.sh` wraps `bundle exec fastlane sim` / `bundle exec fastlane test` (see `fastlane/Fastfile`).
 Build products go to `build/DerivedData` (git-ignored).
 
+## API layer
+
+`Dreamer/API/` holds everything that knows the backend contract:
+
+- `openapi.yaml` - copy of the contract, written by `scripts/sync-openapi.sh` from
+  `../dreamerweb/openapi.yaml` (never edited by hand). The script normalizes nullable
+  `anyOf [X, null]` values to optional `X`, which swift-openapi-generator 1.x would otherwise drop.
+- `openapi-generator-config.yaml` - swift-openapi-generator runs at build time (Xcode asks once to
+  trust the plugin; command-line builds pass `-skipPackagePluginValidation`). The operation
+  allowlist leaves out the server webhooks and `morningInsight` (nullable body, called by hand).
+- `APIClient` + `APIClient+Endpoints` - every phase 1 endpoint returning models from `Models/`;
+  generated types never leave `API/`. `APIClient+Raw` covers the calls outside the generator.
+- `APIError` - one error type: backend codes (`PREMIUM_REQUIRED`, `RATE_LIMITED` with
+  `Retry-After` / `resetAt`, ...), plus offline, timeout and signed-out states.
+
+Tests use `DreamerTests/Support/StubURLProtocol.swift`; `LiveAPITests` hit staging when run with
+`TEST_RUNNER_DREAMER_LIVE_TESTS=1`.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
