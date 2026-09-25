@@ -16,3 +16,9 @@ build/
 # Swift Package Manager
 .build/
 .swiftpm/
+
+# fastlane run artifacts
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/

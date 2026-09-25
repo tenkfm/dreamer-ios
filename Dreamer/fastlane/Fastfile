@@ -1,0 +1,76 @@
+# Dreamer lanes. Run from the Dreamer/ folder:
+#   bundle exec fastlane sim                                  # build, boot iPhone 17, install, launch
+#   bundle exec fastlane sim device:"iPhone 17 Pro" screen:journal reset:true
+#   bundle exec fastlane test
+
+default_platform(:ios)
+
+PROJECT = "Dreamer.xcodeproj"
+SCHEME = "Dreamer"
+BUNDLE_ID = "com.braincode.dreamer"
+DEFAULT_DEVICE = "iPhone 17"
+DERIVED_DATA = File.expand_path("../build/DerivedData", __dir__)
+
+platform :ios do
+  desc "Build the app and run it in the simulator"
+  desc "Options: device (simulator name), screen (debug start screen, e.g. journal), reset (true = clean install)"
+  lane :sim do |options|
+    udid = boot_simulator(name: options[:device] || DEFAULT_DEVICE)
+
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      configuration: "Debug",
+      destination: "platform=iOS Simulator,id=#{udid}",
+      derived_data_path: DERIVED_DATA,
+      skip_archive: true,
+      skip_codesigning: true,
+      skip_package_ipa: true,
+      skip_package_dependencies_resolution: true
+    )
+
+    app_path = File.join(DERIVED_DATA, "Build/Products/Debug-iphonesimulator/#{SCHEME}.app")
+    # A clean install also drops the cached launch screen and saved preferences.
+    sh("xcrun simctl uninstall #{udid} #{BUNDLE_ID}") if options[:reset]
+    sh("xcrun simctl install #{udid} #{app_path.shellescape}")
+
+    launch_arguments = options[:screen] ? "-debugScreen #{options[:screen]}" : ""
+    sh("xcrun simctl launch --terminate-running-process #{udid} #{BUNDLE_ID} #{launch_arguments}")
+  end
+
+  desc "Run the unit tests in the simulator"
+  desc "Options: device (simulator name)"
+  lane :test do |options|
+    udid = boot_simulator(name: options[:device] || DEFAULT_DEVICE)
+
+    run_tests(
+      project: PROJECT,
+      scheme: SCHEME,
+      destination: "platform=iOS Simulator,id=#{udid}",
+      derived_data_path: DERIVED_DATA,
+      output_directory: File.expand_path("../build/test_output", __dir__),
+      skip_package_dependencies_resolution: true
+    )
+  end
+
+  # Finds an available simulator by name (a booted one first, then the newest runtime),
+  # boots it and brings the Simulator app to the front. Returns its UDID.
+  private_lane :boot_simulator do |options|
+    name = options[:name]
+    devices = JSON.parse(sh("xcrun simctl list devices available -j", log: false))["devices"]
+    candidates = devices.flat_map do |runtime, list|
+      version = runtime[/iOS-(\d+)-(\d+)/] ? Gem::Version.new("#{$1}.#{$2}") : Gem::Version.new("0")
+      list.select { |device| device["name"] == name }.map { |device| device.merge("version" => version) }
+    end
+    UI.user_error!("No available simulator named '#{name}'. See `xcrun simctl list devices available`.") if candidates.empty?
+
+    device = candidates.max_by { |d| [d["state"] == "Booted" ? 1 : 0, d["version"]] }
+    udid = device["udid"]
+    UI.message("Simulator: #{name} (iOS #{device['version']}) #{udid}")
+
+    sh("xcrun simctl boot #{udid}") unless device["state"] == "Booted"
+    sh("xcrun simctl bootstatus #{udid}", log: false)
+    sh("open -a Simulator --args -CurrentDeviceUDID #{udid}")
+    udid
+  end
+end

@@ -7,6 +7,20 @@ mock data behind service protocols. Design handoff: `../Dreamer-iOS-Handoff`.
 - Swift 6 language mode (strict concurrency), no third-party dependencies
 - Open `Dreamer.xcodeproj` and run the `Dreamer` scheme; `Cmd+U` runs the unit tests
 
+## Run from the terminal (fastlane)
+
+Ruby 3.3.5 (`.tool-versions`) and Bundler; the first run installs the gems.
+
+```
+./run.sh                                     # build, boot iPhone 17, install and launch
+./run.sh screen:journal                      # open a screen directly (see "Debug" below)
+./run.sh device:"iPhone 17 Pro" reset:true   # another simulator, clean install
+./run.sh test                                # unit tests (results in build/test_output)
+```
+
+`run.sh` wraps `bundle exec fastlane sim` / `bundle exec fastlane test` (see `fastlane/Fastfile`).
+Build products go to `build/DerivedData` (git-ignored).
+
 ## Architecture (MVVM)
 
 ```
