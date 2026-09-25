@@ -38,6 +38,12 @@ struct RootView: View {
                 try? await Task.sleep(for: .seconds(30))
             }
         }
+        // Universal links arrive here at a cold start and while the app runs.
+        .onOpenURL { url in
+            if let link = DeepLink(url: url, apiHost: AppConfig.current.apiBaseURL?.host()) {
+                appState.handle(link)
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { appState.refreshClock() }
         }

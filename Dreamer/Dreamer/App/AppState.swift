@@ -24,6 +24,8 @@ final class AppState {
     var selectedTab: AppTab = .today
     var paths: [AppTab: [Route]] = [:]
     var isRecordFlowPresented = false
+    /// A link the app was opened with, waiting for the screen that handles it (cold start included).
+    var pendingDeepLink: DeepLink?
 
     // MARK: Night mode
 
@@ -59,6 +61,24 @@ final class AppState {
     }
 
     var isSignedIn: Bool { userID != nil }
+
+    // MARK: Deep links
+
+    func handle(_ link: DeepLink) {
+        switch link {
+        case .emailSignIn:
+            // Already signed in: the link has nothing left to do (it was probably opened twice).
+            guard !isSignedIn else { return }
+            pendingDeepLink = link
+        }
+    }
+
+    /// The handling screen takes the link (once).
+    func consumeEmailSignInToken() -> String? {
+        guard case .emailSignIn(let token) = pendingDeepLink else { return nil }
+        pendingDeepLink = nil
+        return token
+    }
 
     // MARK: Account
 

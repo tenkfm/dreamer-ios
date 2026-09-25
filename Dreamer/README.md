@@ -84,6 +84,12 @@ page after the account step until the user is signed in, so a swipe cannot skip 
 `AuthService` (`APIAuthService` / `MockAuthService`) stores tokens through `TokenManager`; at
 launch the Keychain decides whether the user is still signed in.
 
+Email links are universal links, `https://<api host>/auth/verify?token=...`: Associated Domains
+lists `applinks:$(API_HOST)` and the backend serves the AASA file from that host. `DeepLink`
+(App/AppLinks.swift) only trusts this build's API host; `.onOpenURL` in RootView hands the link to
+AppState, which keeps it until the account step verifies it (so a cold start works too). An
+expired link offers "Send a new link" to the address requested on this device.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

@@ -107,6 +107,11 @@ struct OnboardingFlowView: View {
                     withAnimation(.soft(0.8)) { viewModel.leaveAccount() }
                 }
                 .onChange(of: viewModel.accountMode, initial: true) { _, mode in signIn.mode = mode }
+                .onChange(of: appState.pendingDeepLink, initial: true) {
+                    guard let token = appState.consumeEmailSignInToken() else { return }
+                    withAnimation(.soft(0.8)) { viewModel.openEmailLink() }
+                    Task { await signIn.verifyLink(token: token) }
+                }
             }
         case .paywall:
             PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState))

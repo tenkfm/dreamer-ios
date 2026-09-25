@@ -138,6 +138,10 @@ struct SignInView: View {
             Text(error.title).textStyle(.bodyStrong)
             Text(error.message)
                 .textStyle(.secondary, color: DS.Palette.textSecondary)
+            if error.action == .requestNewLink, let title = error.actionTitle {
+                PillButton(title: title) { Task { await viewModel.performErrorAction() } }
+                    .padding(.top, 4)
+            }
         }
         .multilineTextAlignment(.center)
         .fixedSize(horizontal: false, vertical: true)

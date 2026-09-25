@@ -102,6 +102,14 @@ final class OnboardingViewModel {
         go(to: .account)
     }
 
+    /// A sign-in link from an email was opened: to the account step, which checks it.
+    func openEmailLink() {
+        if step != .account {
+            accountMode = appState.onboardingCompleted ? .signIn : accountMode
+            go(to: .account)
+        }
+    }
+
     /// Back from the account step: to the quiz for new users, to the start for returning ones.
     func leaveAccount() {
         go(to: accountMode == .signIn ? .welcome : .quizLens)

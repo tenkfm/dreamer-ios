@@ -136,6 +136,20 @@ final class SignInViewModel {
         error = nil
     }
 
+    /// The action of the current error ("Send a new link" after an expired one).
+    func performErrorAction() async {
+        guard let error else { return }
+        switch error.action {
+        case .requestNewLink:
+            phase = .form
+            self.error = nil
+            // The address is known when the email was requested on this device.
+            if isEmailValid { await continueWithEmail() }
+        default:
+            self.error = nil
+        }
+    }
+
     // MARK: -
 
     private func perform(_ method: SignInMethod, _ work: () async throws(APIError) -> Void) async {
