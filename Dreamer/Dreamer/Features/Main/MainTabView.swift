@@ -108,7 +108,8 @@ private struct RouteDestination: View {
                                         readAloud: dependencies.makeReadAloudService(), imageSaver: dependencies.imageSaver,
                                         analytics: dependencies.analytics, notesService: dependencies.api,
                                         imageLoader: dependencies.imageLoader, imageActions: dependencies.imageActions,
-                                        imageGenerationEnabled: dependencies.featureFlags.isEnabled(.imageGenerationEnabled))
+                                        imageGenerationEnabled: dependencies.featureFlags.isEnabled(.imageGenerationEnabled),
+                                        shareCards: dependencies.shareCards, instagramAppID: dependencies.instagramAppID)
             } content: { viewModel in
                 InterpretationView(viewModel: viewModel)
             }

@@ -22,6 +22,13 @@ struct InterpretationView: View {
             }
         }
         .toast($viewModel.toastMessage)
+        .sheet(item: $viewModel.shareItem) { item in
+            ActivityView(items: [item.image]) { activity, completed in
+                viewModel.shareSheetClosed(activity: activity, completed: completed)
+            }
+            .presentationDetents([.medium, .large])
+            .ignoresSafeArea()
+        }
         .task(id: viewModel.imageRequest) { await viewModel.loadImage() }
         .task(id: viewModel.mainLens) { viewModel.prepareVoice() }
         .onDisappear {
@@ -44,20 +51,16 @@ struct InterpretationView: View {
                         Task { await viewModel.saveImage() }
                     }
                     .disabled(viewModel.isSavingImage)
-                    ShareLink(item: shareImage, preview: SharePreview(viewModel.dream?.title ?? "Dream", image: shareImage)) {
-                        GlassIconLabel(systemImage: "square.and.arrow.up")
+                    GlassIconButton(systemImage: "square.and.arrow.up", accessibilityLabel: "Share") {
+                        Task { await viewModel.share() }
                     }
-                    .buttonStyle(PressableButtonStyle())
-                    .accessibilityLabel("Share")
+                    .disabled(viewModel.isPreparingShare)
                 }
             }
         }
         .enterUp(0.1)
     }
 
-    private var shareImage: Image {
-        viewModel.loadedImage.map(Image.init(uiImage:)) ?? DreamImage.image(named: viewModel.imageName)
-    }
 
     // MARK: Content
 
@@ -99,10 +102,17 @@ struct InterpretationView: View {
                 InsightCard(overline: "For you, right now", text: forYou)
             }
             thoughts
-            ShareLink(item: shareImage, preview: SharePreview(dream.title, image: shareImage)) {
-                PrimaryButtonLabel(title: "Share my dream image", systemImage: "square.and.arrow.up")
+            VStack(spacing: 12) {
+                PrimaryButton(title: "Share my dream image", systemImage: "square.and.arrow.up",
+                              isLoading: viewModel.isPreparingShare) {
+                    Task { await viewModel.share() }
+                }
+                if viewModel.canShareToStories {
+                    PillButton(title: "Share to Instagram Stories") {
+                        Task { await viewModel.shareToStories() }
+                    }
+                }
             }
-            .buttonStyle(PressableButtonStyle())
             disclaimer
         }
         .padding(.horizontal, DS.Space.screen)

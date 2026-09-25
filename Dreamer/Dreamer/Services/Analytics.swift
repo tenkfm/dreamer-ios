@@ -20,7 +20,7 @@ enum AnalyticsEvent: Equatable, Sendable {
     case readAloudPlayed(lens: Lens, fallback: Bool)
     case readAloudCompleted(lens: Lens, fallback: Bool, listenedPct: Int)
     case readAloudFallback(lens: Lens, reason: String)
-    case dreamShared(target: String)
+    case dreamShared(target: ShareTarget)
     case journalOpened
     case librarySymbolOpened(slug: String)
     case pushOpened(type: String)
@@ -64,7 +64,7 @@ enum AnalyticsEvent: Equatable, Sendable {
         case .readAloudCompleted(let lens, let fallback, let pct):
             ["lens": lens.rawValue, "fallback": String(fallback), "listenedPct": String(pct)]
         case .readAloudFallback(let lens, let reason): ["lens": lens.rawValue, "reason": reason]
-        case .dreamShared(let target): ["target": target]
+        case .dreamShared(let target): ["target": target.rawValue]
         case .librarySymbolOpened(let slug): ["slug": slug]
         case .pushOpened(let type): ["type": type]
         }
@@ -77,6 +77,12 @@ enum SignInMethod: String, Sendable {
 
 /// Product analytics. The PostHog implementation arrives with IOS-08.1; until then events go
 /// nowhere in release builds and to the debug log in debug builds.
+/// Where a dream card or image went (the tracking plan's `dream_shared.target`).
+enum ShareTarget: String, Sendable {
+    case shareSheet = "share_sheet"
+    case photos
+}
+
 protocol Analytics: Sendable {
     func track(_ event: AnalyticsEvent)
     /// The backend user id (the same distinct id the server uses). Never an email.

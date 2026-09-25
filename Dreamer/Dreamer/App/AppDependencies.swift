@@ -38,6 +38,9 @@ final class AppDependencies {
     /// Dream images from the backend (nil in mock mode: the asset catalog).
     let imageLoader: (any DreamImageLoading)?
     let imageActions: (any DreamImageActions)?
+    /// The backend's 9:16 share card (nil in mock mode: the dream image is shared).
+    let shareCards: (any ShareCardProviding)?
+    let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
     @ObservationIgnored let makeSpeechPermissions: @MainActor () -> any SpeechPermissions
@@ -61,6 +64,8 @@ final class AppDependencies {
          transcriber: (any RecordingTranscriber)? = nil,
          imageLoader: (any DreamImageLoading)? = nil,
          imageActions: (any DreamImageActions)? = nil,
+         shareCards: (any ShareCardProviding)? = nil,
+         instagramAppID: String? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
          makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() }) {
@@ -83,6 +88,8 @@ final class AppDependencies {
         self.transcriber = transcriber
         self.imageLoader = imageLoader
         self.imageActions = imageActions
+        self.shareCards = shareCards
+        self.instagramAppID = instagramAppID
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
         self.makeSpeechPermissions = makeSpeechPermissions
@@ -118,6 +125,7 @@ final class AppDependencies {
                 transcriber: mockTranscriber(),
                 imageLoader: images,
                 imageActions: images,
+                instagramAppID: config.facebookAppID,
                 makeSpeechService: { MockSpeechService(liveText: mockTranscriber() == nil) },
                 makeReadAloudService: { SpeechSynthesizerReadAloudService() }
             )
@@ -154,6 +162,8 @@ final class AppDependencies {
             transcriber: serverSpeech ? APIRecordingTranscriber(client: api) : nil,
             imageLoader: RemoteDreamImageLoader(actions: api),
             imageActions: api,
+            shareCards: APIShareCardProvider(client: api),
+            instagramAppID: config.facebookAppID,
             makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
             makeReadAloudService: {
                 BackendReadAloudService(source: api, fallback: SpeechSynthesizerReadAloudService(), playback: AVVoicePlayback(),

@@ -15,6 +15,8 @@ struct AppConfig: Sendable, Equatable {
     let postHogAPIKey: String?
     let postHogHost: URL?
     let sentryDSN: String?
+    /// Instagram Stories needs the Meta app id in its share URL; nil hides the Stories button.
+    let facebookAppID: String?
 
     static let current = AppConfig(infoDictionary: Bundle.main.infoDictionary ?? [:])
 
@@ -36,5 +38,6 @@ struct AppConfig: Sendable, Equatable {
         postHogAPIKey = value("DreamerPostHogAPIKey")
         postHogHost = value("DreamerPostHogHost").flatMap(URL.init(string:))
         sentryDSN = value("DreamerSentryDSN")
+        facebookAppID = value("DreamerFacebookAppID")
     }
 }

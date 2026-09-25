@@ -16,6 +16,15 @@ final class InterpretationViewModel {
     private(set) var isRegeneratingImage = false
     /// A new value restarts `loadImage` (after a regeneration).
     private(set) var imageRequest = UUID()
+    /// The share card is being fetched (the backend renders it on the first ask).
+    private(set) var isPreparingShare = false
+    /// Set to present the share sheet with the card.
+    var shareItem: ShareItem?
+
+    struct ShareItem: Identifiable {
+        let id = UUID()
+        let image: UIImage
+    }
     var toastMessage: String?
     /// Saved on the device at once and on the backend a moment after typing stops.
     var notes: String {
@@ -55,6 +64,10 @@ final class InterpretationViewModel {
     private let imageGenerationEnabled: Bool
     private let imagePollInterval: Duration
     @ObservationIgnored private var loadedImageData: Data?
+    /// Nil in mock mode: the dream image is shared instead.
+    private let shareCards: (any ShareCardProviding)?
+    private let instagramAppID: String?
+    @ObservationIgnored private var cardData: Data?
     private let region: Locale.Region?
 
     init(dreamID: Dream.ID,
@@ -71,6 +84,8 @@ final class InterpretationViewModel {
          imageActions: (any DreamImageActions)? = nil,
          imageGenerationEnabled: Bool = true,
          imagePollInterval: Duration = .seconds(3),
+         shareCards: (any ShareCardProviding)? = nil,
+         instagramAppID: String? = nil,
          dateFormatter: DreamDateFormatter = DreamDateFormatter()) {
         let dream = store.dream(id: dreamID)
         self.dream = dream
@@ -89,6 +104,8 @@ final class InterpretationViewModel {
         self.imageActions = imageActions
         self.imageGenerationEnabled = imageGenerationEnabled
         self.imagePollInterval = imagePollInterval
+        self.shareCards = shareCards
+        self.instagramAppID = instagramAppID
     }
 
     // MARK: Content
@@ -241,6 +258,48 @@ final class InterpretationViewModel {
         store.save(dream)
     }
 
+    // MARK: Sharing
+
+    /// Instagram is installed and the build has the Meta app id; never for crisis dreams.
+    var canShareToStories: Bool {
+        support == nil && InstagramStories.isAvailable(appID: instagramAppID)
+    }
+
+    /// "Share": the 9:16 card in the share sheet (which also offers Save Image).
+    func share() async {
+        guard !isPreparingShare, let data = await preparedCard(), let image = UIImage(data: data) else {
+            if !isPreparingShare { toastMessage = "Couldn’t prepare your dream card. Please try again." }
+            return
+        }
+        shareItem = ShareItem(image: image)
+    }
+
+    func shareToStories() async {
+        guard let instagramAppID, !isPreparingShare, let data = await preparedCard() else { return }
+        if !(await InstagramStories.share(background: data, appID: instagramAppID)) {
+            toastMessage = "Couldn’t open Instagram"
+        }
+    }
+
+    /// The share sheet closed; `completed` is false when the user cancelled.
+    func shareSheetClosed(activity: UIActivity.ActivityType?, completed: Bool) {
+        shareItem = nil
+        guard completed else { return }
+        analytics.track(.dreamShared(target: activity == .saveToCameraRoll ? .photos : .shareSheet))
+    }
+
+    private func preparedCard() async -> Data? {
+        if let cardData { return cardData }
+        isPreparingShare = true
+        defer { isPreparingShare = false }
+        if let shareCards, let dreamID = dream?.id, let data = try? await shareCards.cardImage(dreamID: dreamID) {
+            cardData = data
+            return data
+        }
+        // No card (mock mode, offline, still rendering): the dream image itself.
+        return loadedImageData ?? DreamImage.uiImage(named: imageName)?.jpegData(compressionQuality: 0.95)
+    }
+
     func saveImage() async {
         guard !isSavingImage else { return }
         guard imagePhase == .asset || loadedImageData != nil else {
@@ -256,6 +315,7 @@ final class InterpretationViewModel {
                 try await imageSaver.saveImage(named: imageName)
             }
             toastMessage = "Saved to Photos"
+            analytics.track(.dreamShared(target: .photos))
         } catch ImageSavingError.accessDenied {
             toastMessage = "Allow Photos access in Settings to save"
         } catch {

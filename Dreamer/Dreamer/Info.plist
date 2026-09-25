@@ -14,6 +14,12 @@
 	<string>$(POSTHOG_HOST)</string>
 	<key>DreamerSentryDSN</key>
 	<string>$(SENTRY_DSN)</string>
+	<key>DreamerFacebookAppID</key>
+	<string>$(FACEBOOK_APP_ID)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>instagram-stories</string>
+	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Quicksand-Light.ttf</string>

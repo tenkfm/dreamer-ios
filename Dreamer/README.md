@@ -63,6 +63,16 @@ parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an
 `DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
 or the connection drops, and keeps polling through network gaps, so the result is never lost.
 
+Sharing (IOS-05.6, `Services/ShareCard.swift`): Share (in the header and "Share my dream image")
+fetches the backend's 9:16 card with `GET /v1/dreams/{id}/share-card`. While the backend renders
+it (202), the app asks again after `Retry-After`, for up to 15 s, and then downloads the card from
+its signed link. The card opens in the system share sheet, which includes Save Image. Offline or in
+mock mode the dream image is shared instead. `dream_shared {target}` is sent only when a share
+finishes: `photos` for Save Image and the download button, `share_sheet` otherwise. "Share to
+Instagram Stories" puts the card on the pasteboard for 5 minutes and opens
+`instagram-stories://share?source_application=<Meta app id>`. The button shows only when Instagram
+is installed and `FACEBOOK_APP_ID` is set in the xcconfig (empty for now, see Blockers).
+
 Read aloud (IOS-05.5, `Services/BackendReadAloudService.swift`): Listen plays the backend's
 ElevenLabs voice with AVPlayer, using the `playback` / `spokenAudio` session. The main lens comes
 with the dream (`DreamDetail.audio[lens]`) and is buffered as soon as Interpretation opens, so it
