@@ -99,3 +99,50 @@ struct RecordViewModelSpeechTests {
         #expect(viewModel.transcript == "Half a dream")
     }
 }
+
+@MainActor
+struct MicrophonePermissionTests {
+    @Test func grantedStartsListeningAtOnce() {
+        let viewModel = RecordViewModel(speech: RecordViewModelSpeechTests.ScriptedSpeech(events: []),
+                                        permissions: MockSpeechPermissions(current: .granted))
+        viewModel.appeared()
+        #expect(viewModel.access == .listening)
+        #expect(viewModel.isRecording)
+        viewModel.stop()
+    }
+
+    @Test func firstTimeShowsThePrePromptBeforeTheSystemAlert() async {
+        let permissions = MockSpeechPermissions(current: .notDetermined, answer: .granted)
+        let viewModel = RecordViewModel(speech: RecordViewModelSpeechTests.ScriptedSpeech(events: []), permissions: permissions)
+
+        viewModel.appeared()
+        #expect(viewModel.access == .prePrompt)
+        #expect(permissions.requests == 0)
+        #expect(!viewModel.isRecording)
+
+        await viewModel.requestAccess()
+        #expect(permissions.requests == 1)
+        #expect(viewModel.access == .listening)
+        viewModel.stop()
+    }
+
+    @Test func refusalOffersTypingAndSettings() async {
+        let viewModel = RecordViewModel(speech: RecordViewModelSpeechTests.ScriptedSpeech(events: []),
+                                        permissions: MockSpeechPermissions(current: .notDetermined, answer: .denied))
+        viewModel.appeared()
+        await viewModel.requestAccess()
+        #expect(viewModel.access == .blocked(.denied))
+
+        viewModel.typeInstead()
+        #expect(viewModel.isTyping)
+        #expect(!viewModel.isRecording)
+    }
+
+    @Test func permissionsCombineMicrophoneAndSpeech() {
+        #expect(SystemSpeechPermissions.combine(microphone: .granted, speech: .authorized) == .granted)
+        #expect(SystemSpeechPermissions.combine(microphone: .denied, speech: .authorized) == .denied)
+        #expect(SystemSpeechPermissions.combine(microphone: .granted, speech: .denied) == .denied)
+        #expect(SystemSpeechPermissions.combine(microphone: .undetermined, speech: .authorized) == .notDetermined)
+        #expect(SystemSpeechPermissions.combine(microphone: .granted, speech: .restricted) == .restricted)
+    }
+}

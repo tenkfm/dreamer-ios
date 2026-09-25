@@ -18,12 +18,56 @@ final class RecordViewModel {
 
     static let barCount = 24
 
+    /// What stands between the user and the microphone.
+    enum Access: Equatable {
+        case unknown
+        /// Our own explanation, shown before the system alerts.
+        case prePrompt
+        case listening
+        /// Refused or restricted: Settings or typing.
+        case blocked(SpeechPermission)
+    }
+
+    private(set) var access: Access = .unknown
+
     private let speech: any SpeechService
+    private let permissions: any SpeechPermissions
     @ObservationIgnored private var listenTask: Task<Void, Never>?
     @ObservationIgnored private var timerTask: Task<Void, Never>?
 
-    init(speech: any SpeechService) {
+    init(speech: any SpeechService, permissions: any SpeechPermissions = MockSpeechPermissions()) {
         self.speech = speech
+        self.permissions = permissions
+    }
+
+    /// The Record screen appeared: listen at once when allowed, otherwise explain first.
+    func appeared() {
+        switch permissions.current {
+        case .granted:
+            access = .listening
+            start()
+        case .notDetermined:
+            access = .prePrompt
+        case .denied, .restricted:
+            access = .blocked(permissions.current)
+        }
+    }
+
+    /// "Allow microphone" on the pre-prompt: the system alerts, then listen or explain the refusal.
+    func requestAccess() async {
+        let answer = await permissions.request()
+        if answer == .granted {
+            access = .listening
+            start()
+        } else {
+            access = .blocked(answer)
+        }
+    }
+
+    /// No microphone: write the dream down instead (the main flow never depends on permissions).
+    func typeInstead() {
+        stop()
+        isTyping = true
     }
 
     var timerText: String {

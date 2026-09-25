@@ -21,11 +21,12 @@ final class RecordFlowViewModel {
     private let onCancel: () -> Void
 
     init(speech: any SpeechService,
+         permissions: any SpeechPermissions = MockSpeechPermissions(),
          analysisService: any DreamAnalysisService,
          store: any DreamStore,
          onFinish: @escaping (Dream.ID) -> Void,
          onCancel: @escaping () -> Void) {
-        record = RecordViewModel(speech: speech)
+        record = RecordViewModel(speech: speech, permissions: permissions)
         self.analysisService = analysisService
         self.store = store
         self.onFinish = onFinish
@@ -36,6 +37,7 @@ final class RecordFlowViewModel {
                      onFinish: @escaping (Dream.ID) -> Void,
                      onCancel: @escaping () -> Void) {
         self.init(speech: dependencies.makeSpeechService(),
+                  permissions: dependencies.makeSpeechPermissions(),
                   analysisService: dependencies.analysis,
                   store: dependencies.dreamStore,
                   onFinish: onFinish,

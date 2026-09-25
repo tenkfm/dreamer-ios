@@ -141,6 +141,11 @@ otherwise. One recognition request stops after about a minute; the service start
 buffer into a 0...1 level about 20 times a second; the Record waveform mirrors the last 24 levels
 around its centre. Mock mode types the sample dream with a talking-like level.
 
+Permissions: the first time, Record shows its own card ("Tell your dream out loud", Allow microphone
+/ Type it instead) before the system asks for the microphone and speech recognition. A refusal
+shows "The microphone is off" with Type it instead and Open Settings, so a dream can always be
+written. Debug: `-micPermission notDetermined|denied|restricted` with `-debugScreen record`.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

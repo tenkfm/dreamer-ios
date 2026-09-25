@@ -33,6 +33,7 @@ final class AppDependencies {
     let network: NetworkMonitor
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
+    @ObservationIgnored let makeSpeechPermissions: @MainActor () -> any SpeechPermissions
 
     init(mode: Mode = .mock,
          api: APIClient? = nil,
@@ -50,7 +51,8 @@ final class AppDependencies {
          crashReporter: any CrashReporter = NoopCrashReporter(),
          network: NetworkMonitor = NetworkMonitor(isOnline: true),
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
-         makeReadAloudService: @escaping @MainActor () -> any ReadAloudService) {
+         makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
+         makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() }) {
         self.mode = mode
         self.api = api
         self.tokens = tokens
@@ -68,6 +70,7 @@ final class AppDependencies {
         self.network = network
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
+        self.makeSpeechPermissions = makeSpeechPermissions
     }
 
     /// The app's services. Live mode talks to the build's backend; services whose live version
@@ -117,7 +120,8 @@ final class AppDependencies {
             crashReporter: crashReporter,
             network: network,
             makeSpeechService: { OnDeviceSpeechService() },
-            makeReadAloudService: { SpeechSynthesizerReadAloudService() }
+            makeReadAloudService: { SpeechSynthesizerReadAloudService() },
+            makeSpeechPermissions: { SystemSpeechPermissions() }
         )
     }
 
@@ -140,6 +144,24 @@ final class AppDependencies {
             return RevenueCatPurchaseService(apiKey: key, debugLogs: config.environment != .production)
         }
         return StoreKitPurchaseService()
+    }
+
+    /// Mock mode grants the microphone; Debug builds can show the other states with
+    /// `-micPermission notDetermined|denied|restricted`.
+    static func mockSpeechPermissions() -> any SpeechPermissions {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "-micPermission"), index + 1 < arguments.count {
+            let state: SpeechPermission = switch arguments[index + 1] {
+            case "notDetermined": .notDetermined
+            case "denied": .denied
+            case "restricted": .restricted
+            default: .granted
+            }
+            return MockSpeechPermissions(current: state, answer: state == .notDetermined ? .granted : state)
+        }
+        #endif
+        return MockSpeechPermissions()
     }
 
     private static func liveNetworkMonitor() -> NetworkMonitor {
