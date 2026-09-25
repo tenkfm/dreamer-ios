@@ -45,7 +45,8 @@ struct SymbolDetailView: View {
     private var hero: some View {
         ZStack(alignment: .bottomLeading) {
             GeometryReader { geo in
-                DreamImage.image(named: symbol.imageName)
+                // Library symbols only ship small tile images; the hero needs a full-size one.
+                DreamImage.image(named: nil)
                     .resizable()
                     .scaledToFill()
                     .frame(width: geo.size.width, height: geo.size.height)

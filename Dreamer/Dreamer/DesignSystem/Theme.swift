@@ -10,52 +10,76 @@ extension Color {
                   blue: Double(hex & 0xFF) / 255,
                   opacity: opacity)
     }
+
+    /// Resolves to `day` in the light appearance and `night` in night mode (dark appearance).
+    init(day: Color, night: Color) {
+        self.init(UIColor { traits in
+            UIColor(traits.userInterfaceStyle == .dark ? night : day)
+        })
+    }
+
+    init(day: UInt32, night: UInt32) {
+        self.init(day: Color(hex: day), night: Color(hex: night))
+    }
 }
 
 /// Design tokens from docs/02-design-system.md. Feature code uses only these values.
+/// Colors are adaptive: day values follow the design, night values the deep-navy night mode.
 enum DS {
     enum Palette {
-        static let background      = Color(hex: 0xEEF4FB)
-        static let textPrimary     = Color(hex: 0x1E2A4A)
-        static let textSecondary   = Color(hex: 0x3A4666)
-        static let textTertiary    = Color(hex: 0x4B587A)
-        static let overline        = Color(hex: 0x3D4A6B)
-        static let icon            = Color(hex: 0x5670A3)
-        static let iconSoft        = Color(hex: 0x7FA2DC)
-        static let accent          = Color(hex: 0x3F5E9C)
-        static let cta             = Color(hex: 0x2E4677)
+        static let background      = Color(day: 0xEEF4FB, night: 0x0F1833)
+        static let textPrimary     = Color(day: 0x1E2A4A, night: 0xEDF1FB)
+        static let textSecondary   = Color(day: 0x3A4666, night: 0xC4CDE4)
+        static let textTertiary    = Color(day: 0x4B587A, night: 0x9FAACA)
+        static let overline        = Color(day: 0x3D4A6B, night: 0xB4BFDB)
+        static let icon            = Color(day: 0x5670A3, night: 0xA9BDEF)
+        static let iconSoft        = Color(day: 0x7FA2DC, night: 0x8FB0EA)
+        static let accent          = Color(day: 0x3F5E9C, night: 0xA3BBF4)
+        static let cta             = Color(day: 0x2E4677, night: 0x4A67B3)
         static let peach           = Color(hex: 0xF2A488)
-        static let tabInactive     = Color(hex: 0x8392B4)
-        static let segmentInactive = Color(hex: 0x5B6785)
-        static let destructive     = Color(hex: 0xB4453C)
+        static let tabInactive     = Color(day: 0x8392B4, night: 0x7D89AB)
+        static let segmentInactive = Color(day: 0x5B6785, night: 0x9AA5C2)
+        static let destructive     = Color(day: 0xB4453C, night: 0xF08A80)
         static let recordDot       = Color(hex: 0xE9826A)
+        /// Pure white: text and glyphs over the sky, CTA labels, the logo.
         static let white           = Color.white
+        /// Raised opaque surfaces: pills, the selected tab / segment, check circles.
+        static let surface         = Color(day: 0xFFFFFF, night: 0x2A3866)
+        /// Text on pastel fills (emotion chips, peach badge); dark in both appearances.
+        static let ink             = Color(hex: 0x1E2A4A)
+        /// Dividers inside glass groups.
+        static let hairline        = Color(day: .white.opacity(0.7), night: .white.opacity(0.08))
+        /// Empty part of progress tracks and rings.
+        static let track           = Color(day: .white.opacity(0.55), night: .white.opacity(0.16))
+        /// Unselected chip fill.
+        static let chipFill        = Color(day: .white.opacity(0.6), night: .white.opacity(0.06))
 
-        /// Soft blue used for every shadow: rgb(80,110,170).
-        static let shadow          = Color(hex: 0x506EAA)
-        static let ctaShadow       = Color(hex: 0x2E4677)
+        /// Soft blue used for every shadow: rgb(80,110,170). Near-black at night.
+        static let shadow          = Color(day: 0x506EAA, night: 0x03081A)
+        static let ctaShadow       = Color(day: 0x2E4677, night: 0x03081A)
         /// Orb drop shadow rgb(70,105,170).
-        static let orbShadow       = Color(hex: 0x4669AA)
+        static let orbShadow       = Color(day: 0x4669AA, night: 0x03081A)
         /// Text shadow for white text over the sky: rgb(70,110,180).
-        static let skyTextShadow   = Color(hex: 0x466EB4)
+        static let skyTextShadow   = Color(day: 0x466EB4, night: 0x0A1230)
         /// Neutral line color rgb(90,110,150) used for radio rings, chip borders, switch off.
-        static let line            = Color(hex: 0x5A6E96)
+        static let line            = Color(day: 0x5A6E96, night: 0x8D9CC4)
         /// Empty week-day ring rgb(130,150,190).
-        static let weekRing        = Color(hex: 0x8296BE)
+        static let weekRing        = Color(day: 0x8296BE, night: 0x6F7EA8)
         /// Bottom sheet fill rgb(247,250,254) and its shadow rgb(60,90,150).
-        static let sheetFill       = Color(hex: 0xF7FAFE)
-        static let sheetShadow     = Color(hex: 0x3C5A96)
+        static let sheetFill       = Color(day: 0xF7FAFE, night: 0x16213F)
+        static let sheetShadow     = Color(day: 0x3C5A96, night: 0x03081A)
         /// Veil laid over the sky behind the Details sheet.
-        static let skyDim          = Color(hex: 0x2E4677)
+        static let skyDim          = Color(day: 0x2E4677, night: 0x03081A)
         /// Mid stops of the sky fades.
-        static let fadeTop         = Color(hex: 0xF1F4F8)
-        static let fadeFull        = Color(hex: 0xF1F5FA)
+        static let fadeTop         = Color(day: 0xF1F4F8, night: 0x152044)
+        static let fadeFull        = Color(day: 0xF1F5FA, night: 0x152044)
 
+        /// White orb by day, a soft moon at night.
         static let orbGradient = RadialGradient(
             stops: [
-                .init(color: .white, location: 0),
-                .init(color: Color(hex: 0xF6F9FE), location: 0.7),
-                .init(color: Color(hex: 0xE9F0FA), location: 1)
+                .init(color: Color(day: 0xFFFFFF, night: 0xF1F4FD), location: 0),
+                .init(color: Color(day: 0xF6F9FE, night: 0xD8E1F6), location: 0.7),
+                .init(color: Color(day: 0xE9F0FA, night: 0xB9C8EB), location: 1)
             ],
             center: UnitPoint(x: 0.5, y: 0.35), startRadius: 0, endRadius: 70)
     }
@@ -101,7 +125,10 @@ enum DS {
         static let tabBarBottom: CGFloat = 24
         static let heroHeight: CGFloat = 380
         static let heroFade: CGFloat = 200
-        static let topSkyHeight: CGFloat = 300
+        /// Top sky: the fade runs from `topSkyFadeStart` to `topSkyHeight`, where it is fully opaque,
+        /// so the image edge is always hidden under the background.
+        static let topSkyFadeStart: CGFloat = 150
+        static let topSkyHeight: CGFloat = 380
     }
 }
 

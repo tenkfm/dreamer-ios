@@ -105,7 +105,7 @@ final class JournalViewModel {
         Row(id: dream.id,
             title: dream.title,
             dateText: dateFormatter.day(dream.createdAt, now: now()),
-            imageName: dream.imageName,
+            imageName: dream.thumbnailName ?? dream.imageName,
             emotion: dream.emotions.first)
     }
 

@@ -36,7 +36,10 @@ final class SettingsViewModel {
 
     var nightModeAfter9: Bool {
         get { appState.reminders.nightModeAfter9 }
-        set { appState.reminders.nightModeAfter9 = newValue }
+        set {
+            appState.reminders.nightModeAfter9 = newValue
+            appState.resetNightModeOverride()
+        }
     }
 
     var lockWithFaceID: Bool {

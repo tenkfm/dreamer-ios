@@ -61,7 +61,7 @@ enum MockData {
         var dreams: [Dream] = [
             Dream(createdAt: date(daysAgo: 1, hour: 7, minute: 12), title: "The house with endless stairs",
                   transcript: transcript, emotions: [.anxiety, .confusion], recurrence: .sometimes, someoneSpecific: true,
-                  symbols: [staircase, grandmothersHouse, callingVoice], interpretation: houseInterpretation, imageName: "DreamThumb1"),
+                  symbols: [staircase, grandmothersHouse, callingVoice], interpretation: houseInterpretation, thumbnailName: "DreamThumb1"),
             Dream(createdAt: date(daysAgo: 3, hour: 6, minute: 48), title: "Flying over a frozen lake",
                   transcript: "I was flying low over a frozen lake, then climbing stone steps into the sky. The ice was glowing.",
                   emotions: [.joy], symbols: [flying, lake, steps],
@@ -69,7 +69,7 @@ enum MockData {
                       psychology: "Flying over ice suggests you are rising above feelings you have put on hold. The lift you felt points to a new sense of control, and the steps say you are getting there one move at a time.",
                       spiritual: "Frozen water is emotion waiting to thaw. Seeing it from above is a sign of clarity arriving: you can now look at what was hidden under the surface.",
                       dreamBook: "Flying: success in a plan you care about. A frozen lake: a calm period before good news. Steps upward: steady progress."),
-                  imageName: "DreamThumb2"),
+                  thumbnailName: "DreamThumb2"),
             Dream(createdAt: date(daysAgo: 4, hour: 7, minute: 30), title: "Late for an exam I never took",
                   transcript: "I ran up the school stairs for an exam I never studied for, and the room kept moving.",
                   emotions: [.anxiety], symbols: [exam, steps],
@@ -77,7 +77,7 @@ enum MockData {
                       psychology: "Exam dreams often show up when you feel measured by others. Being late for a test you never took hints at pressure you put on yourself rather than a real deadline.",
                       spiritual: "An unexpected test is a call to trust what you already know. The moving room asks you to stop chasing and let the answer come to you.",
                       dreamBook: "An exam: a situation where you will be noticed. Being late: rushing a decision. Stairs: an effort that pays off later."),
-                  imageName: "DreamThumb3"),
+                  thumbnailName: "DreamThumb3"),
             Dream(createdAt: date(daysAgo: 8, hour: 8, minute: 5), title: "My old dog came back",
                   transcript: "My old dog was waiting at the door like nothing had happened, and we walked together for a long time.",
                   emotions: [.calm], symbols: [dog],
@@ -85,7 +85,7 @@ enum MockData {
                       psychology: "Pets from the past often return when you need comfort and unconditional support. The calm walk suggests you are ready to make peace with a loss.",
                       spiritual: "A beloved animal returning is read as a visit of love and protection. You are being reminded that you are not alone right now.",
                       dreamBook: "A faithful dog: a loyal friend will help you soon. Walking together: harmony at home."),
-                  imageName: "DreamThumb4"),
+                  thumbnailName: "DreamThumb4"),
             Dream(createdAt: date(daysAgo: 10, hour: 6, minute: 55), title: "Chased through a night market",
                   transcript: "Someone was following me through a crowded night market and I could not find the exit.",
                   emotions: [.fear], symbols: [chase, market],
@@ -93,7 +93,7 @@ enum MockData {
                       psychology: "Being chased is one of the most common ways the mind shows avoidance. The crowded market mirrors a busy mind - too many options, no clear exit.",
                       spiritual: "What chases us in dreams is often a part of ourselves we have not yet welcomed. Turning to face it is the invitation.",
                       dreamBook: "Being chased: a worry you can solve if you stop running. A market at night: choices to be made carefully."),
-                  imageName: "DreamThumb2")
+                  thumbnailName: "DreamThumb2")
         ]
 
         let older: [(Int, String, [Emotion], DreamSymbol, String)] = [
@@ -107,7 +107,7 @@ enum MockData {
         ]
         dreams += older.map { daysAgo, title, emotions, symbol, image in
             Dream(createdAt: date(daysAgo: daysAgo, hour: 7, minute: 0), title: title, transcript: title + ".",
-                  emotions: emotions, symbols: [symbol], interpretation: generic(for: symbol), imageName: image)
+                  emotions: emotions, symbols: [symbol], interpretation: generic(for: symbol), thumbnailName: image)
         }
         return dreams
     }

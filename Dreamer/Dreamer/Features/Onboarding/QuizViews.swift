@@ -32,7 +32,6 @@ private struct QuizScaffold<Options: View>: View {
             }
         }
         .scrollBounceBehavior(.basedOnSize)
-        .scrollEdgeEffectsHidden()
         .safeAreaInset(edge: .top, spacing: 0) {
             HeaderBar(leading: {
                 GlassIconButton(systemImage: "chevron.left", accessibilityLabel: "Back", action: onBack)

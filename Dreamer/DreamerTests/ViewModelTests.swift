@@ -58,6 +58,45 @@ struct OnboardingTests {
 }
 
 @MainActor
+struct NightModeTests {
+    private func date(hour: Int) -> Date {
+        Calendar.current.date(from: DateComponents(year: 2026, month: 9, day: 25, hour: hour, minute: 10))!
+    }
+
+    @Test func followsTheNinePMSchedule() {
+        let appState = AppState(store: InMemoryPreferencesStore(), now: date(hour: 22))
+        #expect(appState.isNightMode)
+
+        appState.refreshClock(date(hour: 8))
+        #expect(!appState.isNightMode)
+
+        appState.refreshClock(date(hour: 3))
+        #expect(appState.isNightMode)
+    }
+
+    @Test func scheduleCanBeTurnedOff() {
+        var preferences = UserPreferences()
+        preferences.reminders.nightModeAfter9 = false
+        let appState = AppState(store: InMemoryPreferencesStore(preferences), now: date(hour: 22))
+        #expect(!appState.isNightMode)
+    }
+
+    @Test func moonButtonHoldsUntilTheScheduleFlips() {
+        let appState = AppState(store: InMemoryPreferencesStore(), now: date(hour: 15))
+        appState.toggleNightMode()
+        #expect(appState.isNightMode)
+
+        appState.refreshClock(date(hour: 18))
+        #expect(appState.isNightMode)
+
+        // 9 PM: the schedule turns night on by itself, the manual choice is dropped.
+        appState.refreshClock(date(hour: 21))
+        #expect(appState.nightModeOverride == nil)
+        #expect(appState.isNightMode)
+    }
+}
+
+@MainActor
 struct PaywallTests {
     @Test func purchaseActivatesTheSelectedPlan() async {
         let appState = AppState(store: InMemoryPreferencesStore())

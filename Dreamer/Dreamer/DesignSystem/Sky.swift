@@ -14,13 +14,13 @@ struct SkyFade: View {
             case .top:
                 // Sky only at the top: y 150 ... 380 clear -> 60% (at 45%) -> background, solid below.
                 VStack(spacing: 0) {
-                    Color.clear.frame(height: 150)
+                    Color.clear.frame(height: DS.Size.topSkyFadeStart)
                     LinearGradient(stops: [
                         .init(color: bg.opacity(0), location: 0),
                         .init(color: DS.Palette.fadeTop.opacity(0.6), location: 0.45),
                         .init(color: bg, location: 1)
                     ], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 230)
+                    .frame(height: DS.Size.topSkyHeight - DS.Size.topSkyFadeStart)
                     bg
                 }
             case .full:

@@ -51,22 +51,34 @@ struct LoopingView<Content: View>: View {
     }
 }
 
+// MARK: - Entrance gating
+
+extension EnvironmentValues {
+    /// False while a view is built but not on screen yet (e.g. the next page of a pager).
+    /// Entrance animations wait for it to become true, then play once.
+    @Entry var entranceActive: Bool = true
+}
+
 // MARK: - Enter-up entrance
 
 struct EnterUp: ViewModifier {
     var delay: Double
     var distance: CGFloat = 18
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.entranceActive) private var entranceActive
     @State private var shown = false
 
     func body(content: Content) -> some View {
         content
             .opacity(shown || reduceMotion ? 1 : 0)
             .offset(y: shown || reduceMotion ? 0 : distance)
-            .onAppear {
-                guard !reduceMotion, !shown else { return }
-                withAnimation(.soft().delay(delay)) { shown = true }
-            }
+            .onAppear { if entranceActive { reveal() } }
+            .onChange(of: entranceActive) { _, active in if active { reveal() } }
+    }
+
+    private func reveal() {
+        guard !reduceMotion, !shown else { return }
+        withAnimation(.soft().delay(delay)) { shown = true }
     }
 }
 

@@ -66,7 +66,27 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 ```
 
 Names: `welcome recordIntro understand quizGoal quizLens paywall home journal library settings
-interpretation symbol record details analysis`. You can also add it to the scheme's launch arguments.
+interpretation symbol record details analysis`. Add `-night` or `-day` to force the appearance,
+`-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
+You can also add these to the scheme's launch arguments.
+
+## Night mode
+
+Every color token is adaptive (`Color(day:night:)` in `DesignSystem/Theme.swift`) and the sky images
+have a dark-appearance variant in the asset catalog, so screens need no night-specific code. The app
+always sets its own appearance through `preferredColorScheme` and never follows the system setting:
+
+- by schedule from 9 PM to 5 AM, when Settings -> "Night mode after 9 PM" is on;
+- by the moon / sun button on Home, which holds until the schedule flips at 9 PM or 5 AM.
+
+Night skies are generated with Seedream 5.0 Pro on kie.ai; prompts live in the script:
+
+```
+KIE_API_KEY=... python3 scripts/generate_night_skies.py            # all images
+KIE_API_KEY=... python3 scripts/generate_night_skies.py SkyTopNight
+```
+
+Results land in `build/night_skies/`; copy the ones you like into the matching image set.
 
 ## Accessibility and motion
 

@@ -99,13 +99,13 @@ private struct StepIndicator: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(DS.Palette.icon)
                     .frame(width: 26, height: 26)
-                    .background(Circle().fill(DS.Palette.white))
+                    .background(Circle().fill(DS.Palette.surface))
                     .shadow(color: DS.Palette.shadow.opacity(0.18), radius: 5, x: 0, y: 3)
                     .transition(.scale(scale: 0.4).combined(with: .opacity).animation(.pop))
             case .active:
                 LoopingView { time in
                     ZStack {
-                        Circle().stroke(DS.Palette.white.opacity(0.8), lineWidth: 2)
+                        Circle().stroke(DS.Palette.track, lineWidth: 2)
                         Circle()
                             .trim(from: 0, to: 0.28)
                             .stroke(DS.Palette.icon, style: StrokeStyle(lineWidth: 2, lineCap: .round))

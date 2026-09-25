@@ -4,6 +4,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(AppDependencies.self) private var dependencies
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
@@ -23,6 +24,20 @@ struct RootView: View {
             }
         }
         .animation(.soft(0.6), value: appState.rootScreen)
+        // The app always sets its own appearance: night mode, never the system setting.
+        .preferredColorScheme(appState.isNightMode ? .dark : .light)
+        // Screens draw clear sky under their headers; no iOS 26 blur at scroll edges anywhere.
+        .scrollEdgeEffectsHidden()
+        .task {
+            // Lets the 9 PM / 5 AM schedule switch while the app stays open.
+            while !Task.isCancelled {
+                appState.refreshClock()
+                try? await Task.sleep(for: .seconds(30))
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { appState.refreshClock() }
+        }
     }
 
     private var initialOnboardingStep: OnboardingViewModel.Step {

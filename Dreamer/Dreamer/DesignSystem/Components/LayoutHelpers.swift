@@ -14,7 +14,6 @@ struct FillingScrollView<Content: View>: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .scrollIndicators(.hidden)
-            .scrollEdgeEffectsHidden()
         }
     }
 }
@@ -27,6 +26,7 @@ struct TypewriterText: View {
     var style: TextStyle = .body
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.entranceActive) private var entranceActive
     @State private var visibleCount = 0
 
     var body: some View {
@@ -37,9 +37,9 @@ struct TypewriterText: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(text)
-        .task(id: text) {
+        .task(id: entranceActive) {
+            guard entranceActive, visibleCount == 0 else { return }
             guard !reduceMotion else { visibleCount = text.count; return }
-            visibleCount = 0
             try? await Task.sleep(for: .seconds(startDelay))
             while visibleCount < text.count, !Task.isCancelled {
                 try? await Task.sleep(for: interval)

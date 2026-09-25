@@ -23,10 +23,20 @@ final class AppState {
     var paths: [AppTab: [Route]] = [:]
     var isRecordFlowPresented = false
 
-    @ObservationIgnored private let store: PreferencesStore
+    // MARK: Night mode
 
-    init(store: PreferencesStore) {
+    /// Current time, refreshed by the root view so the schedule can switch while the app is open.
+    private(set) var clock: Date
+    /// Moon button choice. Holds until the schedule itself flips (at 9 PM or 5 AM).
+    private(set) var nightModeOverride: Bool?
+
+    @ObservationIgnored private let store: PreferencesStore
+    @ObservationIgnored private let calendar: Calendar
+
+    init(store: PreferencesStore, now: Date = .now, calendar: Calendar = .current) {
         self.store = store
+        self.clock = now
+        self.calendar = calendar
         let saved = store.load()
         onboardingCompleted = saved.onboardingCompleted
         userName = saved.userName
@@ -42,6 +52,31 @@ final class AppState {
         guard onboardingCompleted else { return .onboarding }
         if subscription == .none && !paywallBypassed { return .paywall }
         return .main
+    }
+
+    /// Night mode schedule: 9 PM to 5 AM, when "Night mode after 9 PM" is on.
+    var isNightBySchedule: Bool {
+        guard reminders.nightModeAfter9 else { return false }
+        let hour = calendar.component(.hour, from: clock)
+        return hour >= 21 || hour < 5
+    }
+
+    var isNightMode: Bool { nightModeOverride ?? isNightBySchedule }
+
+    /// Moon button on Home.
+    func toggleNightMode() {
+        nightModeOverride = !isNightMode
+    }
+
+    /// Settings changed: follow the schedule again.
+    func resetNightModeOverride() {
+        nightModeOverride = nil
+    }
+
+    func refreshClock(_ now: Date = .now) {
+        let wasNight = isNightBySchedule
+        clock = now
+        if isNightBySchedule != wasNight { nightModeOverride = nil }
     }
 
     // MARK: Onboarding & subscription
@@ -72,6 +107,7 @@ final class AppState {
         subscription = fresh.subscription
         paywallBypassed = fresh.paywallBypassed
         reminders = fresh.reminders
+        nightModeOverride = nil
         selectedTab = .today
         paths = [:]
     }

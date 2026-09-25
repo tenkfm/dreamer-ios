@@ -40,6 +40,7 @@ struct MainTabView: View {
             } content: { viewModel in
                 RecordFlowView(viewModel: viewModel)
             }
+            .scrollEdgeEffectsHidden()
         }
     }
 

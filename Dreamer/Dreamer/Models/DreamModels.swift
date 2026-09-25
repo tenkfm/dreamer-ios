@@ -107,16 +107,19 @@ struct Dream: Identifiable, Codable, Hashable, Sendable {
     var someoneSpecific: Bool
     var symbols: [DreamSymbol]
     var interpretation: Interpretation?
-    /// Asset name in phase 1, URL later.
+    /// Generated dream image. Asset name in phase 1, URL later.
     var imageName: String?
+    /// Small image for lists; falls back to `imageName`.
+    var thumbnailName: String?
     var notes: String
 
-    /// Shown until the generated image is available.
-    static let placeholderImageName = "SkyTall"
+    /// Shown until the generated image is available. Light only: a dream image does not follow night mode.
+    static let placeholderImageName = "DreamPlaceholder"
 
     init(id: UUID = UUID(), createdAt: Date, title: String, transcript: String, emotions: [Emotion],
          recurrence: Recurrence = .never, someoneSpecific: Bool = false, symbols: [DreamSymbol] = [],
-         interpretation: Interpretation? = nil, imageName: String? = nil, notes: String = "") {
+         interpretation: Interpretation? = nil, imageName: String? = nil, thumbnailName: String? = nil,
+         notes: String = "") {
         self.id = id
         self.createdAt = createdAt
         self.title = title
@@ -127,6 +130,7 @@ struct Dream: Identifiable, Codable, Hashable, Sendable {
         self.symbols = symbols
         self.interpretation = interpretation
         self.imageName = imageName
+        self.thumbnailName = thumbnailName
         self.notes = notes
     }
 }

@@ -38,15 +38,18 @@ struct SettingsView: View {
             .scrollIndicators(.hidden)
         }
         .sheet(item: $viewModel.activeSheet) { sheet in
-            switch sheet {
-            case .reminderTime: ReminderTimeSheet(time: $viewModel.reminderTime)
-            case .lens: LensPickerSheet(selection: $viewModel.preferredLens)
-            case .subscription:
-                ZStack {
-                    SkyBackground(kind: .full)
-                    PaywallView(viewModel: viewModel.makePaywallViewModel())
+            Group {
+                switch sheet {
+                case .reminderTime: ReminderTimeSheet(time: $viewModel.reminderTime)
+                case .lens: LensPickerSheet(selection: $viewModel.preferredLens)
+                case .subscription:
+                    ZStack {
+                        SkyBackground(kind: .full)
+                        PaywallView(viewModel: viewModel.makePaywallViewModel())
+                    }
                 }
             }
+            .scrollEdgeEffectsHidden()
         }
         .confirmationDialog("Delete your account and all dreams?", isPresented: $viewModel.isDeleteConfirmationPresented, titleVisibility: .visible) {
             Button("Delete everything", role: .destructive) { viewModel.deleteEverything() }

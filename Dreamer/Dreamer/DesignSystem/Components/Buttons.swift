@@ -89,7 +89,7 @@ struct PillButton: View {
             Text(title).font(DreamerFont.fixed(12)).foregroundStyle(DS.Palette.textPrimary)
                 .padding(.horizontal, 14)
                 .frame(height: 30)
-                .background(Capsule().fill(DS.Palette.white))
+                .background(Capsule().fill(DS.Palette.surface))
                 .shadow(color: DS.Palette.shadow.opacity(0.15), radius: 6, x: 0, y: 4)
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())

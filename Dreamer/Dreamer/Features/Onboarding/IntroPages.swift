@@ -34,9 +34,9 @@ private struct IntroPageLayout<Header: View, Hero: View>: View {
                         .enterUp(0.55)
                 }
                 .fixedSize(horizontal: false, vertical: true)
-                PageDots(index: pageIndex)
+                // The flow draws one shared, live PageDots here (see OnboardingFlowView).
+                PageDotsSlot(pageIndex: pageIndex)
                     .padding(.top, 34)
-                    .enterUp(0.7)
                 VStack(spacing: 8) {
                     PrimaryButton(title: ctaTitle, action: onContinue)
                     TextLinkButton(title: "I already have an account", action: onExistingAccount)
@@ -47,6 +47,27 @@ private struct IntroPageLayout<Header: View, Hero: View>: View {
             }
             .padding(.horizontal, DS.Space.cta)
         }
+    }
+}
+
+/// Reserves the page-dots space on an intro page and reports where it is, so the flow can draw
+/// a single indicator there that stays put while the pages slide.
+struct PageDotsSlot: View {
+    var pageIndex: Int
+
+    var body: some View {
+        Color.clear
+            .frame(width: 60, height: 8)
+            .anchorPreference(key: PageDotsSlotKey.self, value: .center) { [pageIndex: $0] }
+            .accessibilityHidden(true)
+    }
+}
+
+struct PageDotsSlotKey: PreferenceKey {
+    static let defaultValue: [Int: Anchor<CGPoint>] = [:]
+
+    static func reduce(value: inout [Int: Anchor<CGPoint>], nextValue: () -> [Int: Anchor<CGPoint>]) {
+        value.merge(nextValue()) { $1 }
     }
 }
 

@@ -1,17 +1,18 @@
 {
   "images": [
     {
-      "idiom": "universal",
-      "scale": "1x"
+      "filename": "SkyTop.jpg",
+      "idiom": "universal"
     },
     {
-      "idiom": "universal",
-      "filename": "SkyTop@2x.jpg",
-      "scale": "2x"
-    },
-    {
-      "idiom": "universal",
-      "scale": "3x"
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "filename": "SkyTopNight.jpg",
+      "idiom": "universal"
     }
   ],
   "info": {

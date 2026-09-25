@@ -84,7 +84,7 @@ struct PlanCard: View {
                         if let badge {
                             Text(badge)
                                 .font(DreamerFont.fixed(11, .medium))
-                                .foregroundStyle(DS.Palette.textPrimary)
+                                .foregroundStyle(DS.Palette.ink)
                                 .padding(.horizontal, 8)
                                 .frame(height: 20)
                                 .background(Capsule().fill(DS.Palette.peach))
@@ -114,19 +114,22 @@ struct Chip: View {
 
     var title: String
     var isOn: Bool
-    var onColor: Color = DS.Palette.white
+    /// Fill when selected (emotion colors). Nil = a raised surface pill (Library categories).
+    var onColor: Color? = nil
     var size: Size = .regular
     var action: () -> Void
 
     var body: some View {
+        let selectedFill = onColor ?? DS.Palette.surface
         Button(action: action) {
             Text(title)
-                .textStyle(size == .regular ? .link : .label)
+                .textStyle(size == .regular ? .link : .label,
+                           color: isOn && onColor != nil ? DS.Palette.ink : DS.Palette.textPrimary)
                 .padding(.horizontal, size == .regular ? 16 : 14)
                 .frame(height: size == .regular ? 38 : 34)
-                .background(Capsule().fill(isOn ? onColor : Color.white.opacity(0.6)))
-                .overlay(Capsule().strokeBorder(isOn ? onColor : DS.Palette.line.opacity(0.25), lineWidth: 1))
-                .shadow(color: DS.Palette.shadow.opacity(isOn && onColor == DS.Palette.white ? 0.12 : 0), radius: 6, y: 3)
+                .background(Capsule().fill(isOn ? selectedFill : DS.Palette.chipFill))
+                .overlay(Capsule().strokeBorder(isOn ? selectedFill : DS.Palette.line.opacity(0.25), lineWidth: 1))
+                .shadow(color: DS.Palette.shadow.opacity(isOn && onColor == nil ? 0.12 : 0), radius: 6, y: 3)
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())
                 .animation(.easeOut(duration: 0.3), value: isOn)
@@ -148,7 +151,7 @@ struct EmotionTag: View {
     var body: some View {
         Text(title)
             .font(DreamerFont.fixed(size == .small ? 12 : 13))
-            .foregroundStyle(DS.Palette.textPrimary)
+            .foregroundStyle(DS.Palette.ink)
             .padding(.horizontal, size == .small ? 10 : 10)
             .frame(height: size == .small ? 22 : 26)
             .background(Capsule().fill(color))
@@ -224,7 +227,7 @@ struct DreamerSegmented<Option: Hashable>: View {
                         .frame(height: 36)
                         .background {
                             if isSelected {
-                                Capsule().fill(DS.Palette.white)
+                                Capsule().fill(DS.Palette.surface)
                                     .shadow(color: DS.Palette.shadow.opacity(0.15), radius: 6, x: 0, y: 4)
                                     .matchedGeometryEffect(id: "pill", in: ns)
                             }

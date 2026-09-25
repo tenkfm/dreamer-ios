@@ -38,6 +38,7 @@ struct RecordView: View {
         .onDisappear { viewModel.stop() }
         .sheet(isPresented: $viewModel.isTyping) {
             TypeDreamSheet(text: $viewModel.transcript)
+                .scrollEdgeEffectsHidden()
         }
     }
 

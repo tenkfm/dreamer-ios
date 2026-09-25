@@ -2,21 +2,33 @@ import SwiftUI
 
 // MARK: - Page dots
 
+/// Active dot = 26 pt capsule, others 8 pt at 25 %. `position` is continuous, so while a pager is
+/// dragged the active capsule flows from one dot to the next.
 struct PageDots: View {
     var count = 3
-    var index: Int
+    var position: CGFloat
 
     var body: some View {
         HStack(spacing: 8) {
             ForEach(0..<count, id: \.self) { i in
+                let activity = max(0, 1 - abs(position - CGFloat(i)))
                 Capsule()
-                    .fill(DS.Palette.accent.opacity(i == index ? 1 : 0.25))
-                    .frame(width: i == index ? 26 : 8, height: 8)
+                    .fill(DS.Palette.accent.opacity(0.25 + 0.75 * activity))
+                    .frame(width: 8 + 18 * activity, height: 8)
             }
         }
-        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: index)
         .accessibilityElement()
-        .accessibilityLabel("Step \(index + 1) of \(count)")
+        .accessibilityLabel("Step \(currentIndex + 1) of \(count)")
+    }
+
+    private var currentIndex: Int {
+        min(max(Int(position.rounded()), 0), count - 1)
+    }
+}
+
+extension PageDots {
+    init(count: Int = 3, index: Int) {
+        self.init(count: count, position: CGFloat(index))
     }
 }
 
@@ -28,26 +40,31 @@ struct ProgressCapsule: View {
     var initialValue: Double = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.entranceActive) private var entranceActive
     @State private var shown: Double?
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.55))
+                Capsule().fill(DS.Palette.track)
                 Capsule().fill(DS.Palette.cta)
                     .frame(width: geo.size.width * (shown ?? initialValue))
             }
         }
         .frame(height: 6)
-        .onAppear {
-            guard !reduceMotion else { shown = value; return }
-            withAnimation(.soft(1).delay(0.3)) { shown = value }
-        }
+        .onAppear { if entranceActive { grow() } }
+        .onChange(of: entranceActive) { _, active in if active { grow() } }
         .onChange(of: value) { _, newValue in
             withAnimation(reduceMotion ? nil : .soft(1)) { shown = newValue }
         }
         .accessibilityElement()
         .accessibilityValue("\(Int(value * 100)) percent")
+    }
+
+    private func grow() {
+        guard shown == nil else { return }
+        guard !reduceMotion else { shown = value; return }
+        withAnimation(.soft(1).delay(0.3)) { shown = value }
     }
 }
 
@@ -64,7 +81,7 @@ struct ProgressRing<Label: View>: View {
 
     var body: some View {
         ZStack {
-            Circle().stroke(Color.white.opacity(0.7), lineWidth: lineWidth)
+            Circle().stroke(DS.Palette.track, lineWidth: lineWidth)
             Circle()
                 .trim(from: 0, to: shown)
                 .stroke(DS.Palette.iconSoft, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
@@ -129,7 +146,7 @@ private struct WeekDayCircle: View {
                     .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(DS.Palette.icon)
                     .frame(width: 38, height: 38)
-                    .background(Circle().fill(DS.Palette.white))
+                    .background(Circle().fill(DS.Palette.surface))
                     .shadow(color: DS.Palette.shadow.opacity(0.18), radius: 7, x: 0, y: 4)
                     .scaleEffect(popped ? 1 : 0.4)
                     .opacity(popped ? 1 : 0)

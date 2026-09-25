@@ -1,17 +1,18 @@
 {
   "images": [
     {
-      "idiom": "universal",
-      "scale": "1x"
+      "filename": "SkyTall.jpg",
+      "idiom": "universal"
     },
     {
-      "idiom": "universal",
-      "filename": "SkyTall@2x.jpg",
-      "scale": "2x"
-    },
-    {
-      "idiom": "universal",
-      "scale": "3x"
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "filename": "SkyTallNight.jpg",
+      "idiom": "universal"
     }
   ],
   "info": {

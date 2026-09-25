@@ -3,7 +3,6 @@ import SwiftUI
 /// 07 Home (Today tab).
 struct HomeView: View {
     @State private var viewModel: HomeViewModel
-    @State private var nightModeTaps = 0
 
     init(viewModel: HomeViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -34,7 +33,7 @@ struct HomeView: View {
             .scrollIndicators(.hidden)
             .scrollBounceBehavior(.basedOnSize)
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: nightModeTaps)
+        .sensoryFeedback(.impact(weight: .light), trigger: viewModel.isNightMode)
     }
 
     private var header: some View {
@@ -43,8 +42,10 @@ struct HomeView: View {
         } center: {
             Logo()
         } trailing: {
-            // Night mode arrives in a later phase; for now the button only answers with a haptic.
-            GlassIconButton(systemImage: "moon", accessibilityLabel: "Night mode") { nightModeTaps += 1 }
+            GlassIconButton(systemImage: viewModel.isNightMode ? "sun.max" : "moon",
+                            accessibilityLabel: viewModel.isNightMode ? "Switch to day mode" : "Switch to night mode") {
+                viewModel.toggleNightMode()
+            }
         }
     }
 

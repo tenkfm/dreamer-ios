@@ -20,7 +20,6 @@ struct DreamerApp: App {
             RootView()
                 .environment(dependencies)
                 .environment(appState)
-                .preferredColorScheme(.light)
                 .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         }
     }

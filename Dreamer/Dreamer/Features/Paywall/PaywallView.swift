@@ -60,7 +60,7 @@ struct PaywallView: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(DS.Palette.icon)
                         .frame(width: 26, height: 26)
-                        .background(Circle().fill(DS.Palette.white))
+                        .background(Circle().fill(DS.Palette.surface))
                     Text(perk).textStyle(.link)
                 }
                 .accessibilityElement(children: .combine)

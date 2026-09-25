@@ -3,6 +3,8 @@ import Foundation
 
 /// Debug-only deep start for visual QA: `-debugScreen <name>` opens a screen directly
 /// with in-memory preferences, e.g. `xcrun simctl launch booted com.braincode.dreamer -debugScreen journal`.
+/// Add `-night` or `-day` to force the appearance regardless of the clock,
+/// `-debugAdvance` to let the onboarding tap "Continue" once.
 @MainActor
 enum DebugLaunch {
     enum Screen: String {
@@ -15,6 +17,17 @@ enum DebugLaunch {
         let arguments = ProcessInfo.processInfo.arguments
         guard let index = arguments.firstIndex(of: "-debugScreen"), index + 1 < arguments.count else { return nil }
         return Screen(rawValue: arguments[index + 1])
+    }()
+
+    /// `-debugAdvance`: the onboarding taps "Continue" by itself after 2 s.
+    static let autoAdvances = ProcessInfo.processInfo.arguments.contains("-debugAdvance")
+
+    /// `-night` / `-day`; nil follows the 9 PM schedule.
+    static let forcedNightMode: Bool? = {
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-night") { return true }
+        if arguments.contains("-day") { return false }
+        return nil
     }()
 
     static var onboardingStep: OnboardingViewModel.Step? {
@@ -33,6 +46,7 @@ enum DebugLaunch {
     static func makeAppState(dependencies: AppDependencies) -> AppState? {
         guard let screen else { return nil }
         let state = AppState(store: InMemoryPreferencesStore())
+        if let forcedNightMode, forcedNightMode != state.isNightMode { state.toggleNightMode() }
         guard onboardingStep == nil else { return state }
         state.activateSubscription(.yearly)
         switch screen {

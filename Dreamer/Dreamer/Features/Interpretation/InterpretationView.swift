@@ -120,7 +120,7 @@ struct InterpretationView: View {
                 }
                 .padding(.horizontal, 12)
                 .frame(height: 28)
-                .background(Capsule().fill(DS.Palette.white.opacity(0.9)))
+                .background(Capsule().fill(DS.Palette.surface.opacity(0.9)))
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("Lens: \(viewModel.mainLens.title)")
             }
@@ -202,7 +202,7 @@ private struct DreamHero: View {
                     .scaledToFill()
                     .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
                     .clipped()
-                    .blur(radius: revealed || reduceMotion ? 0 : 14)
+                    .blur(radius: revealed || reduceMotion ? 0 : 14, opaque: true)
                     .scaleEffect(revealed || reduceMotion ? 1 : 1.05)
                     .clipped()
             }

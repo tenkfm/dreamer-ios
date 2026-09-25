@@ -184,7 +184,7 @@ struct SettingsGroup<Content: View>: View {
 
 struct SettingsDivider: View {
     var body: some View {
-        Rectangle().fill(Color.white.opacity(0.7)).frame(height: 1)
+        Rectangle().fill(DS.Palette.hairline).frame(height: 1)
     }
 }
 

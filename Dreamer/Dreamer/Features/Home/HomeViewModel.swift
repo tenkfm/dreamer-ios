@@ -92,7 +92,10 @@ final class HomeViewModel {
 
     // MARK: Actions
 
+    var isNightMode: Bool { appState.isNightMode }
+
     func openSettings() { appState.push(.settings, on: .today) }
+    func toggleNightMode() { appState.toggleNightMode() }
     func startRecording() { appState.presentRecordFlow() }
     func seePattern() { appState.open(.journal) }
     func seeAllSymbols() { appState.open(.library) }

@@ -33,7 +33,7 @@ struct DreamerTabBar<Selection: Hashable>: View {
                     .background {
                         if active {
                             RoundedRectangle(cornerRadius: 26, style: .continuous)
-                                .fill(Color.white.opacity(0.95))
+                                .fill(DS.Palette.surface.opacity(0.95))
                                 .shadow(color: DS.Palette.shadow.opacity(0.16), radius: 8, x: 0, y: 6)
                                 .matchedGeometryEffect(id: "tabPill", in: ns)
                         }
