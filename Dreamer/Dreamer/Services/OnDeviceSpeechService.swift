@@ -7,29 +7,44 @@ import os
 /// Recognition stays on the device where the model is available (works in airplane mode). One
 /// recognition request is limited to about a minute, so a long dream is told across several
 /// requests: each finished segment is kept and the next one continues after it.
+///
+/// With `keepsAudio` (the serverSttFallback flag) the audio is also written to a temporary m4a, so
+/// a dream that got no text on the device (a language the iPhone cannot recognize, a failed
+/// recognizer) can still be transcribed on the server when the user is done.
 @MainActor
 final class OnDeviceSpeechService: SpeechService {
     private let locale: Locale
+    let keepsAudio: Bool
     private var session: SpeechSession?
+    /// Spans every listening run of one recording (pauses included) until taken or discarded.
+    private var audioFile: AudioRecordingFile?
 
-    init(locale: Locale = .current) {
+    init(locale: Locale = .current, keepsAudio: Bool = false) {
         self.locale = locale
+        self.keepsAudio = keepsAudio
     }
 
-    /// The recognizer for the user's language, or US English when the device cannot recognize it.
-    static func recognizer(for locale: Locale) -> SFSpeechRecognizer? {
+    /// The recognizer for the user's language. When the device cannot recognize it: none if the
+    /// server will transcribe the audio, US English otherwise (better than no text at all).
+    nonisolated static func recognizer(for locale: Locale, serverFallback: Bool = false) -> SFSpeechRecognizer? {
         if let native = SFSpeechRecognizer(locale: locale), native.isAvailable { return native }
+        if serverFallback { return nil }
         return SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
     }
 
     func start() -> AsyncThrowingStream<SpeechEvent, any Error> {
         stop()
         let (stream, continuation) = AsyncThrowingStream<SpeechEvent, any Error>.makeStream()
-        guard let recognizer = Self.recognizer(for: locale), recognizer.isAvailable else {
+        let recognizer = Self.recognizer(for: locale, serverFallback: keepsAudio).flatMap { $0.isAvailable ? $0 : nil }
+        if keepsAudio && audioFile == nil {
+            audioFile = try? AudioRecordingFile(url: RecordingFiles.newFileURL())
+        }
+        guard recognizer != nil || audioFile != nil else {
             continuation.finish(throwing: SpeechError.unavailable)
             return stream
         }
-        let session = SpeechSession(recognizer: recognizer, continuation: continuation)
+        if recognizer == nil { continuation.yield(.liveTextUnavailable) }
+        let session = SpeechSession(recognizer: recognizer, audioFile: audioFile, continuation: continuation)
         self.session = session
         do {
             try session.begin()
@@ -45,12 +60,32 @@ final class OnDeviceSpeechService: SpeechService {
         session?.end()
         session = nil
     }
+
+    func takeRecording() -> RecordedAudio? {
+        stop()
+        guard let file = audioFile else { return nil }
+        audioFile = nil
+        let audio = file.finish()
+        guard audio.duration >= RecordedAudio.minimumDuration else {
+            audio.delete()
+            return nil
+        }
+        return audio
+    }
+
+    func discardRecording() {
+        stop()
+        audioFile?.finish().delete()
+        audioFile = nil
+    }
 }
 
 /// One recording: the audio engine, the rolling recognition requests and the stitched transcript.
 /// Callbacks arrive on the audio and recognition threads, so the mutable state sits behind a lock.
 private final class SpeechSession: @unchecked Sendable {
-    private let recognizer: SFSpeechRecognizer
+    /// Nil when there is no live text, only the audio for the server.
+    private let recognizer: SFSpeechRecognizer?
+    private let audioFile: AudioRecordingFile?
     private let continuation: AsyncThrowingStream<SpeechEvent, any Error>.Continuation
     private let engine = AVAudioEngine()
     private let state = OSAllocatedUnfairLock(initialState: State())
@@ -65,8 +100,10 @@ private final class SpeechSession: @unchecked Sendable {
 
     private var observers: [NSObjectProtocol] = []
 
-    init(recognizer: SFSpeechRecognizer, continuation: AsyncThrowingStream<SpeechEvent, any Error>.Continuation) {
+    init(recognizer: SFSpeechRecognizer?, audioFile: AudioRecordingFile?,
+         continuation: AsyncThrowingStream<SpeechEvent, any Error>.Continuation) {
         self.recognizer = recognizer
+        self.audioFile = audioFile
         self.continuation = continuation
     }
 
@@ -128,11 +165,13 @@ private final class SpeechSession: @unchecked Sendable {
             (state.request, state.meter.level(of: buffer))
         }
         request?.append(buffer)
+        audioFile?.append(buffer)
         if let level { continuation.yield(.level(level)) }
     }
 
     /// A new recognition request; the previous one's text is already committed.
     private func startRequest() {
+        guard let recognizer else { return }
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
         request.taskHint = .dictation
@@ -166,6 +205,12 @@ private final class SpeechSession: @unchecked Sendable {
         // the end): keep listening with a new one. The text so far is committed already.
         if result?.isFinal == true || error != nil {
             if let error, !Self.isRecoverable(error) {
+                if audioFile != nil {
+                    // The audio goes on; the server writes it down at the end.
+                    state.withLock { $0.request = nil; $0.task = nil }
+                    continuation.yield(.liveTextUnavailable)
+                    return
+                }
                 continuation.finish(throwing: error)
                 end()
                 return

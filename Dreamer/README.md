@@ -165,6 +165,20 @@ duplicated. Rate limits wait until `resetAt`, other failures back off per draft;
 offline stop the flush. Sign-out and account deletion clear the drafts. File protection shows only
 on a device (the simulator has no Data Protection): check it in the device QA.
 
+Server transcription fallback (`Services/ServerTranscription.swift`, flag `serverSttFallback`, on by
+default): while the flag is on, the recording is also written to an m4a (AAC, 16 kHz mono, about
+2 MB for five minutes) in a protected temporary folder. If the iPhone cannot recognize the language,
+the Record screen says "your words will appear when you're done" and records audio only. A
+recognizer that fails mid-dream switches to audio only too. At "I'm done" with no text, the audio
+goes through `POST /v1/recordings/upload-url` and a presigned PUT, and the file is deleted as soon
+as the upload succeeds. Then `POST /v1/recordings/{id}/transcribe` returns the text, and the dream
+is sent with that `recordingId`. The backend deletes the audio after the first transcribe call
+whatever the result, so only the upload can be retried. A failed transcription (provider
+unavailable, the 20-a-day limit) asks the user to type. When there is live text, the audio is
+deleted and never sent. Recordings are also deleted when the flow is closed, and at launch in case
+the app crashed mid-flow. Debug: `-noLiveText` with `-debugScreen record` shows the fallback with a
+mock server.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
@@ -260,7 +274,7 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
 interpretation symbol record details analysis`. Debug screens use mock services (`-liveServices`
 to talk to the backend instead); `-mockServices` does the same for a normal launch,
-`-offline` to show the offline banner, `-night` or `-day` to force the appearance,
+`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.
 

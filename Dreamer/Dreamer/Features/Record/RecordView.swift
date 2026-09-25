@@ -26,7 +26,7 @@ struct RecordView: View {
             // Short text sits right under the waveform; long text keeps its newest line in view.
             GeometryReader { geo in
                 ScrollView {
-                    CaretText(text: viewModel.transcript, style: .lead, showsCaret: viewModel.isRecording)
+                    transcriptText
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
                         .padding(.horizontal, DS.Space.cta)
@@ -38,7 +38,7 @@ struct RecordView: View {
             }
             .padding(.top, 22)
             .enterUp(0.5)
-            .accessibilityLabel(viewModel.transcript.isEmpty ? "Listening" : viewModel.transcript)
+            .accessibilityLabel(viewModel.transcript.isEmpty ? liveTextNote ?? "Listening" : viewModel.transcript)
             pauseNote
             bottomBar
                 .opacity(viewModel.access == .listening || viewModel.access == .unknown ? 1 : 0)
@@ -65,6 +65,7 @@ struct RecordView: View {
             }
         }
         .animation(.soft(0.5), value: viewModel.access)
+        .animation(.soft(0.4), value: viewModel.serverTranscription)
         .onAppear { viewModel.appeared() }
         .onDisappear { viewModel.stop() }
         .sheet(isPresented: $viewModel.isTyping) {
@@ -102,6 +103,31 @@ struct RecordView: View {
         }
     }
 
+    /// The words as they are recognized; without live text, what happens to the recording instead.
+    @ViewBuilder private var transcriptText: some View {
+        if viewModel.transcript.isEmpty, let note = liveTextNote {
+            VStack(spacing: 14) {
+                if viewModel.isTranscribing {
+                    ProgressView()
+                        .tint(DS.Palette.textSecondary)
+                }
+                Text(note)
+                    .textStyle(.secondary, color: DS.Palette.textSecondary)
+            }
+            .transition(.opacity)
+        } else {
+            CaretText(text: viewModel.transcript, style: .lead, showsCaret: viewModel.isRecording)
+        }
+    }
+
+    private var liveTextNote: String? {
+        if viewModel.isTranscribing { return "Writing down your dream…" }
+        if viewModel.isLiveTextUnavailable && viewModel.serverTranscription == nil {
+            return "Keep talking - your words will appear when you’re done."
+        }
+        return nil
+    }
+
     /// Why the recording stopped, and the way to go on.
     @ViewBuilder private var pauseNote: some View {
         if let message = viewModel.pauseMessage {
@@ -109,7 +135,9 @@ struct RecordView: View {
                 Text(message)
                     .textStyle(.secondary, color: DS.Palette.textSecondary)
                     .multilineTextAlignment(.center)
-                if viewModel.canContinue {
+                if case .failed(let failure) = viewModel.serverTranscription, failure.canRetry {
+                    PillButton(title: "Try again", action: onDone)
+                } else if viewModel.canContinue {
                     PillButton(title: "Continue recording") { viewModel.resume() }
                 }
             }
@@ -125,9 +153,9 @@ struct RecordView: View {
                             size: DS.Size.primaryButton, style: .selected) {
                 viewModel.switchToTyping()
             }
-            PrimaryButton(title: "I’m done", systemImage: "checkmark", action: onDone)
-                .disabled(viewModel.trimmedTranscript.isEmpty)
-                .opacity(viewModel.trimmedTranscript.isEmpty ? 0.6 : 1)
+            PrimaryButton(title: "I’m done", systemImage: "checkmark", isLoading: viewModel.isTranscribing, action: onDone)
+                .disabled(!viewModel.canFinish)
+                .opacity(viewModel.canFinish || viewModel.isTranscribing ? 1 : 0.6)
         }
         .padding(.horizontal, DS.Space.cta)
         .padding(.bottom, 8)

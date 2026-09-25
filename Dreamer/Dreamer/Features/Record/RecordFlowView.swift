@@ -31,7 +31,7 @@ struct RecordFlowView: View {
         case .record:
             RecordView(viewModel: viewModel.record,
                        onClose: viewModel.cancel,
-                       onDone: viewModel.finishRecording)
+                       onDone: { Task { await viewModel.finishRecording() } })
         case .details:
             if let details = viewModel.details {
                 DetailsView(viewModel: details,

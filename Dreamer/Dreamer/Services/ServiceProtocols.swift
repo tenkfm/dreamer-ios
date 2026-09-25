@@ -11,6 +11,9 @@ enum SpeechEvent: Sendable, Equatable {
     case level(Float)
     /// The system took the microphone (a call, Siri, an alarm). The stream ends after this.
     case interrupted
+    /// No live text for this recording (the language cannot be recognized on this iPhone, or
+    /// recognition failed): the audio is still recorded and transcribed on the server at the end.
+    case liveTextUnavailable
 }
 
 enum SpeechError: Error, Equatable {
@@ -24,6 +27,19 @@ enum SpeechError: Error, Equatable {
 protocol SpeechService: AnyObject {
     func start() -> AsyncThrowingStream<SpeechEvent, any Error>
     func stop()
+    /// The audio is recorded as well, for the server fallback (IOS-04.5).
+    var keepsAudio: Bool { get }
+    /// Stops and hands over the audio recorded since the last take (nil when none or too short).
+    /// The caller owns the file from then on and must delete it.
+    func takeRecording() -> RecordedAudio?
+    /// Stops and deletes any recorded audio.
+    func discardRecording()
+}
+
+extension SpeechService {
+    var keepsAudio: Bool { false }
+    func takeRecording() -> RecordedAudio? { nil }
+    func discardRecording() { stop() }
 }
 
 /// Turns a draft into an interpreted dream, reporting progress step by step.

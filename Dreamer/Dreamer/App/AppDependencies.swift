@@ -33,6 +33,8 @@ final class AppDependencies {
     let network: NetworkMonitor
     /// Told dreams waiting for the backend (nil when the local store cannot open).
     let drafts: DraftQueue?
+    /// Server speech-to-text for recordings the device gave no text for (nil: flag off, mock mode).
+    let transcriber: (any RecordingTranscriber)?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
     @ObservationIgnored let makeSpeechPermissions: @MainActor () -> any SpeechPermissions
@@ -53,6 +55,7 @@ final class AppDependencies {
          crashReporter: any CrashReporter = NoopCrashReporter(),
          network: NetworkMonitor = NetworkMonitor(isOnline: true),
          drafts: DraftQueue? = nil,
+         transcriber: (any RecordingTranscriber)? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
          makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() }) {
@@ -72,6 +75,7 @@ final class AppDependencies {
         self.crashReporter = crashReporter
         self.network = network
         self.drafts = drafts
+        self.transcriber = transcriber
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
         self.makeSpeechPermissions = makeSpeechPermissions
@@ -85,6 +89,8 @@ final class AppDependencies {
         let crashReporter = CrashReporting.makeReporter(config: config)
         let featureFlags = liveFeatureFlags()
         let network = liveNetworkMonitor()
+        // A recording left by a crash or a kill mid-flow is never uploaded later.
+        RecordingFiles.purge()
 
         let container = try? LocalStore.makeContainer()
 
@@ -101,7 +107,8 @@ final class AppDependencies {
                 crashReporter: crashReporter,
                 network: network,
                 drafts: container.map { DraftQueue(container: $0, submitter: MockDreamSubmitter(), store: dreamStore) },
-                makeSpeechService: { MockSpeechService() },
+                transcriber: mockTranscriber(),
+                makeSpeechService: { MockSpeechService(liveText: mockTranscriber() == nil) },
                 makeReadAloudService: { SpeechSynthesizerReadAloudService() }
             )
         }
@@ -113,6 +120,7 @@ final class AppDependencies {
         }
         let api = APIClient(baseURL: baseURL, tokens: tokens)
         let dreamStore = InMemoryDreamStore()
+        let serverSpeech = featureFlags.isEnabled(.serverSttFallback)
         return AppDependencies(
             mode: .live,
             api: api,
@@ -129,7 +137,8 @@ final class AppDependencies {
             crashReporter: crashReporter,
             network: network,
             drafts: container.map { DraftQueue(container: $0, submitter: api, store: dreamStore) },
-            makeSpeechService: { OnDeviceSpeechService() },
+            transcriber: serverSpeech ? APIRecordingTranscriber(client: api) : nil,
+            makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
             makeReadAloudService: { SpeechSynthesizerReadAloudService() },
             makeSpeechPermissions: { SystemSpeechPermissions() }
         )
@@ -172,6 +181,15 @@ final class AppDependencies {
         }
         #endif
         return MockSpeechPermissions()
+    }
+
+    /// Debug `-noLiveText`: the recording gets no live text and the mock server writes it down,
+    /// to see the IOS-04.5 fallback without an unsupported language.
+    private static func mockTranscriber() -> (any RecordingTranscriber)? {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-noLiveText") { return MockRecordingTranscriber() }
+        #endif
+        return nil
     }
 
     private static func liveNetworkMonitor() -> NetworkMonitor {

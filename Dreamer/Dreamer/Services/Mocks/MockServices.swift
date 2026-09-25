@@ -7,25 +7,34 @@ final class MockSpeechService: SpeechService {
     private let text: String
     private let charactersPerTick: Int
     private let tick: Duration
+    /// Off: no words while talking, only audio for the server fallback (IOS-04.5).
+    private let liveText: Bool
     private var task: Task<Void, Never>?
+    private var recordedTicks = 0
 
-    init(text: String = MockData.transcript, charactersPerTick: Int = 2, tick: Duration = .milliseconds(80)) {
+    init(text: String = MockData.transcript, charactersPerTick: Int = 2, tick: Duration = .milliseconds(80),
+         liveText: Bool = true) {
         self.text = text
-        self.charactersPerTick = charactersPerTick
+        self.charactersPerTick = liveText ? charactersPerTick : 0
         self.tick = tick
+        self.liveText = liveText
     }
+
+    var keepsAudio: Bool { !liveText }
 
     func start() -> AsyncThrowingStream<SpeechEvent, any Error> {
         stop()
         let (stream, continuation) = AsyncThrowingStream<SpeechEvent, any Error>.makeStream()
-        task = Task { [text, charactersPerTick, tick] in
+        if !liveText { continuation.yield(.liveTextUnavailable) }
+        task = Task { [weak self, text, charactersPerTick, tick] in
             var count = 0
             var phase = 0.0
             while !Task.isCancelled {
                 try? await Task.sleep(for: tick)
                 phase += 0.9
                 continuation.yield(.level(Float(0.35 + 0.3 * sin(phase) + 0.2 * sin(phase * 2.7))))
-                if count < text.count {
+                self?.recordedTicks += 1
+                if charactersPerTick > 0, count < text.count {
                     count = min(text.count, count + charactersPerTick)
                     continuation.yield(.transcript(String(text.prefix(count))))
                 }
@@ -38,6 +47,39 @@ final class MockSpeechService: SpeechService {
     func stop() {
         task?.cancel()
         task = nil
+    }
+
+    /// A small placeholder file standing for the audio.
+    func takeRecording() -> RecordedAudio? {
+        stop()
+        guard keepsAudio, recordedTicks > 0, let url = try? RecordingFiles.newFileURL(),
+              (try? Data(count: 1024).write(to: url)) != nil else { return nil }
+        let tickSeconds = Double(tick.components.seconds) + Double(tick.components.attoseconds) / 1e18
+        let duration = Double(recordedTicks) * tickSeconds
+        recordedTicks = 0
+        return RecordedAudio(url: url, duration: duration)
+    }
+
+    func discardRecording() {
+        stop()
+        recordedTicks = 0
+    }
+}
+
+/// Writes every recording down as the sample dream after a short wait.
+struct MockRecordingTranscriber: RecordingTranscriber {
+    var text = MockData.transcript
+    var delay: Duration = .milliseconds(1500)
+
+    func upload(_ audio: RecordedAudio) async throws(APIError) -> String {
+        try? await Task.sleep(for: delay / 2)
+        audio.delete()
+        return "rec_mock_\(UUID().uuidString.prefix(8).lowercased())"
+    }
+
+    func transcribe(recordingID: String) async throws(APIError) -> String {
+        try? await Task.sleep(for: delay / 2)
+        return text
     }
 }
 

@@ -17,7 +17,7 @@ final class AnalysisViewModel {
     /// The dream could not be sent (no connection): it waits in the draft queue.
     private(set) var isSavedOffline = false
 
-    private let draft: DreamDraft
+    let draft: DreamDraft
     private let service: any DreamAnalysisService
     private let store: any DreamStore
     private let drafts: DraftQueue?

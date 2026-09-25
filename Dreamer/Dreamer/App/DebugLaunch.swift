@@ -71,7 +71,7 @@ enum DebugLaunch {
     static func prepare(_ flow: RecordFlowViewModel) {
         guard screen == .details || screen == .analysis else { return }
         flow.record.transcript = MockData.transcript
-        flow.finishRecording()
+        flow.showDetails(for: .init(transcript: MockData.transcript))
         if screen == .analysis { flow.interpret(includeDetails: true) }
     }
 }

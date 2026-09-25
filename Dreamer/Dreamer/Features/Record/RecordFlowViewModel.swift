@@ -18,17 +18,20 @@ final class RecordFlowViewModel {
     /// One id for this dream across retries, so the backend never creates it twice.
     private let clientId = UUID().uuidString.lowercased()
     private let recordedAt = Date.now
+    /// The server transcription the text came from (IOS-04.5), sent with the dream.
+    private var recordingID: String?
     private let onFinish: (Dream.ID) -> Void
     private let onCancel: () -> Void
 
     init(speech: any SpeechService,
          permissions: any SpeechPermissions = MockSpeechPermissions(),
+         transcriber: (any RecordingTranscriber)? = nil,
          analysisService: any DreamAnalysisService,
          store: any DreamStore,
          drafts: DraftQueue? = nil,
          onFinish: @escaping (Dream.ID) -> Void,
          onCancel: @escaping () -> Void) {
-        record = RecordViewModel(speech: speech, permissions: permissions)
+        record = RecordViewModel(speech: speech, permissions: permissions, transcriber: transcriber)
         self.analysisService = analysisService
         self.store = store
         self.drafts = drafts
@@ -41,6 +44,7 @@ final class RecordFlowViewModel {
                      onCancel: @escaping () -> Void) {
         self.init(speech: dependencies.makeSpeechService(),
                   permissions: dependencies.makeSpeechPermissions(),
+                  transcriber: dependencies.transcriber,
                   analysisService: dependencies.analysis,
                   store: dependencies.dreamStore,
                   drafts: dependencies.drafts,
@@ -49,9 +53,14 @@ final class RecordFlowViewModel {
     }
 
     /// "I’m done".
-    func finishRecording() {
-        record.stop()
-        details = DetailsViewModel(transcript: record.trimmedTranscript, clientId: clientId)
+    func finishRecording() async {
+        guard let recorded = await record.finish() else { return }
+        showDetails(for: recorded)
+    }
+
+    func showDetails(for recorded: RecordViewModel.RecordedDream) {
+        recordingID = recorded.recordingID
+        details = DetailsViewModel(transcript: recorded.transcript, clientId: clientId)
         step = .details
     }
 
@@ -61,6 +70,7 @@ final class RecordFlowViewModel {
             ? details?.draft ?? DreamDraft(clientId: clientId, transcript: record.trimmedTranscript)
             : DreamDraft(clientId: clientId, transcript: record.trimmedTranscript)
         draft.recordedAt = recordedAt
+        draft.recordingId = recordingID
         analysis = AnalysisViewModel(draft: draft, service: analysisService, store: store, drafts: drafts)
         step = .analysis
     }
@@ -73,6 +83,7 @@ final class RecordFlowViewModel {
 
     func cancel() {
         record.stop()
+        record.discardAudio()
         onCancel()
     }
 }

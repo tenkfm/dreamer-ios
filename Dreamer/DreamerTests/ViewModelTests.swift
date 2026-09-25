@@ -231,7 +231,7 @@ struct RecordFlowTests {
                                        store: store, onFinish: { finishedID = $0 }, onCancel: {})
 
         flow.record.transcript = "A long hallway"
-        flow.finishRecording()
+        await flow.finishRecording()
         flow.details?.toggle(.joy)
         flow.interpret(includeDetails: true)
         await flow.analysis?.run()
