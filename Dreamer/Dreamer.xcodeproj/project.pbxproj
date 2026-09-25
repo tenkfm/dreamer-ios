@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D7A0000000000000000000BF /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000091 /* PostHog */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		D7A000000000000000000011 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -58,6 +62,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D7A0000000000000000000BF /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,6 +127,7 @@
 			);
 			name = Dreamer;
 			packageProductDependencies = (
+				D7A000000000000000000091 /* PostHog */,
 			);
 			productName = Dreamer;
 			productReference = D7A000000000000000000002 /* Dreamer.app */;
@@ -178,6 +184,9 @@
 			);
 			mainGroup = D7A000000000000000000006;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D7A000000000000000000090 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7A000000000000000000007 /* Products */;
 			projectDirPath = "";
@@ -492,6 +501,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D7A000000000000000000090 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.84.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D7A000000000000000000091 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A000000000000000000090;
+			productName = "PostHog";
+		};
+/* End XCSwiftPackageProductDependency section */
 
 	};
 	rootObject = D7A000000000000000000001 /* Project object */;

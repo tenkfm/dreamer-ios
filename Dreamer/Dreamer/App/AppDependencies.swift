@@ -10,6 +10,8 @@ final class AppDependencies {
     let purchases: any PurchaseService
     let catalog: any SymbolCatalog
     let imageSaver: any ImageSaving
+    /// Remote switches for this session (see FeatureFlags).
+    let featureFlags: FeatureFlags
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
 
@@ -18,6 +20,7 @@ final class AppDependencies {
          purchases: any PurchaseService,
          catalog: any SymbolCatalog,
          imageSaver: any ImageSaving,
+         featureFlags: FeatureFlags = .defaults,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService) {
         self.dreamStore = dreamStore
@@ -25,6 +28,7 @@ final class AppDependencies {
         self.purchases = purchases
         self.catalog = catalog
         self.imageSaver = imageSaver
+        self.featureFlags = featureFlags
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
     }
@@ -37,9 +41,19 @@ final class AppDependencies {
             purchases: MockPurchaseService(),
             catalog: MockSymbolCatalog(),
             imageSaver: PhotoLibraryImageSaver(),
+            featureFlags: liveFeatureFlags(),
             makeSpeechService: { MockSpeechService() },
             makeReadAloudService: { SpeechSynthesizerReadAloudService() }
         )
+    }
+
+    private static func liveFeatureFlags() -> FeatureFlags {
+        let flags = PostHogFeatureFlagService(config: .current).flags
+        #if DEBUG
+        return flags.overridden(by: ProcessInfo.processInfo.arguments)
+        #else
+        return flags
+        #endif
     }
 
     static func preview() -> AppDependencies {

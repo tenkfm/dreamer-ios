@@ -36,6 +36,16 @@ Ruby 3.3.5 (`.tool-versions`) and Bundler; the first run installs the gems.
 `run.sh` wraps `bundle exec fastlane sim` / `bundle exec fastlane test` (see `fastlane/Fastfile`).
 Build products go to `build/DerivedData` (git-ignored).
 
+## Feature flags
+
+`Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
+app works fully offline: `ttsEnabled` (on), `attestationEnforced` (off), `serverSttFallback` (on),
+`imageGenerationEnabled` (on, image kill switch). With a PostHog key the values come from PostHog
+feature flags with the same keys. A session always uses the flags cached on the previous launch
+and refreshes the cache in the background, so a change applies on the next launch and never flips
+a feature mid-use. Debug builds accept overrides: `-featureFlag ttsEnabled=false`.
+The paywall variant is not a flag: the backend assigns it (`GET /v1/subscription.paywallVariant`).
+
 ## Signing
 
 Certificates and profiles are shared through fastlane match (`fastlane/Matchfile`), App Store

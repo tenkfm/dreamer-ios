@@ -38,7 +38,6 @@ platform :ios do
       skip_archive: true,
       skip_codesigning: true,
       skip_package_ipa: true,
-      skip_package_dependencies_resolution: true
     )
 
     app_path = File.join(DERIVED_DATA, "Build/Products/#{configuration}-iphonesimulator/#{SCHEME}.app")
@@ -63,7 +62,6 @@ platform :ios do
       output_directory: File.expand_path("../build/test_output", __dir__),
       output_types: "junit,html",
       result_bundle: true,
-      skip_package_dependencies_resolution: true
     )
   end
 
