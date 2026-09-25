@@ -31,6 +31,8 @@ final class AppDependencies {
     let featureFlags: FeatureFlags
     let crashReporter: any CrashReporter
     let network: NetworkMonitor
+    /// Told dreams waiting for the backend (nil when the local store cannot open).
+    let drafts: DraftQueue?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
     @ObservationIgnored let makeSpeechPermissions: @MainActor () -> any SpeechPermissions
@@ -50,6 +52,7 @@ final class AppDependencies {
          featureFlags: FeatureFlags = .defaults,
          crashReporter: any CrashReporter = NoopCrashReporter(),
          network: NetworkMonitor = NetworkMonitor(isOnline: true),
+         drafts: DraftQueue? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
          makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() }) {
@@ -68,6 +71,7 @@ final class AppDependencies {
         self.featureFlags = featureFlags
         self.crashReporter = crashReporter
         self.network = network
+        self.drafts = drafts
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
         self.makeSpeechPermissions = makeSpeechPermissions
@@ -82,10 +86,13 @@ final class AppDependencies {
         let featureFlags = liveFeatureFlags()
         let network = liveNetworkMonitor()
 
+        let container = try? LocalStore.makeContainer()
+
         guard mode(config: config, arguments: arguments) == .live, let baseURL = config.apiBaseURL else {
+            let dreamStore = InMemoryDreamStore()
             return AppDependencies(
                 mode: .mock,
-                dreamStore: InMemoryDreamStore(),
+                dreamStore: dreamStore,
                 analysis: MockDreamAnalysisService(),
                 purchases: MockPurchaseService(),
                 catalog: MockSymbolCatalog(),
@@ -93,6 +100,7 @@ final class AppDependencies {
                 featureFlags: featureFlags,
                 crashReporter: crashReporter,
                 network: network,
+                drafts: container.map { DraftQueue(container: $0, submitter: MockDreamSubmitter(), store: dreamStore) },
                 makeSpeechService: { MockSpeechService() },
                 makeReadAloudService: { SpeechSynthesizerReadAloudService() }
             )
@@ -104,6 +112,7 @@ final class AppDependencies {
             try await publicClient.refreshTokens(refreshToken: refreshToken)
         }
         let api = APIClient(baseURL: baseURL, tokens: tokens)
+        let dreamStore = InMemoryDreamStore()
         return AppDependencies(
             mode: .live,
             api: api,
@@ -111,7 +120,7 @@ final class AppDependencies {
             auth: APIAuthService(client: api, tokens: tokens),
             profiles: APIProfileService(client: api),
             subscriptionStatus: APISubscriptionStatusService(client: api),
-            dreamStore: InMemoryDreamStore(),
+            dreamStore: dreamStore,
             analysis: APIDreamAnalysisService(client: api),
             purchases: livePurchases(config: config),
             catalog: MockSymbolCatalog(),
@@ -119,6 +128,7 @@ final class AppDependencies {
             featureFlags: featureFlags,
             crashReporter: crashReporter,
             network: network,
+            drafts: container.map { DraftQueue(container: $0, submitter: api, store: dreamStore) },
             makeSpeechService: { OnDeviceSpeechService() },
             makeReadAloudService: { SpeechSynthesizerReadAloudService() },
             makeSpeechPermissions: { SystemSpeechPermissions() }

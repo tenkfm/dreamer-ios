@@ -156,6 +156,15 @@ Manual interruption checklist (device): incoming call mid-sentence; Siri; alarm;
 swipe up; lock button; Control Center (keeps recording); airplane mode on the Record screen
 (keeps recognizing on devices with the on-device model); 5-minute limit.
 
+Drafts (`Services/DraftQueue.swift`, SwiftData in Application Support/Dreamer with complete file
+protection): every told dream is saved as a draft before it is sent, with the `clientId` the record
+flow generated for it, and removed once the backend has it. Offline, Analysis says "Saved on your
+iPhone" and Home shows how many dreams wait; `flush` sends them when the connection comes back,
+at launch and after sign-in. Resending the same `clientId` returns the same dream, so nothing is
+duplicated. Rate limits wait until `resetAt`, other failures back off per draft; the paywall and
+offline stop the flush. Sign-out and account deletion clear the drafts. File protection shows only
+on a device (the simulator has no Data Protection): check it in the device QA.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

@@ -62,6 +62,11 @@ struct RootView: View {
             guard let request = appState.subscriptionRefresh, appState.isSignedIn else { return }
             await subscriptionSync.refreshBackend(expectPremium: request.afterPurchase)
         }
+        .task(id: DraftFlushTrigger(online: dependencies.network.isOnline, userID: appState.userID, phase: scenePhase)) {
+            // Told dreams waiting for the backend go out when there is a connection and an account.
+            guard dependencies.network.isOnline, appState.isSignedIn, scenePhase == .active else { return }
+            await dependencies.drafts?.flush()
+        }
         .task(id: appState.pendingProfileSync) {
             // New account: quiz answers and settings go up; existing one: the server's profile comes down.
             guard let direction = appState.pendingProfileSync else { return }
@@ -94,4 +99,11 @@ struct RootView: View {
     RootView()
         .environment(AppDependencies.preview())
         .environment(AppState.preview(onboardingCompleted: false))
+}
+
+/// Re-runs the draft flush when the connection, the account or the foreground state changes.
+private struct DraftFlushTrigger: Equatable {
+    var online: Bool
+    var userID: String?
+    var phase: ScenePhase
 }

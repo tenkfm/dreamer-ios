@@ -4,6 +4,7 @@ import SwiftUI
 struct AnalysisView: View {
     var viewModel: AnalysisViewModel
     var onContinue: () -> Void
+    var onClose: () -> Void = {}
 
     @Environment(AppDependencies.self) private var dependencies
     @Environment(AppState.self) private var appState
@@ -31,7 +32,16 @@ struct AnalysisView: View {
                     .padding(.horizontal, 40 - DS.Space.screen)
                     .enterUp(0.5)
 
-                if let state = viewModel.errorState {
+                if viewModel.isSavedOffline {
+                    VStack(spacing: 4) {
+                        Text("Saved on your iPhone").textStyle(.bodyStrong)
+                        Text("You’re offline. We’ll read your dream as soon as you’re back online.")
+                            .textStyle(.secondary, color: DS.Palette.textSecondary)
+                    }
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 16)
+                } else if let state = viewModel.errorState {
                     VStack(spacing: 4) {
                         Text(state.title).textStyle(.bodyStrong)
                         Text(state.message).textStyle(.secondary, color: DS.Palette.textSecondary)
@@ -48,7 +58,11 @@ struct AnalysisView: View {
 
                 Spacer(minLength: 24)
 
-                if viewModel.isFinished {
+                if viewModel.isSavedOffline {
+                    PrimaryButton(title: "Back to Home", action: onClose)
+                        .padding(.horizontal, DS.Space.cta - DS.Space.screen)
+                        .padding(.bottom, 8)
+                } else if viewModel.isFinished {
                     PrimaryButton(title: "See my interpretation", action: onContinue)
                         .padding(.horizontal, DS.Space.cta - DS.Space.screen)
                         .padding(.bottom, 8)

@@ -14,6 +14,7 @@ final class RecordFlowViewModel {
 
     private let analysisService: any DreamAnalysisService
     private let store: any DreamStore
+    private let drafts: DraftQueue?
     /// One id for this dream across retries, so the backend never creates it twice.
     private let clientId = UUID().uuidString.lowercased()
     private let recordedAt = Date.now
@@ -24,11 +25,13 @@ final class RecordFlowViewModel {
          permissions: any SpeechPermissions = MockSpeechPermissions(),
          analysisService: any DreamAnalysisService,
          store: any DreamStore,
+         drafts: DraftQueue? = nil,
          onFinish: @escaping (Dream.ID) -> Void,
          onCancel: @escaping () -> Void) {
         record = RecordViewModel(speech: speech, permissions: permissions)
         self.analysisService = analysisService
         self.store = store
+        self.drafts = drafts
         self.onFinish = onFinish
         self.onCancel = onCancel
     }
@@ -40,6 +43,7 @@ final class RecordFlowViewModel {
                   permissions: dependencies.makeSpeechPermissions(),
                   analysisService: dependencies.analysis,
                   store: dependencies.dreamStore,
+                  drafts: dependencies.drafts,
                   onFinish: onFinish,
                   onCancel: onCancel)
     }
@@ -57,7 +61,7 @@ final class RecordFlowViewModel {
             ? details?.draft ?? DreamDraft(clientId: clientId, transcript: record.trimmedTranscript)
             : DreamDraft(clientId: clientId, transcript: record.trimmedTranscript)
         draft.recordedAt = recordedAt
-        analysis = AnalysisViewModel(draft: draft, service: analysisService, store: store)
+        analysis = AnalysisViewModel(draft: draft, service: analysisService, store: store, drafts: drafts)
         step = .analysis
     }
 

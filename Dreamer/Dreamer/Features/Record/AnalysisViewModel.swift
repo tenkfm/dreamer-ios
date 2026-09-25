@@ -14,14 +14,19 @@ final class AnalysisViewModel {
     /// Set when the failure came from the backend (paywall, limit, sign-in...).
     private(set) var errorState: ErrorState?
 
+    /// The dream could not be sent (no connection): it waits in the draft queue.
+    private(set) var isSavedOffline = false
+
     private let draft: DreamDraft
     private let service: any DreamAnalysisService
     private let store: any DreamStore
+    private let drafts: DraftQueue?
 
-    init(draft: DreamDraft, service: any DreamAnalysisService, store: any DreamStore) {
+    init(draft: DreamDraft, service: any DreamAnalysisService, store: any DreamStore, drafts: DraftQueue? = nil) {
         self.draft = draft
         self.service = service
         self.store = store
+        self.drafts = drafts
     }
 
     var isFinished: Bool { result != nil }
@@ -42,10 +47,15 @@ final class AnalysisViewModel {
         guard result == nil else { return }
         errorMessage = nil
         errorState = nil
+        isSavedOffline = false
         completed = []
+        // Saved before sending: a crash or a relaunch mid-request still has the dream.
+        drafts?.save(draft)
         do {
             for try await progress in service.analyze(draft) {
                 switch progress {
+                case .accepted:
+                    drafts?.markSent(clientId: draft.clientId)
                 case .completed(let step):
                     completed.insert(step)
                 case .finished(let dream):
@@ -55,6 +65,9 @@ final class AnalysisViewModel {
             }
         } catch is CancellationError {
             return
+        } catch let error as APIError where (error == .offline || error == .timeout) && drafts != nil {
+            // Not lost: the draft queue sends it when the connection is back.
+            isSavedOffline = true
         } catch let error as APIError {
             errorState = ErrorState(error)
             errorMessage = errorState?.message

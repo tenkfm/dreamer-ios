@@ -40,7 +40,7 @@ struct RecordFlowView: View {
             }
         case .analysis:
             if let analysis = viewModel.analysis {
-                AnalysisView(viewModel: analysis, onContinue: viewModel.showInterpretation)
+                AnalysisView(viewModel: analysis, onContinue: viewModel.showInterpretation, onClose: viewModel.cancel)
             }
         }
     }

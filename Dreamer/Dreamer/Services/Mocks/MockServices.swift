@@ -49,6 +49,7 @@ struct MockDreamAnalysisService: DreamAnalysisService {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
+                    continuation.yield(.accepted(UUID()))
                     for step in AnalysisStep.allCases {
                         try await Task.sleep(for: stepDuration)
                         continuation.yield(.completed(step))
@@ -126,6 +127,15 @@ final class InMemoryDreamStore: DreamStore {
 
     func deleteAll() {
         dreams.removeAll()
+    }
+}
+
+/// Accepts every draft as the sample dream.
+struct MockDreamSubmitter: DreamSubmitter {
+    func submit(_ submission: DreamSubmission) async throws(APIError) -> Dream {
+        var draft = DreamDraft(clientId: submission.clientId, transcript: submission.text)
+        draft.emotions = submission.details?.emotions ?? []
+        return MockData.analyzedDream(from: draft, at: submission.recordedAt ?? .now)
     }
 }
 

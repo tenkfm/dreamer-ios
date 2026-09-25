@@ -16,6 +16,7 @@ struct APIDreamAnalysisService: DreamAnalysisService {
             let task = Task {
                 do {
                     let (dream, _) = try await client.createDream(Self.submission(for: draft))
+                    continuation.yield(.accepted(dream.id))
                     var reported = 0
                     // analysisStep n = the first n checklist steps are done.
                     func report(upTo step: Int) {

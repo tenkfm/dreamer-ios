@@ -99,7 +99,8 @@ private struct RouteDestination: View {
             SettingsView(viewModel: SettingsViewModel(
                 appState: appState, purchases: dependencies.purchases,
                 account: AccountController(auth: dependencies.auth, dreamStore: dependencies.dreamStore,
-                                           appState: appState, unlink: dependencies.unlinkAccount),
+                                           drafts: dependencies.drafts, appState: appState,
+                                           unlink: dependencies.unlinkAccount),
                 analytics: dependencies.analytics))
         case .interpretation(let id):
             ViewModelHost {

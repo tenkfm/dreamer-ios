@@ -13,14 +13,16 @@ protocol AccountActions: AnyObject {
 final class AccountController: AccountActions {
     private let auth: any AuthService
     private let dreamStore: any DreamStore
+    private let drafts: DraftQueue?
     private let appState: AppState
     /// SDK identities (RevenueCat, analytics, crash reports) and later the push token.
     private let unlink: @MainActor () async -> Void
 
-    init(auth: any AuthService, dreamStore: any DreamStore, appState: AppState,
+    init(auth: any AuthService, dreamStore: any DreamStore, drafts: DraftQueue? = nil, appState: AppState,
          unlink: @escaping @MainActor () async -> Void) {
         self.auth = auth
         self.dreamStore = dreamStore
+        self.drafts = drafts
         self.appState = appState
         self.unlink = unlink
     }
@@ -44,6 +46,7 @@ final class AccountController: AccountActions {
     private func clearDevice() async {
         // Dreams of this account must not be readable by whoever signs in next.
         dreamStore.deleteAll()
+        drafts?.removeAll()
         await unlink()
     }
 }

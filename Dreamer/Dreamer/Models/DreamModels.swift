@@ -178,6 +178,8 @@ enum AnalysisStep: Int, CaseIterable, Sendable {
 }
 
 enum AnalysisProgress: Sendable {
+    /// The backend has the dream (its draft can be forgotten on the device).
+    case accepted(UUID)
     /// The given step has completed.
     case completed(AnalysisStep)
     case finished(Dream)

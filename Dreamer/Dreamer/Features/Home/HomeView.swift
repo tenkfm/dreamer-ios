@@ -3,6 +3,7 @@ import SwiftUI
 /// 07 Home (Today tab).
 struct HomeView: View {
     @State private var viewModel: HomeViewModel
+    @Environment(AppDependencies.self) private var dependencies
 
     init(viewModel: HomeViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -20,6 +21,11 @@ struct HomeView: View {
                     .padding(.top, 6)
                     .enterUp(0.3)
                     greeting.enterUp(0.4)
+                    if let drafts = dependencies.drafts, drafts.pendingCount > 0 {
+                        DraftStatusPill(count: drafts.pendingCount, isSending: drafts.isSending)
+                            .padding(.top, 12)
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    }
                     weekCard.padding(.top, 20).enterUp(0.55)
                     insightCard.padding(.top, 14).enterUp(0.7)
                     SectionHeader(title: "Dreamed about today", trailing: "See all") { viewModel.seeAllSymbols() }
@@ -103,7 +109,38 @@ struct HomeView: View {
     }
 }
 
+/// Told dreams that have not reached the backend yet (offline, or waiting to be retried).
+private struct DraftStatusPill: View {
+    var count: Int
+    var isSending: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if isSending {
+                ProgressView().controlSize(.mini).tint(DS.Palette.icon)
+            } else {
+                Image(systemName: "icloud.and.arrow.up")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(DS.Palette.icon)
+            }
+            Text(text)
+                .font(DreamerFont.ui(12, relativeTo: .caption))
+                .foregroundStyle(DS.Palette.textPrimary)
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 32)
+        .glassCapsule()
+        .accessibilityElement(children: .combine)
+    }
+
+    private var text: String {
+        if isSending { return count == 1 ? "Sending your dream…" : "Sending your dreams…" }
+        return count == 1 ? "1 dream will be read when you’re online" : "\(count) dreams will be read when you’re online"
+    }
+}
+
 #Preview {
     let state = AppState.preview()
     HomeView(viewModel: HomeViewModel(appState: state, store: InMemoryDreamStore(), catalog: MockSymbolCatalog()))
+        .environment(AppDependencies.preview())
 }
