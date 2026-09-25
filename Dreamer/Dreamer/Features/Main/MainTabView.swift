@@ -13,9 +13,11 @@ struct MainTabView: View {
         ZStack(alignment: .bottom) {
             NavigationStack(path: pathBinding(for: tab)) {
                 root(for: tab)
+                    .offlineBannerInset()
                     .hideSystemNavigationBar()
                     .navigationDestination(for: Route.self) { route in
                         RouteDestination(route: route)
+                            .offlineBannerInset()
                             .hideSystemNavigationBar()
                     }
             }
@@ -39,6 +41,7 @@ struct MainTabView: View {
                 makeRecordFlowViewModel()
             } content: { viewModel in
                 RecordFlowView(viewModel: viewModel)
+                    .offlineBannerInset()
             }
             .scrollEdgeEffectsHidden()
         }

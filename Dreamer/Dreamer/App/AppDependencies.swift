@@ -13,6 +13,7 @@ final class AppDependencies {
     /// Remote switches for this session (see FeatureFlags).
     let featureFlags: FeatureFlags
     let crashReporter: any CrashReporter
+    let network: NetworkMonitor
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
 
@@ -23,6 +24,7 @@ final class AppDependencies {
          imageSaver: any ImageSaving,
          featureFlags: FeatureFlags = .defaults,
          crashReporter: any CrashReporter = NoopCrashReporter(),
+         network: NetworkMonitor = NetworkMonitor(isOnline: true),
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService) {
         self.dreamStore = dreamStore
@@ -32,6 +34,7 @@ final class AppDependencies {
         self.imageSaver = imageSaver
         self.featureFlags = featureFlags
         self.crashReporter = crashReporter
+        self.network = network
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
     }
@@ -48,9 +51,17 @@ final class AppDependencies {
             imageSaver: PhotoLibraryImageSaver(),
             featureFlags: liveFeatureFlags(),
             crashReporter: crashReporter,
+            network: liveNetworkMonitor(),
             makeSpeechService: { MockSpeechService() },
             makeReadAloudService: { SpeechSynthesizerReadAloudService() }
         )
+    }
+
+    private static func liveNetworkMonitor() -> NetworkMonitor {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-offline") { return NetworkMonitor(isOnline: false) }
+        #endif
+        return NetworkMonitor()
     }
 
     private static func liveFeatureFlags() -> FeatureFlags {

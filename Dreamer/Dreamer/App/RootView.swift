@@ -11,11 +11,13 @@ struct RootView: View {
             switch appState.rootScreen {
             case .onboarding:
                 OnboardingFlowView(viewModel: OnboardingViewModel(appState: appState, step: initialOnboardingStep))
+                    .offlineBannerInset()
                     .transition(.opacity)
             case .paywall:
                 ZStack {
                     SkyBackground(kind: .full)
                     PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState))
+                        .offlineBannerInset()
                 }
                 .transition(.opacity)
             case .main:

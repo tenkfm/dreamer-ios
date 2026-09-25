@@ -51,6 +51,12 @@ Build products go to `build/DerivedData` (git-ignored).
 - `APIError` - one error type: backend codes (`PREMIUM_REQUIRED`, `RATE_LIMITED` with
   `Retry-After` / `resetAt`, ...), plus offline, timeout and signed-out states.
 
+Failures: `RetryMiddleware` retries GETs and the idempotent `POST /v1/dreams` on 5xx and dropped
+connections (backoff 0.5 s, 1 s), never on 4xx. `ErrorState` (Features/Shared) turns every
+`APIError` into a screen state with copy and an action (retry, paywall, sign in, new link, wait
+until `resetAt`), shown with `ErrorStateCard`. `NetworkMonitor` drives a glass offline banner
+(`offlineBannerInset()`, applied inside each navigation container; debug: `-offline`).
+
 Tests use `DreamerTests/Support/StubURLProtocol.swift`; `LiveAPITests` hit staging when run with
 `TEST_RUNNER_DREAMER_LIVE_TESTS=1`.
 

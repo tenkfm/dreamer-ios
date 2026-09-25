@@ -23,13 +23,16 @@ final class APIClient: Sendable {
     init(baseURL: URL,
          tokens: (any AccessTokenProvider)?,
          session: URLSession = APIClient.makeSession(),
-         extraMiddlewares: [any ClientMiddleware] = []) {
+         extraMiddlewares: [any ClientMiddleware] = [],
+         retry: RetryMiddleware = RetryMiddleware()) {
         self.baseURL = baseURL
         self.session = session
         self.tokens = tokens
-        // Order matters: the first middleware is the outermost. AuthMiddleware must sit outside
-        // ErrorMiddleware to see an expired token as a thrown APIError and retry after refresh.
+        // Order matters: the first middleware is the outermost. Retry wraps everything (a retried
+        // request gets a fresh token); AuthMiddleware sits outside ErrorMiddleware to see an expired
+        // token as a thrown APIError and retry after refresh.
         var middlewares: [any ClientMiddleware] = extraMiddlewares
+        middlewares.append(retry)
         if let tokens {
             middlewares.append(AuthMiddleware(tokens: tokens))
         }
