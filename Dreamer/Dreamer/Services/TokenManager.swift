@@ -22,7 +22,12 @@ actor TokenManager: AccessTokenProvider {
         self.store = store
         self.refresh = refresh
         self.now = now
-        session = (try? store.data(for: Self.sessionKey)).flatMap { try? JSONDecoder().decode(AuthSession.self, from: $0) }
+        session = Self.storedSession(in: store)
+    }
+
+    /// The session saved in `store`, read synchronously (launch needs it before any actor hop).
+    nonisolated static func storedSession(in store: any SecureStore) -> AuthSession? {
+        (try? store.data(for: sessionKey)).flatMap { try? JSONDecoder().decode(AuthSession.self, from: $0) }
     }
 
     /// Fires when the backend ends the session (refresh rejected): the app goes back to sign-in.

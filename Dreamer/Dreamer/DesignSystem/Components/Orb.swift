@@ -54,15 +54,26 @@ struct OrbView: View {
             SparkleShape()
                 .stroke(DS.Palette.iconSoft, style: StrokeStyle(lineWidth: 2.4, lineJoin: .round))
                 .frame(width: glyphSize, height: glyphSize)
-        case .mic, .moon:
-            Image(systemName: glyph == .mic ? "mic" : "moon")
-                .font(.system(size: glyphSize, weight: .regular))
+        case .mic, .moon, .envelope:
+            Image(systemName: glyph.systemName)
+                .font(.system(size: glyphSize * (glyph == .envelope ? 0.9 : 1), weight: .regular))
                 .foregroundStyle(DS.Palette.iconSoft)
         }
     }
 }
 
-enum OrbGlyph { case mic, moon, sparkle }
+enum OrbGlyph {
+    case mic, moon, sparkle, envelope
+
+    fileprivate var systemName: String {
+        switch self {
+        case .mic: "mic"
+        case .moon: "moon"
+        case .envelope: "envelope"
+        case .sparkle: "sparkle"
+        }
+    }
+}
 
 /// Tappable orb (Home mic).
 struct OrbButton: View {

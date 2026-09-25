@@ -73,6 +73,17 @@ answers "sign in again" - sign-in arrives with IOS-02.
 Tests use `DreamerTests/Support/StubURLProtocol.swift`; `LiveAPITests` hit staging when run with
 `TEST_RUNNER_DREAMER_LIVE_TESTS=1`.
 
+## Account
+
+Onboarding: Welcome -> Record intro -> Understand -> quiz -> **account** -> paywall -> Main. The
+account step (`Features/Auth`) has Sign in with Apple and an email link ("Check your inbox", resend
+with a 30 s cooldown; the backend allows 5 emails an hour). The design has no account screen: it is
+built from the design system after the web handoff's spec. "I already have an account" opens the
+same step as "Welcome back"; a returning account skips the rest of onboarding. The pager shows no
+page after the account step until the user is signed in, so a swipe cannot skip it.
+`AuthService` (`APIAuthService` / `MockAuthService`) stores tokens through `TokenManager`; at
+launch the Keychain decides whether the user is still signed in.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
@@ -165,8 +176,9 @@ Debug builds accept `-debugScreen <name>` (in-memory preferences, nothing persis
 xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 ```
 
-Names: `welcome recordIntro understand quizGoal quizLens paywall home journal library settings
-interpretation symbol record details analysis`. Add `-mockServices` for local data only,
+Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
+interpretation symbol record details analysis`. Debug screens use mock services (`-liveServices`
+to talk to the backend instead); `-mockServices` does the same for a normal launch,
 `-offline` to show the offline banner, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.

@@ -4,30 +4,68 @@ import Testing
 
 @MainActor
 struct OnboardingTests {
-    @Test func quizAnswersAreStoredWhenLeavingTheLensQuestion() {
+    private static func session(isNew: Bool) -> AuthSession {
+        AuthSession(accessToken: "a", accessExpiresAt: .now, refreshToken: "r", refreshExpiresAt: .now,
+                    userID: "user-1", isNewUser: isNew)
+    }
+
+    @Test func quizAnswersAreStoredWhenLeavingTheQuiz() {
         let appState = AppState(store: InMemoryPreferencesStore())
-        let viewModel = OnboardingViewModel(appState: appState, step: .quizGoal)
+        let analytics = RecordingAnalytics()
+        let viewModel = OnboardingViewModel(appState: appState, step: .quizGoal, analytics: analytics)
 
         viewModel.goal = .recurring
         viewModel.next()
         viewModel.lens = .spiritual
         viewModel.next()
 
-        #expect(viewModel.step == .paywall)
+        #expect(viewModel.step == .account)
         #expect(appState.goal == .recurring)
         #expect(appState.preferredLens == .spiritual)
         #expect(appState.rootScreen == .onboarding)
+        #expect(analytics.events.contains(.quizAnswered(question: "goal", answer: "recurring")))
+        #expect(analytics.events.contains(.onboardingStepViewed(step: "account")))
     }
 
-    @Test func swipingToThePaywallAlsoStoresTheAnswers() {
+    @Test func thePaywallCannotBeReachedWithoutAnAccount() {
         let appState = AppState(store: InMemoryPreferencesStore())
-        let viewModel = OnboardingViewModel(appState: appState, step: .quizLens)
+        let viewModel = OnboardingViewModel(appState: appState, step: .account)
 
-        viewModel.lens = .dreamBook
+        #expect(!viewModel.reachableSteps.contains(.paywall))
         viewModel.go(to: .paywall)
+        #expect(viewModel.step == .account)
+    }
 
-        #expect(appState.preferredLens == .dreamBook)
-        #expect(appState.goal == .understand)
+    @Test func newAccountContinuesToThePaywall() {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        let viewModel = OnboardingViewModel(appState: appState, step: .account)
+
+        viewModel.signedIn(Self.session(isNew: true))
+
+        #expect(viewModel.step == .paywall)
+        #expect(appState.isSignedIn)
+        #expect(appState.rootScreen == .onboarding)
+    }
+
+    @Test func returningAccountLeavesOnboarding() {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        let viewModel = OnboardingViewModel(appState: appState)
+
+        viewModel.useExistingAccount()
+        #expect(viewModel.step == .account)
+        #expect(viewModel.accountMode == .signIn)
+
+        viewModel.signedIn(Self.session(isNew: false))
+        #expect(appState.rootScreen == .paywall)
+    }
+
+    @Test func signedOutReturningUserStartsOnSignIn() {
+        var preferences = UserPreferences()
+        preferences.onboardingCompleted = true
+        let viewModel = OnboardingViewModel(appState: AppState(store: InMemoryPreferencesStore(preferences)))
+
+        #expect(viewModel.step == .account)
+        #expect(viewModel.accountMode == .signIn)
     }
 
     @Test func skipJumpsToTheQuiz() {
@@ -36,15 +74,11 @@ struct OnboardingTests {
         #expect(viewModel.step == .quizGoal)
     }
 
-    @Test func existingAccountOpensMain() {
-        let appState = AppState(store: InMemoryPreferencesStore())
-        OnboardingViewModel(appState: appState).useExistingAccount()
-        #expect(appState.rootScreen == .main)
-    }
-
     @Test func completionIsPersisted() {
         let store = InMemoryPreferencesStore()
-        AppState(store: store).activateSubscription(.weekly)
+        let appState = AppState(store: store)
+        appState.signedIn(userID: "user-1", isNewUser: true)
+        appState.activateSubscription(.weekly)
 
         let relaunched = AppState(store: store)
         #expect(relaunched.rootScreen == .main)
@@ -52,8 +86,23 @@ struct OnboardingTests {
     }
 
     @Test func hardPaywallShowsWithoutSubscription() {
-        let store = InMemoryPreferencesStore(UserPreferences(onboardingCompleted: true))
-        #expect(AppState(store: store).rootScreen == .paywall)
+        var preferences = UserPreferences()
+        preferences.onboardingCompleted = true
+        preferences.userID = "user-1"
+        #expect(AppState(store: InMemoryPreferencesStore(preferences)).rootScreen == .paywall)
+    }
+
+    @Test func lostKeychainSessionSignsOut() {
+        var preferences = UserPreferences()
+        preferences.onboardingCompleted = true
+        preferences.userID = "user-1"
+        preferences.subscription = .active(.yearly)
+        let appState = AppState(store: InMemoryPreferencesStore(preferences))
+
+        appState.reconcileSession(storedUserID: nil)
+
+        #expect(!appState.isSignedIn)
+        #expect(appState.rootScreen == .onboarding)
     }
 }
 
@@ -100,6 +149,7 @@ struct NightModeTests {
 struct PaywallTests {
     @Test func purchaseActivatesTheSelectedPlan() async {
         let appState = AppState(store: InMemoryPreferencesStore())
+        appState.signedIn(userID: "user-1", isNewUser: true)
         let viewModel = PaywallViewModel(purchases: MockPurchaseService(delay: .zero), appState: appState)
 
         viewModel.selectedPlan = .weekly

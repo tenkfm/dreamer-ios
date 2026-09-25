@@ -8,7 +8,7 @@ import Foundation
 @MainActor
 enum DebugLaunch {
     enum Screen: String {
-        case welcome, recordIntro, understand, quizGoal, quizLens, paywall
+        case welcome, recordIntro, understand, quizGoal, quizLens, account, paywall
         case home, journal, library, settings, interpretation, symbol
         case record, details, analysis
     }
@@ -37,6 +37,7 @@ enum DebugLaunch {
         case .understand: .understand
         case .quizGoal: .quizGoal
         case .quizLens: .quizLens
+        case .account: .account
         case .paywall: .paywall
         default: nil
         }
@@ -47,7 +48,9 @@ enum DebugLaunch {
         guard let screen else { return nil }
         let state = AppState(store: InMemoryPreferencesStore())
         if let forcedNightMode, forcedNightMode != state.isNightMode { state.toggleNightMode() }
+        if screen == .paywall { state.signedIn(userID: "debug-user", isNewUser: true) }
         guard onboardingStep == nil else { return state }
+        state.signedIn(userID: "debug-user", isNewUser: false)
         state.activateSubscription(.yearly)
         switch screen {
         case .journal: state.open(.journal)

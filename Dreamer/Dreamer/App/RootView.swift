@@ -10,7 +10,8 @@ struct RootView: View {
         ZStack {
             switch appState.rootScreen {
             case .onboarding:
-                OnboardingFlowView(viewModel: OnboardingViewModel(appState: appState, step: initialOnboardingStep))
+                OnboardingFlowView(viewModel: OnboardingViewModel(appState: appState, step: initialOnboardingStep,
+                                                                  analytics: dependencies.analytics))
                     .offlineBannerInset()
                     .transition(.opacity)
             case .paywall:
@@ -39,6 +40,15 @@ struct RootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { appState.refreshClock() }
+        }
+        .task {
+            // The backend ended the session (refresh refused): back to sign-in.
+            guard let tokens = dependencies.tokens else { return }
+            for await _ in tokens.signedOutEvents {
+                appState.signedOut()
+                dependencies.analytics.reset()
+                dependencies.crashReporter.setUserID(nil)
+            }
         }
     }
 

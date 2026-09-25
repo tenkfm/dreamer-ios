@@ -8,9 +8,15 @@ struct DreamerApp: App {
     init() {
         let dependencies = AppDependencies.live()
         var appState = AppState(store: UserDefaultsPreferencesStore())
+        var debugState: AppState?
         #if DEBUG
-        if let debugState = DebugLaunch.makeAppState(dependencies: dependencies) { appState = debugState }
+        debugState = DebugLaunch.makeAppState(dependencies: dependencies)
         #endif
+        if let debugState {
+            appState = debugState
+        } else if case .some(let stored) = AppDependencies.storedUserID(mode: dependencies.mode) {
+            appState.reconcileSession(storedUserID: stored)
+        }
         _dependencies = State(initialValue: dependencies)
         _appState = State(initialValue: appState)
     }

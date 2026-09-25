@@ -40,7 +40,10 @@ final class APIClient: Sendable {
         client = Client(
             serverURL: baseURL,
             configuration: Configuration(dateTranscoder: FlexibleDateTranscoder()),
-            transport: URLSessionTransport(configuration: .init(session: session)),
+            // Buffered, not streamed: request bodies are small JSON (the API caps them at 1 MB), and
+            // the streaming body bridge trips an internal precondition - crashing the app - when a
+            // connection drops mid-upload. The event stream uses its own URLSession.bytes call.
+            transport: URLSessionTransport(configuration: .init(session: session, httpBodyProcessingMode: .buffered)),
             middlewares: middlewares
         )
     }

@@ -62,14 +62,32 @@ protocol ImageSaving: Sendable {
 
 /// Session-level preferences that survive relaunch.
 struct UserPreferences: Codable, Hashable, Sendable {
+    init() {}
+
+    init(from decoder: any Decoder) throws {
+        // Every field has a default, so preferences saved by an older build still load.
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = UserPreferences()
+        onboardingCompleted = try container.decodeIfPresent(Bool.self, forKey: .onboardingCompleted) ?? defaults.onboardingCompleted
+        userName = try container.decodeIfPresent(String.self, forKey: .userName) ?? defaults.userName
+        goal = try container.decodeIfPresent(Goal.self, forKey: .goal)
+        preferredLens = try container.decodeIfPresent(Lens.self, forKey: .preferredLens) ?? defaults.preferredLens
+        subscription = try container.decodeIfPresent(SubscriptionStatus.self, forKey: .subscription) ?? defaults.subscription
+        paywallBypassed = try container.decodeIfPresent(Bool.self, forKey: .paywallBypassed) ?? defaults.paywallBypassed
+        reminders = try container.decodeIfPresent(ReminderSettings.self, forKey: .reminders) ?? defaults.reminders
+        userID = try container.decodeIfPresent(String.self, forKey: .userID)
+    }
+
     var onboardingCompleted = false
     var userName = "Anna"
     var goal: Goal?
     var preferredLens: Lens = .psychology
     var subscription: SubscriptionStatus = .none
-    /// Phase 1 testing: lets "I already have an account" and the paywall close button reach Main.
+    /// Phase 1 testing: lets the paywall close button reach Main.
     var paywallBypassed = false
     var reminders = ReminderSettings()
+    /// Backend user id of the signed-in account (not secret; the tokens live in the Keychain).
+    var userID: String?
 }
 
 @MainActor

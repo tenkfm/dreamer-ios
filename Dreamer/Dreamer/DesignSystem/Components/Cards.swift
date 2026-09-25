@@ -277,6 +277,38 @@ struct GlassSearchField: View {
     }
 }
 
+/// Single-line glass field with a leading icon (email on the account step).
+struct GlassTextField: View {
+    var systemImage: String
+    var placeholder: String
+    @Binding var text: String
+    var contentType: UITextContentType? = nil
+    var keyboard: UIKeyboardType = .default
+    var submitLabel: SubmitLabel = .done
+    var onSubmit: () -> Void = {}
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.system(size: 16, weight: .regular))
+                .foregroundStyle(DS.Palette.icon)
+                .accessibilityHidden(true)
+            TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(DS.Palette.textTertiary.opacity(0.8)))
+                .textStyle(.body)
+                .textContentType(contentType)
+                .keyboardType(keyboard)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(submitLabel)
+                .onSubmit(onSubmit)
+                .accessibilityLabel(placeholder)
+        }
+        .padding(.horizontal, 20)
+        .frame(height: DS.Size.primaryButton)
+        .glassCapsule(style: .selected)
+    }
+}
+
 /// Glass multi-line editor with a placeholder.
 struct GlassTextEditor: View {
     var placeholder: String

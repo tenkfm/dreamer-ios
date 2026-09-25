@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Session-level state: onboarding, preferences, subscription and navigation.
+/// Session-level state: account, onboarding, preferences, subscription and navigation.
 @MainActor
 @Observable
 final class AppState {
@@ -16,6 +16,8 @@ final class AppState {
     private(set) var subscription: SubscriptionStatus { didSet { persist() } }
     private(set) var paywallBypassed: Bool { didSet { persist() } }
     var reminders: ReminderSettings { didSet { persist() } }
+    /// The signed-in account; nil when signed out.
+    private(set) var userID: String? { didSet { persist() } }
 
     // MARK: Navigation
 
@@ -45,13 +47,43 @@ final class AppState {
         subscription = saved.subscription
         paywallBypassed = saved.paywallBypassed
         reminders = saved.reminders
+        userID = saved.userID
     }
 
-    /// Hard paywall: onboarding done but no subscription shows the paywall before Main.
+    /// Onboarding until the user has an account and has been through it (new users) or signed
+    /// back in (returning users); then the hard paywall until there is a subscription.
     var rootScreen: RootScreen {
-        guard onboardingCompleted else { return .onboarding }
+        guard isSignedIn, onboardingCompleted else { return .onboarding }
         if subscription == .none && !paywallBypassed { return .paywall }
         return .main
+    }
+
+    var isSignedIn: Bool { userID != nil }
+
+    // MARK: Account
+
+    /// After a successful sign-in. A returning user skips the rest of onboarding.
+    func signedIn(userID: String, isNewUser: Bool) {
+        self.userID = userID
+        if !isNewUser { onboardingCompleted = true }
+    }
+
+    /// The session ended (signed out, or the backend revoked it): back to sign-in, keeping the
+    /// device's preferences.
+    func signedOut() {
+        userID = nil
+        subscription = .none
+        selectedTab = .today
+        paths = [:]
+        isRecordFlowPresented = false
+    }
+
+    /// Launch check: the Keychain is the truth about the session. Nil `storedUserID` means the
+    /// tokens are gone (reinstall restores UserDefaults-free state, a revoked session...).
+    func reconcileSession(storedUserID: String?) {
+        if userID != storedUserID {
+            if let storedUserID { userID = storedUserID } else { signedOut() }
+        }
     }
 
     /// Night mode schedule: 9 PM to 5 AM, when "Night mode after 9 PM" is on.
@@ -81,7 +113,8 @@ final class AppState {
 
     // MARK: Onboarding & subscription
 
-    func completeOnboarding(goal: Goal, lens: Lens) {
+    /// Quiz answers, kept on the device until they are sent to the profile (IOS-02.5).
+    func saveQuizAnswers(goal: Goal, lens: Lens) {
         self.goal = goal
         preferredLens = lens
     }
@@ -91,7 +124,7 @@ final class AppState {
         onboardingCompleted = true
     }
 
-    /// Phase 1: "I already have an account" and the paywall close button go straight to Main.
+    /// Phase 1: the paywall close button goes straight to Main.
     func enterMainForTesting() {
         paywallBypassed = true
         onboardingCompleted = true
@@ -107,6 +140,7 @@ final class AppState {
         subscription = fresh.subscription
         paywallBypassed = fresh.paywallBypassed
         reminders = fresh.reminders
+        userID = nil
         nightModeOverride = nil
         selectedTab = .today
         paths = [:]
@@ -141,14 +175,15 @@ final class AppState {
     // MARK: Persistence
 
     private func persist() {
-        store.save(UserPreferences(
-            onboardingCompleted: onboardingCompleted,
-            userName: userName,
-            goal: goal,
-            preferredLens: preferredLens,
-            subscription: subscription,
-            paywallBypassed: paywallBypassed,
-            reminders: reminders
-        ))
+        var preferences = UserPreferences()
+        preferences.onboardingCompleted = onboardingCompleted
+        preferences.userName = userName
+        preferences.goal = goal
+        preferences.preferredLens = preferredLens
+        preferences.subscription = subscription
+        preferences.paywallBypassed = paywallBypassed
+        preferences.reminders = reminders
+        preferences.userID = userID
+        store.save(preferences)
     }
 }

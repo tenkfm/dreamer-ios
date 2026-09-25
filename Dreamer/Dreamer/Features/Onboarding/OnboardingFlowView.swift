@@ -35,7 +35,7 @@ struct OnboardingFlowView: View {
                         // Eager (not lazy) so every page has its exact frame from the first layout:
                         // the pager always starts on the bound step and button taps slide precisely.
                         HStack(spacing: 0) {
-                            ForEach(Step.allCases, id: \.self) { step in
+                            ForEach(viewModel.reachableSteps, id: \.self) { step in
                                 page(for: step)
                                     .containerRelativeFrame(.horizontal)
                                     .environment(\.entranceActive, revealedSteps.contains(step))
@@ -88,15 +88,26 @@ struct OnboardingFlowView: View {
     @ViewBuilder private func page(for step: Step) -> some View {
         switch step {
         case .welcome:
-            WelcomePage(onContinue: next, onExistingAccount: viewModel.useExistingAccount)
+            WelcomePage(onContinue: next, onExistingAccount: existingAccount)
         case .record:
-            RecordIntroPage(onContinue: next, onSkip: skip, onExistingAccount: viewModel.useExistingAccount)
+            RecordIntroPage(onContinue: next, onSkip: skip, onExistingAccount: existingAccount)
         case .understand:
-            UnderstandPage(onContinue: next, onSkip: skip, onExistingAccount: viewModel.useExistingAccount)
+            UnderstandPage(onContinue: next, onSkip: skip, onExistingAccount: existingAccount)
         case .quizGoal:
             QuizGoalView(viewModel: viewModel, onBack: back, onContinue: next)
         case .quizLens:
             QuizLensView(viewModel: viewModel, onBack: back, onContinue: next)
+        case .account:
+            ViewModelHost {
+                SignInViewModel(mode: viewModel.accountMode, auth: dependencies.auth, analytics: dependencies.analytics) { session in
+                    withAnimation(.soft(0.6)) { viewModel.signedIn(session) }
+                }
+            } content: { signIn in
+                SignInView(viewModel: signIn) {
+                    withAnimation(.soft(0.8)) { viewModel.leaveAccount() }
+                }
+                .onChange(of: viewModel.accountMode, initial: true) { _, mode in signIn.mode = mode }
+            }
         case .paywall:
             PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState))
         }
@@ -130,6 +141,7 @@ struct OnboardingFlowView: View {
     private func next() { withAnimation(.soft(0.6)) { viewModel.next() } }
     private func back() { withAnimation(.soft(0.6)) { viewModel.back() } }
     private func skip() { withAnimation(.soft(0.8)) { viewModel.skipIntro() } }
+    private func existingAccount() { withAnimation(.soft(0.9)) { viewModel.useExistingAccount() } }
 
     /// Blends the quiz "sky only at the top" look in and out as the pages slide.
     private var topSkyAmount: Double {

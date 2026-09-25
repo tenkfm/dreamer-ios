@@ -18,6 +18,8 @@ final class AppDependencies {
     let api: APIClient?
     /// Nil in mock mode.
     let tokens: TokenManager?
+    let auth: any AuthService
+    let analytics: any Analytics
     let dreamStore: any DreamStore
     let analysis: any DreamAnalysisService
     let purchases: any PurchaseService
@@ -33,6 +35,8 @@ final class AppDependencies {
     init(mode: Mode = .mock,
          api: APIClient? = nil,
          tokens: TokenManager? = nil,
+         auth: any AuthService = MockAuthService(),
+         analytics: any Analytics = NoopAnalytics(),
          dreamStore: any DreamStore,
          analysis: any DreamAnalysisService,
          purchases: any PurchaseService,
@@ -46,6 +50,8 @@ final class AppDependencies {
         self.mode = mode
         self.api = api
         self.tokens = tokens
+        self.auth = auth
+        self.analytics = analytics
         self.dreamStore = dreamStore
         self.analysis = analysis
         self.purchases = purchases
@@ -93,6 +99,7 @@ final class AppDependencies {
             mode: .live,
             api: api,
             tokens: tokens,
+            auth: APIAuthService(client: api, tokens: tokens),
             dreamStore: InMemoryDreamStore(),
             analysis: APIDreamAnalysisService(client: api),
             purchases: MockPurchaseService(),
@@ -107,11 +114,13 @@ final class AppDependencies {
     }
 
     /// Mock mode for `-mockServices` (Debug and Staging builds, UI tests and demos) and for builds
-    /// without an API host (Release until the production domain exists).
+    /// without an API host (Release until the production domain exists). `-debugScreen` implies
+    /// mock data too, so screenshots are deterministic; add `-liveServices` to override.
     nonisolated static func mode(config: AppConfig, arguments: [String]) -> Mode {
         guard config.apiBaseURL != nil else { return .mock }
         #if DEBUG || STAGING
-        if arguments.contains("-mockServices") { return .mock }
+        if arguments.contains("-liveServices") { return .live }
+        if arguments.contains("-mockServices") || arguments.contains("-debugScreen") { return .mock }
         #endif
         return .live
     }
@@ -145,10 +154,22 @@ final class AppDependencies {
     }
 }
 
+extension AppDependencies {
+    /// The signed-in user id stored with the tokens (Keychain), read at launch. In mock mode the
+    /// session lives in the preferences only.
+    nonisolated static func storedUserID(mode: Mode, store: any SecureStore = KeychainStore()) -> String?? {
+        guard mode == .live else { return .none }
+        return .some(TokenManager.storedSession(in: store)?.userID)
+    }
+}
+
 extension AppState {
     static func preview(onboardingCompleted: Bool = true) -> AppState {
         let state = AppState(store: InMemoryPreferencesStore())
-        if onboardingCompleted { state.activateSubscription(.yearly) }
+        if onboardingCompleted {
+            state.signedIn(userID: "preview-user", isNewUser: false)
+            state.activateSubscription(.yearly)
+        }
         return state
     }
 }
