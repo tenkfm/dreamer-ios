@@ -116,7 +116,7 @@ final class AppDependencies {
             featureFlags: featureFlags,
             crashReporter: crashReporter,
             network: network,
-            makeSpeechService: { MockSpeechService() },
+            makeSpeechService: { OnDeviceSpeechService() },
             makeReadAloudService: { SpeechSynthesizerReadAloudService() }
         )
     }

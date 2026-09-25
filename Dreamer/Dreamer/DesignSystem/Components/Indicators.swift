@@ -170,23 +170,48 @@ struct WaveformBars: View {
     var spacing: CGFloat = 5
     var color: Color = DS.Palette.iconSoft
     var isAnimating = true
+    /// Live input levels (0...1, newest last). When set, bars follow the voice instead of the loop.
+    var levels: [CGFloat]? = nil
 
     /// Relative resting heights, so the frozen state still reads as a waveform.
     private static let pattern: [Double] = [0.35, 0.7, 0.5, 0.9, 0.4, 1, 0.6, 0.3, 0.75, 0.5, 0.95, 0.45,
                                             0.65, 0.3, 0.85, 0.55, 1, 0.4, 0.7, 0.35, 0.8, 0.5, 0.6, 0.9]
 
     var body: some View {
-        LoopingView(isPaused: !isAnimating) { time in
-            HStack(spacing: spacing) {
-                ForEach(0..<count, id: \.self) { i in
-                    Capsule()
-                        .fill(color)
-                        .frame(width: barWidth, height: height * scale(for: i, time: time))
-                        .frame(height: height)
+        Group {
+            if let levels {
+                HStack(spacing: spacing) {
+                    ForEach(0..<count, id: \.self) { i in
+                        Capsule()
+                            .fill(color)
+                            .frame(width: barWidth, height: height * voiceScale(i, levels: levels))
+                            .frame(height: height)
+                    }
+                }
+                .animation(.easeOut(duration: 0.12), value: levels)
+            } else {
+                LoopingView(isPaused: !isAnimating) { time in
+                    HStack(spacing: spacing) {
+                        ForEach(0..<count, id: \.self) { i in
+                            Capsule()
+                                .fill(color)
+                                .frame(width: barWidth, height: height * scale(for: i, time: time))
+                                .frame(height: height)
+                        }
+                    }
                 }
             }
         }
         .accessibilityHidden(true)
+    }
+
+    /// Mirrored around the centre bar so speech ripples outwards; silence keeps a low line.
+    private func voiceScale(_ i: Int, levels: [CGFloat]) -> CGFloat {
+        guard !levels.isEmpty else { return 0.25 }
+        let distance = abs(i - count / 2)
+        let level = levels[max(0, levels.count - 1 - distance)]
+        let texture = 0.7 + 0.3 * Self.pattern[i % Self.pattern.count]
+        return 0.25 + 0.75 * min(1, level * texture)
     }
 
     private func scale(for i: Int, time: TimeInterval) -> CGFloat {

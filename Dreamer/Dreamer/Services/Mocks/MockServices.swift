@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Types the sample transcript in, ~2 characters every 80 ms.
+/// Types the sample transcript in, ~2 characters every 80 ms, with a talking-like level.
 @MainActor
 final class MockSpeechService: SpeechService {
     private let text: String
@@ -15,15 +15,20 @@ final class MockSpeechService: SpeechService {
         self.tick = tick
     }
 
-    func start() -> AsyncStream<String> {
+    func start() -> AsyncThrowingStream<SpeechEvent, any Error> {
         stop()
-        let (stream, continuation) = AsyncStream<String>.makeStream()
+        let (stream, continuation) = AsyncThrowingStream<SpeechEvent, any Error>.makeStream()
         task = Task { [text, charactersPerTick, tick] in
             var count = 0
-            while count < text.count, !Task.isCancelled {
+            var phase = 0.0
+            while !Task.isCancelled {
                 try? await Task.sleep(for: tick)
-                count = min(text.count, count + charactersPerTick)
-                continuation.yield(String(text.prefix(count)))
+                phase += 0.9
+                continuation.yield(.level(Float(0.35 + 0.3 * sin(phase) + 0.2 * sin(phase * 2.7))))
+                if count < text.count {
+                    count = min(text.count, count + charactersPerTick)
+                    continuation.yield(.transcript(String(text.prefix(count))))
+                }
             }
             continuation.finish()
         }

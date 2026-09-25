@@ -3,10 +3,24 @@ import Foundation
 // Service boundaries. Views never talk to services directly: view models do,
 // so real implementations (speech, backend, StoreKit) plug in without touching the UI.
 
-/// Live transcription. The stream yields the full transcript recognized so far.
+/// What live transcription reports while the user talks.
+enum SpeechEvent: Sendable, Equatable {
+    /// The whole transcript recognized so far (it can still change as recognition refines it).
+    case transcript(String)
+    /// Microphone level, 0...1, about 20 times a second (drives the waveform).
+    case level(Float)
+}
+
+enum SpeechError: Error, Equatable {
+    case notAuthorized
+    case unavailable
+    case audio(String)
+}
+
+/// Live transcription. `start` ends when `stop` is called or recognition fails.
 @MainActor
 protocol SpeechService: AnyObject {
-    func start() -> AsyncStream<String>
+    func start() -> AsyncThrowingStream<SpeechEvent, any Error>
     func stop()
 }
 

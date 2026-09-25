@@ -131,6 +131,16 @@ nothing to restore; subscribers open the App Store's own management from Setting
 Events: `paywall_viewed {placement, variant}`, `plan_selected`, `purchase_started`; trial and
 purchase events come from the RevenueCat integration.
 
+## Recording
+
+`OnDeviceSpeechService` (live mode) streams the microphone through AVAudioEngine into
+SFSpeechRecognizer with `requiresOnDeviceRecognition` where the model exists, so a dream is written
+down in airplane mode. The user's language is used when the device can recognize it, US English
+otherwise. One recognition request stops after about a minute; the service starts the next one and
+`TranscriptStitcher` continues the text after the finished segments. `AudioLevelMeter` turns each
+buffer into a 0...1 level about 20 times a second; the Record waveform mirrors the last 24 levels
+around its centre. Mock mode types the sample dream with a talking-like level.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

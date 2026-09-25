@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 import Observation
 
@@ -10,6 +11,12 @@ final class RecordViewModel {
     private(set) var elapsedSeconds = 0
     private(set) var isRecording = false
     var isTyping = false
+    /// The last 24 microphone levels (0...1), newest last, for the waveform.
+    private(set) var levels: [CGFloat] = Array(repeating: 0, count: RecordViewModel.barCount)
+    /// Recognition stopped by itself (unavailable, failed).
+    private(set) var speechError: SpeechError?
+
+    static let barCount = 24
 
     private let speech: any SpeechService
     @ObservationIgnored private var listenTask: Task<Void, Never>?
@@ -30,10 +37,16 @@ final class RecordViewModel {
     func start() {
         guard !isRecording else { return }
         isRecording = true
+        speechError = nil
         let stream = speech.start()
         listenTask = Task { [weak self] in
-            for await text in stream {
-                self?.transcript = text
+            do {
+                for try await event in stream {
+                    self?.handle(event)
+                }
+            } catch {
+                self?.speechError = (error as? SpeechError) ?? .audio(String(describing: type(of: error)))
+                self?.stop()
             }
         }
         timerTask = Task { [weak self] in
@@ -45,8 +58,19 @@ final class RecordViewModel {
         }
     }
 
+    private func handle(_ event: SpeechEvent) {
+        switch event {
+        case .transcript(let text):
+            transcript = text
+        case .level(let level):
+            levels.removeFirst()
+            levels.append(CGFloat(level))
+        }
+    }
+
     func stop() {
         speech.stop()
+        levels = Array(repeating: 0, count: Self.barCount)
         listenTask?.cancel()
         timerTask?.cancel()
         listenTask = nil

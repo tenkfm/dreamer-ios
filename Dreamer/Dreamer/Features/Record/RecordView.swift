@@ -13,7 +13,8 @@ struct RecordView: View {
                 .padding(.top, 30)
                 .enterUp(0.25)
                 .accessibilityHidden(true)
-            WaveformBars(count: 24, barWidth: 4, height: 40, spacing: 5, color: DS.Palette.iconSoft, isAnimating: viewModel.isRecording)
+            WaveformBars(count: RecordViewModel.barCount, barWidth: 4, height: 40, spacing: 5, color: DS.Palette.iconSoft,
+                         isAnimating: viewModel.isRecording, levels: viewModel.levels)
                 .padding(.top, 34)
                 .enterUp(0.4)
             // Short text sits right under the waveform; long text keeps its newest line in view.
