@@ -28,6 +28,11 @@ final class AppState {
     var pendingDeepLink: DeepLink?
     /// Profile sync to run for the current account (set on sign-in and at launch).
     private(set) var pendingProfileSync: ProfileSyncDirection?
+    /// Settings changed on this device and not yet on the server (kept across launches, so an
+    /// offline change is not overwritten by the next pull).
+    private(set) var unsyncedProfile: ProfileUpdate? { didSet { persist() } }
+    /// A new value sends `unsyncedProfile` now.
+    private(set) var profileWriteRequest: UUID?
     /// The backend's subscription record (paywall variant, free interpretations left).
     var serverSubscription: SubscriptionInfo? {
         didSet {
@@ -68,6 +73,7 @@ final class AppState {
         userID = saved.userID
         storedPaywallVariant = saved.paywallVariant
         freeInterpretationsLeft = saved.freeInterpretationsLeft
+        unsyncedProfile = saved.unsyncedProfile
     }
 
     /// Onboarding until the user has an account and has been through it (new users) or signed
@@ -126,6 +132,26 @@ final class AppState {
         pendingProfileSync = nil
     }
 
+    /// The main lens, from Settings or "Make this my main lens"; open interpretations follow it.
+    func setPreferredLens(_ lens: Lens) {
+        guard lens != preferredLens else { return }
+        preferredLens = lens
+        changeProfile(ProfileUpdate(preferredLens: lens))
+    }
+
+    /// Queues a setting for `/v1/me`. Before sign-in there is nothing to send: the onboarding push
+    /// takes the whole local profile.
+    func changeProfile(_ update: ProfileUpdate) {
+        guard isSignedIn else { return }
+        unsyncedProfile = (unsyncedProfile ?? ProfileUpdate()).merging(update)
+        profileWriteRequest = UUID()
+    }
+
+    /// The backend has `sent`; a change made meanwhile stays queued.
+    func profileUpdateSent(_ sent: ProfileUpdate) {
+        if unsyncedProfile == sent { unsyncedProfile = nil }
+    }
+
     /// The server's profile wins over the local copy (another device may have changed it).
     func apply(_ profile: UserProfile) {
         if let name = profile.name?.split(separator: " ").first.map(String.init) { userName = name }
@@ -144,6 +170,7 @@ final class AppState {
     func signedOut() {
         userID = nil
         pendingProfileSync = nil
+        unsyncedProfile = nil
         serverSubscription = nil
         storedPaywallVariant = nil
         freeInterpretationsLeft = 0
@@ -248,6 +275,7 @@ final class AppState {
         paywallBypassed = fresh.paywallBypassed
         reminders = fresh.reminders
         userID = nil
+        unsyncedProfile = nil
         nightModeOverride = nil
         selectedTab = .today
         paths = [:]
@@ -297,6 +325,7 @@ final class AppState {
         preferences.userID = userID
         preferences.paywallVariant = storedPaywallVariant
         preferences.freeInterpretationsLeft = freeInterpretationsLeft
+        preferences.unsyncedProfile = unsyncedProfile
         store.save(preferences)
     }
 }

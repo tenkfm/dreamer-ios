@@ -63,7 +63,9 @@ struct ProfileSync {
                 appState.profileSynced()
             }
         case .pull:
-            guard let profile = try? await profiles.profile() else { return }
+            // A change made offline goes up first, or the pull would bring the old value back.
+            await sendPending()
+            guard appState.unsyncedProfile == nil, let profile = try? await profiles.profile() else { return }
             appState.apply(profile)
             // The server does insights in the user's time zone: keep it current after travel.
             let zone = timeZone().identifier
@@ -71,6 +73,23 @@ struct ProfileSync {
                 _ = try? await profiles.update(ProfileUpdate(timezone: zone))
             }
             appState.profileSynced()
+        }
+    }
+
+    /// Sends the settings changed on this device. Offline and server failures keep them for the
+    /// next try; a refused change (4xx) is dropped so it cannot block every later sync.
+    func sendPending() async {
+        guard let pending = appState.unsyncedProfile else { return }
+        do {
+            _ = try await profiles.update(pending)
+            appState.profileUpdateSent(pending)
+        } catch {
+            switch error {
+            case .server(let server) where (400..<500).contains(server.status) && server.status != 401 && server.status != 429:
+                appState.profileUpdateSent(pending)
+            default:
+                break
+            }
         }
     }
 
@@ -85,5 +104,16 @@ struct ProfileSync {
             timezone: timeZone().identifier,
             nightMode: appState.reminders.nightModeAfter9
         )
+    }
+}
+
+/// The user's notes on a dream, on the backend (`PATCH /v1/dreams/{id}`).
+protocol DreamNotesService: Sendable {
+    func saveNotes(_ notes: String, dreamID: UUID) async throws(APIError)
+}
+
+extension APIClient: DreamNotesService {
+    func saveNotes(_ notes: String, dreamID: UUID) async throws(APIError) {
+        _ = try await updateDream(id: dreamID, DreamPatch(notes: notes))
     }
 }

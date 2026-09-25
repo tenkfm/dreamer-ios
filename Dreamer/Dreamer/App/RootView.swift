@@ -67,6 +67,11 @@ struct RootView: View {
             guard dependencies.network.isOnline, appState.isSignedIn, scenePhase == .active else { return }
             await dependencies.drafts?.flush()
         }
+        .task(id: appState.profileWriteRequest) {
+            // A setting changed (the main lens...): up to /v1/me; offline it waits for the next launch.
+            guard appState.profileWriteRequest != nil else { return }
+            await ProfileSync(appState: appState, profiles: dependencies.profiles).sendPending()
+        }
         .task(id: appState.pendingProfileSync) {
             // New account: quiz answers and settings go up; existing one: the server's profile comes down.
             guard let direction = appState.pendingProfileSync else { return }

@@ -105,7 +105,8 @@ private struct RouteDestination: View {
         case .interpretation(let id):
             ViewModelHost {
                 InterpretationViewModel(dreamID: id, store: dependencies.dreamStore, appState: appState,
-                                        readAloud: dependencies.makeReadAloudService(), imageSaver: dependencies.imageSaver)
+                                        readAloud: dependencies.makeReadAloudService(), imageSaver: dependencies.imageSaver,
+                                        analytics: dependencies.analytics, notesService: dependencies.api)
             } content: { viewModel in
                 InterpretationView(viewModel: viewModel)
             }

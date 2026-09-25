@@ -63,6 +63,15 @@ parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an
 `DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
 or the connection drops, and keeps polling through network gaps, so the result is never lost.
 
+Lenses and notes (IOS-05.3): the main lens of every interpretation is the account's preferred lens
+(the backend reads it from the profile for each dream), so changing it in Settings updates dreams that
+are already open. "Make this my main lens" sets it for the whole account and tracks
+`lens_promoted {from, to}`. Setting changes are queued in `AppState.unsyncedProfile`, which persists,
+and sent with `PATCH /v1/me`. At launch the queue goes up before the profile pull, so an offline
+change is not overwritten. Notes are saved on the device as the user types, and sent with
+`PATCH /v1/dreams/{id}` 1 s after typing stops, or at once when the screen closes. The limit is 4000
+characters.
+
 Crisis-flagged dreams (IOS-05.2): when `interpretation.safetyFlag` is true, Interpretation shows
 `SupportCard` instead of the reading. There are no lenses, voice, image badge, sharing or saving;
 the notes and the disclaimer stay. Analysis also drops the text it streamed. The copy and the

@@ -87,7 +87,7 @@ final class SettingsViewModel {
 
     var preferredLens: Lens {
         get { appState.preferredLens }
-        set { appState.preferredLens = newValue }
+        set { appState.setPreferredLens(newValue) }
     }
 
     var subscriptionText: String {

@@ -22,7 +22,10 @@ struct InterpretationView: View {
             }
         }
         .toast($viewModel.toastMessage)
-        .onDisappear { viewModel.stopPlayback() }
+        .onDisappear {
+            viewModel.stopPlayback()
+            Task { await viewModel.flushNotes() }
+        }
     }
 
     // MARK: Header

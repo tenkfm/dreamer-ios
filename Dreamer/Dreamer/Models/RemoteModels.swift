@@ -35,7 +35,7 @@ struct UserProfile: Sendable, Equatable {
 }
 
 /// `PATCH /v1/me`: only the set fields change.
-struct ProfileUpdate: Sendable, Equatable {
+struct ProfileUpdate: Sendable, Hashable, Codable {
     var name: String?
     var goal: Goal?
     var preferredLens: Lens?
@@ -43,6 +43,17 @@ struct ProfileUpdate: Sendable, Equatable {
     var reminderTime: String?
     var timezone: String?
     var nightMode: Bool?
+
+    /// This update with `newer`'s fields on top (a later change of the same field wins).
+    func merging(_ newer: ProfileUpdate) -> ProfileUpdate {
+        ProfileUpdate(name: newer.name ?? name,
+                      goal: newer.goal ?? goal,
+                      preferredLens: newer.preferredLens ?? preferredLens,
+                      reminderEnabled: newer.reminderEnabled ?? reminderEnabled,
+                      reminderTime: newer.reminderTime ?? reminderTime,
+                      timezone: newer.timezone ?? timezone,
+                      nightMode: newer.nightMode ?? nightMode)
+    }
 }
 
 // MARK: - Dreams

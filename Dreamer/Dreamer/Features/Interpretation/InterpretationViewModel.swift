@@ -1,18 +1,21 @@
 import Foundation
 import Observation
 
-/// 11 Interpretation. Main lens = on-screen override ?? preferred lens; the other two are alternatives.
+/// 11 Interpretation. The main lens is the account's preferred lens (the one the backend used for
+/// the dream), so a change in Settings shows on dreams already open; the other two are alternatives.
 @MainActor
 @Observable
 final class InterpretationViewModel {
     private(set) var dream: Dream?
-    private(set) var lensOverride: Lens?
     private(set) var expandedLenses: Set<Lens> = []
     private(set) var isSavingImage = false
     var toastMessage: String?
+    /// Saved on the device at once and on the backend a moment after typing stops.
     var notes: String {
-        didSet { saveNotes() }
+        didSet { notesChanged() }
     }
+
+    static let notesLimit = 4000
 
     let readAloud: any ReadAloudService
     private let store: any DreamStore
@@ -20,6 +23,13 @@ final class InterpretationViewModel {
     private let imageSaver: any ImageSaving
     private let dateFormatter: DreamDateFormatter
     private let supportContent: any SupportContentProvider
+    private let analytics: any Analytics
+    /// Nil in mock mode (notes stay on the device).
+    private let notesService: (any DreamNotesService)?
+    private let notesDebounce: Duration
+    @ObservationIgnored private var notesTask: Task<Void, Never>?
+    /// Notes typed since the backend last confirmed them.
+    @ObservationIgnored private var unsentNotes: String?
     private let region: Locale.Region?
 
     init(dreamID: Dream.ID,
@@ -29,6 +39,9 @@ final class InterpretationViewModel {
          imageSaver: any ImageSaving,
          supportContent: any SupportContentProvider = PendingSupportContent(),
          region: Locale.Region? = Locale.current.region,
+         analytics: any Analytics = NoopAnalytics(),
+         notesService: (any DreamNotesService)? = nil,
+         notesDebounce: Duration = .seconds(1),
          dateFormatter: DreamDateFormatter = DreamDateFormatter()) {
         let dream = store.dream(id: dreamID)
         self.dream = dream
@@ -40,6 +53,9 @@ final class InterpretationViewModel {
         self.dateFormatter = dateFormatter
         self.supportContent = supportContent
         self.region = region
+        self.analytics = analytics
+        self.notesService = notesService
+        self.notesDebounce = notesDebounce
     }
 
     // MARK: Content
@@ -51,7 +67,7 @@ final class InterpretationViewModel {
         return supportContent.content(for: region)
     }
 
-    var mainLens: Lens { lensOverride ?? appState.preferredLens }
+    var mainLens: Lens { appState.preferredLens }
 
     var alternativeLenses: [Lens] { Lens.allCases.filter { $0 != mainLens } }
 
@@ -93,11 +109,15 @@ final class InterpretationViewModel {
         }
     }
 
-    /// "Make this my main lens": swaps it into the main card, resets the player, collapses both.
+    /// "Make this my main lens": it becomes the account's lens (every dream, and the next ones),
+    /// swaps into the main card, resets the player and collapses both alternatives.
     func promote(_ lens: Lens) {
+        let previous = mainLens
+        guard lens != previous else { return }
         readAloud.stop()
-        lensOverride = lens
+        appState.setPreferredLens(lens)
         expandedLenses = []
+        analytics.track(.lensPromoted(from: previous, to: lens))
     }
 
     func stopPlayback() {
@@ -118,10 +138,38 @@ final class InterpretationViewModel {
         }
     }
 
-    private func saveNotes() {
+    private func notesChanged() {
+        if notes.count > Self.notesLimit {
+            notes = String(notes.prefix(Self.notesLimit))
+            return
+        }
         guard var dream, dream.notes != notes else { return }
         dream.notes = notes
         self.dream = dream
         store.save(dream)
+        unsentNotes = notes
+        notesTask?.cancel()
+        notesTask = Task { [weak self, notesDebounce] in
+            try? await Task.sleep(for: notesDebounce)
+            guard !Task.isCancelled else { return }
+            await self?.sendNotes()
+        }
+    }
+
+    /// Leaving the screen: what was typed goes up now instead of after the pause.
+    func flushNotes() async {
+        notesTask?.cancel()
+        await sendNotes()
+    }
+
+    private func sendNotes() async {
+        guard let notesService, let dreamID = dream?.id, let text = unsentNotes else { return }
+        do {
+            try await notesService.saveNotes(text, dreamID: dreamID)
+            // Typed more while this was on the way: that newer text is still unsent.
+            if unsentNotes == text { unsentNotes = nil }
+        } catch {
+            // Kept on the device; the next edit or leaving the screen tries again.
+        }
     }
 }

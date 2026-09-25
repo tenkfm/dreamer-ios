@@ -121,6 +121,7 @@ struct UserPreferences: Codable, Hashable, Sendable {
         userID = try container.decodeIfPresent(String.self, forKey: .userID)
         paywallVariant = try container.decodeIfPresent(PaywallVariant.self, forKey: .paywallVariant)
         freeInterpretationsLeft = try container.decodeIfPresent(Int.self, forKey: .freeInterpretationsLeft) ?? 0
+        unsyncedProfile = try container.decodeIfPresent(ProfileUpdate.self, forKey: .unsyncedProfile)
     }
 
     var onboardingCompleted = false
@@ -137,6 +138,8 @@ struct UserPreferences: Codable, Hashable, Sendable {
     /// Last known from `GET /v1/subscription`, so the right screen shows before it answers again.
     var paywallVariant: PaywallVariant?
     var freeInterpretationsLeft = 0
+    /// Profile changes made on this device that the backend has not confirmed yet.
+    var unsyncedProfile: ProfileUpdate?
 }
 
 @MainActor
