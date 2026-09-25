@@ -32,6 +32,19 @@ struct AnalysisView: View {
                     .padding(.horizontal, 40 - DS.Space.screen)
                     .enterUp(0.5)
 
+                if showsWrittenText {
+                    // The newest lines of the main lens while it is being written.
+                    Text(viewModel.writtenText)
+                        .textStyle(.secondary, color: DS.Palette.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                        .truncationMode(.head)
+                        .padding(.top, 20)
+                        .padding(.horizontal, 40 - DS.Space.screen + 8)
+                        .transition(.opacity)
+                        .accessibilityHidden(true)
+                }
+
                 if viewModel.isSavedOffline {
                     VStack(spacing: 4) {
                         Text("Saved on your iPhone").textStyle(.bodyStrong)
@@ -81,6 +94,7 @@ struct AnalysisView: View {
             .padding(.horizontal, DS.Space.screen)
         }
         .animation(.soft(0.6), value: viewModel.isFinished)
+        .animation(.soft(0.6), value: showsWrittenText)
         .task { await viewModel.run() }
         .sheet(isPresented: $isPaywallPresented) {
             ZStack {
@@ -98,6 +112,10 @@ struct AnalysisView: View {
             }
         }
         .sensoryFeedback(.success, trigger: viewModel.isFinished) { _, finished in finished }
+    }
+
+    private var showsWrittenText: Bool {
+        !viewModel.writtenText.isEmpty && viewModel.errorMessage == nil && !viewModel.isSavedOffline
     }
 
     private var stepsCard: some View {

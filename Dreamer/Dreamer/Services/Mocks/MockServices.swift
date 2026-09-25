@@ -92,11 +92,21 @@ struct MockDreamAnalysisService: DreamAnalysisService {
             let task = Task {
                 do {
                     continuation.yield(.accepted(UUID()))
+                    let dream = MockData.analyzedDream(from: draft, at: .now)
                     for step in AnalysisStep.allCases {
-                        try await Task.sleep(for: stepDuration)
+                        if step == .writing, stepDuration > .zero {
+                            // The main lens arrives word by word, as the backend streams it.
+                            let words = (dream.interpretation?.text(for: dream.mainLens ?? .psychology) ?? "").split(separator: " ")
+                            for count in stride(from: 3, through: words.count, by: 3) {
+                                try await Task.sleep(for: stepDuration / 12)
+                                continuation.yield(.writing(words.prefix(count).joined(separator: " ")))
+                            }
+                        } else {
+                            try await Task.sleep(for: stepDuration)
+                        }
                         continuation.yield(.completed(step))
                     }
-                    continuation.yield(.finished(MockData.analyzedDream(from: draft, at: .now)))
+                    continuation.yield(.finished(dream))
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)

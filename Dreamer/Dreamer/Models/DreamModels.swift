@@ -182,5 +182,7 @@ enum AnalysisProgress: Sendable {
     case accepted(UUID)
     /// The given step has completed.
     case completed(AnalysisStep)
+    /// The main lens as written so far (streamed; replaces the previous value).
+    case writing(String)
     case finished(Dream)
 }

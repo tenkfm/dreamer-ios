@@ -10,6 +10,8 @@ final class AnalysisViewModel {
     let steps = AnalysisStep.allCases
     private(set) var completed: Set<AnalysisStep> = []
     private(set) var result: Dream?
+    /// The main lens as the backend writes it (first words well before the dream is ready).
+    private(set) var writtenText = ""
     private(set) var errorMessage: String?
     /// Set when the failure came from the backend (paywall, limit, sign-in...).
     private(set) var errorState: ErrorState?
@@ -49,6 +51,7 @@ final class AnalysisViewModel {
         errorState = nil
         isSavedOffline = false
         completed = []
+        writtenText = ""
         // Saved before sending: a crash or a relaunch mid-request still has the dream.
         drafts?.save(draft)
         do {
@@ -58,6 +61,8 @@ final class AnalysisViewModel {
                     drafts?.markSent(clientId: draft.clientId)
                 case .completed(let step):
                     completed.insert(step)
+                case .writing(let text):
+                    writtenText = text
                 case .finished(let dream):
                     store.save(dream)
                     result = dream

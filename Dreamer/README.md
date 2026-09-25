@@ -63,6 +63,13 @@ parsed byte by byte because `AsyncBytes.lines` drops the blank lines that end an
 `DreamProgressTracker` falls back to polling `/status` every 2 s when the stream ends (after 120 s)
 or the connection drops, and keeps polling through network gaps, so the result is never lost.
 
+Analysis (IOS-05.1): the checklist follows the `step` events. The main lens appears under the card
+as it is written (`text` deltas; `reset: true` drops what was shown because the backend restarted
+with its fallback provider). `ready` enables "See my interpretation". A failed dream (`status: failed`
+or an `error` event) shows "Try again": the same `clientId` returns the failed dream, and the service
+then calls `POST /v1/dreams/{id}/retry` before following it again. Closing the screen only stops
+listening; the backend finishes the dream anyway.
+
 Mock or live: `AppDependencies.live()` talks to the build's backend (`APIClient` + `TokenManager`
 with the Keychain) when the configuration has an API host. `-mockServices` (Debug and Staging
 builds) keeps every service local, as do previews, unit tests and Release until the production
