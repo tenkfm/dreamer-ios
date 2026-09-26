@@ -61,7 +61,7 @@ struct MainTabView: View {
         switch tab {
         case .today:
             HomeView(viewModel: HomeViewModel(appState: appState, store: dependencies.dreamStore, catalog: dependencies.catalog,
-                                              insights: dependencies.insights))
+                                              insights: dependencies.insights, now: homeClock))
         case .journal:
             JournalView(viewModel: JournalViewModel(appState: appState, store: dependencies.dreamStore, images: dependencies.imageLoader,
                                                     insights: dependencies.insights, analytics: dependencies.analytics))
@@ -82,6 +82,13 @@ struct MainTabView: View {
         DebugLaunch.prepare(flow)
         #endif
         return flow
+    }
+
+    private var homeClock: () -> Date {
+        #if DEBUG
+        if let clock = DebugLaunch.clock { return clock }
+        #endif
+        return Date.init
     }
 
     private func pathBinding(for tab: AppTab) -> Binding<[Route]> {

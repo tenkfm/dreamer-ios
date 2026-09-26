@@ -7,6 +7,8 @@
 #   bundle exec fastlane certificates                         # match: fetch signing assets
 #   bundle exec fastlane signed_build configuration:Staging   # signed .ipa with match profiles
 #   bundle exec fastlane upload_dsyms                         # dSYMs of the last archive to Sentry
+#   bundle exec fastlane screenshots                          # App Store screenshots (6.9" and 6.5")
+#   bundle exec fastlane upload_store                         # metadata + screenshots to App Store Connect
 
 default_platform(:ios)
 
@@ -51,6 +53,64 @@ platform :ios do
 
     launch_arguments = options[:screen] ? "-debugScreen #{options[:screen]}" : ""
     sh("xcrun simctl launch --terminate-running-process #{udid} #{bundle_id} #{launch_arguments}")
+  end
+
+  desc "App Store screenshots: each screen of fastlane/screenshots.json opened with -debugScreen on"
+  desc "mock data, with a clean status bar, then captioned by scripts/frame_screenshots.py"
+  lane :screenshots do
+    config = JSON.parse(File.read(File.expand_path("screenshots.json", __dir__)))
+    udid = boot_simulator(name: config["device"])
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      configuration: "Debug",
+      destination: "platform=iOS Simulator,id=#{udid}",
+      derived_data_path: DERIVED_DATA,
+      skip_archive: true,
+      skip_codesigning: true,
+      skip_package_ipa: true,
+      xcargs: PLUGIN_XCARGS
+    )
+    bundle_id = BUNDLE_IDS.fetch("Debug")
+    app_path = File.join(DERIVED_DATA, "Build/Products/Debug-iphonesimulator/#{SCHEME}.app")
+    sh("xcrun simctl uninstall #{udid} #{bundle_id}")
+    sh("xcrun simctl install #{udid} #{app_path.shellescape}")
+    sh("xcrun simctl status_bar #{udid} override --time 9:41 --batteryState charged --batteryLevel 100 " \
+       "--cellularMode active --cellularBars 4 --wifiBars 3 --dataNetwork wifi")
+
+    raw_dir = File.expand_path("screenshots/raw", __dir__)
+    FileUtils.mkdir_p(raw_dir)
+    begin
+      # The first launch of a fresh install shows system banners; let them pass before shooting.
+      sh("xcrun simctl launch --terminate-running-process #{udid} #{bundle_id} -debugScreen home")
+      sleep(10)
+      config["shots"].each do |shot|
+        arguments = (config["arguments"] + ["-debugScreen", shot["screen"]]).join(" ")
+        sh("xcrun simctl launch --terminate-running-process #{udid} #{bundle_id} #{arguments}")
+        sleep(shot["wait"])
+        sh("xcrun simctl io #{udid} screenshot #{File.join(raw_dir, "#{shot['name']}.png").shellescape}")
+      end
+    ensure
+      sh("xcrun simctl status_bar #{udid} clear")
+    end
+    sh("python3 #{File.expand_path('../scripts/frame_screenshots.py', __dir__).shellescape}")
+  end
+
+  desc "Upload the metadata (fastlane/metadata) and screenshots to App Store Connect, no binary"
+  desc "Needs the App Store Connect API key (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT)"
+  lane :upload_store do
+    deliver(
+      api_key: asc_api_key,
+      app_identifier: BUNDLE_IDS.fetch("Release"),
+      skip_binary_upload: true,
+      overwrite_screenshots: true,
+      screenshots_path: File.expand_path("screenshots", __dir__),
+      metadata_path: File.expand_path("metadata", __dir__),
+      submit_for_review: false,
+      force: true,
+      precheck_include_in_app_purchases: false,
+      run_precheck_before_submit: false
+    )
   end
 
   desc "Run the unit tests in the simulator"

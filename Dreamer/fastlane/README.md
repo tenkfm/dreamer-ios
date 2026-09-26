@@ -27,6 +27,26 @@ Options: device (simulator name), screen (debug start screen, e.g. journal), res
 
 configuration (Debug, Staging or Release)
 
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+App Store screenshots: each screen of fastlane/screenshots.json opened with -debugScreen on
+
+mock data, with a clean status bar, then captioned by scripts/frame_screenshots.py
+
+### ios upload_store
+
+```sh
+[bundle exec] fastlane ios upload_store
+```
+
+Upload the metadata (fastlane/metadata) and screenshots to App Store Connect, no binary
+
+Needs the App Store Connect API key (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT)
+
 ### ios test
 
 ```sh

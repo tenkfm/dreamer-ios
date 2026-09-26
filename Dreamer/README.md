@@ -363,6 +363,18 @@ and its DSN exist (see Blockers):
 Check the setup with a TestFlight build: launch it with `-crashTestCrash` (Staging), relaunch, and
 the alert should arrive within 15 minutes.
 
+## App Store screenshots
+
+`bundle exec fastlane screenshots` builds Debug, installs it clean on the iPhone 17 Pro Max
+simulator, sets the status bar to 9:41 with full battery, and opens each screen of
+`fastlane/screenshots.json` with `-debugScreen` on mock data (`-day -debugTime 07:30`). It then
+takes the screenshots and captions them with `scripts/frame_screenshots.py` (the design's sky, the
+Quicksand font and the text colour). The result is 6.9" (1320 x 2868) and 6.5" (1284 x 2778)
+images in `fastlane/screenshots/en-US`, which is git-ignored and regenerated at every design
+change. `bundle exec fastlane upload_store` sends the metadata and the screenshots to App Store
+Connect with `deliver`, without a binary. It needs the App Store Connect API key (see Blockers).
+To change the story, edit the screens, waits and captions in `screenshots.json`.
+
 ## Signing
 
 Certificates and profiles are shared through fastlane match (`fastlane/Matchfile`), App Store
@@ -436,7 +448,7 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
 interpretation support symbol record details analysis`. Debug screens use mock services (`-liveServices`
 to talk to the backend instead); `-mockServices` does the same for a normal launch,
-`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-night` or `-day` to force the appearance,
+`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-debugTime HH:mm` for the Home greeting, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.
 

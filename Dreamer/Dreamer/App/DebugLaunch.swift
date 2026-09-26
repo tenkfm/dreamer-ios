@@ -32,6 +32,16 @@ enum DebugLaunch {
         return nil
     }()
 
+    /// `-debugTime HH:mm`: today at that time for the greeting and day labels (store screenshots).
+    static let clock: (() -> Date)? = {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-debugTime"), index + 1 < arguments.count else { return nil }
+        let parts = arguments[index + 1].split(separator: ":").compactMap { Int($0) }
+        guard parts.count == 2 else { return nil }
+        let date = Calendar.current.date(bySettingHour: parts[0], minute: parts[1], second: 0, of: .now) ?? .now
+        return { date }
+    }()
+
     static var onboardingStep: OnboardingViewModel.Step? {
         switch screen {
         case .welcome: .welcome
