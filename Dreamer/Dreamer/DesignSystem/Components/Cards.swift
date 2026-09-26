@@ -117,6 +117,9 @@ struct SymbolCard: View {
     var meaning: String
     var glyph: Glyph
 
+    /// 150 pt in the design; grows with Dynamic Type so a word never breaks in the middle.
+    @ScaledMetric(relativeTo: .body) private var width: CGFloat = 150
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             IconCircle(glyph: glyph, size: 34)
@@ -125,7 +128,7 @@ struct SymbolCard: View {
             Spacer(minLength: 0)
         }
         .padding(DS.Space.cardPadding)
-        .frame(width: 150, alignment: .leading)
+        .frame(width: width, alignment: .leading)
         .frame(maxHeight: .infinity, alignment: .top)
         .glassCard(radius: DS.Radius.option)
         .accessibilityElement(children: .combine)

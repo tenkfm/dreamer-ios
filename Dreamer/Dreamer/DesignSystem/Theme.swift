@@ -244,6 +244,22 @@ extension View {
 
     /// Soft blue shadow used for white text over the sky.
     func skyTextShadow() -> some View {
-        shadow(color: DS.Palette.skyTextShadow.opacity(0.4), radius: 7, x: 0, y: 1)
+        modifier(SkyTextShadow())
+    }
+}
+
+/// White text on the sky: a soft blue shadow, denser with Increase Contrast so the text stays
+/// readable over the brightest clouds.
+private struct SkyTextShadow: ViewModifier {
+    @Environment(\.colorSchemeContrast) private var contrast
+
+    func body(content: Content) -> some View {
+        if contrast == .increased {
+            content
+                .shadow(color: DS.Palette.skyTextShadow.opacity(0.85), radius: 3, x: 0, y: 1)
+                .shadow(color: DS.Palette.skyTextShadow.opacity(0.6), radius: 8, x: 0, y: 1)
+        } else {
+            content.shadow(color: DS.Palette.skyTextShadow.opacity(0.4), radius: 7, x: 0, y: 1)
+        }
     }
 }

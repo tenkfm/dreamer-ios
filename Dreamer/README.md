@@ -616,6 +616,19 @@ All loops (orb breathing, sky drift, waveforms, sparkles, thumbs) run on `Timeli
 with Reduce Motion; entrance animations are skipped too. Icon-only buttons have labels, Dynamic Type
 is capped at `.xxLarge`, and screens scroll on small devices (iPhone SE).
 
+Accessibility check (IOS-10.2):
+- Screenshots of every main screen at the largest supported size
+  (`-UIPreferredContentSizeCategoryName UICTContentSizeCategoryXXL`) show no clipped text. Key
+  symbol cards widen with the text (`@ScaledMetric`), so no word breaks in the middle.
+- The custom switch reads as a switch (`.isToggle`), the selected tab is marked selected, and the
+  sign-in error card offers a "Dismiss" action.
+- With Increase Contrast, white titles on the sky get a denser shadow.
+- Reduce Motion stops every looping animation and entrance (`LoopingView`, `EnterUp`, the image
+  reveal).
+- Manual VoiceOver run of onboarding -> Record (keyboard) -> Interpretation: every icon button
+  has a label and the steps of Analysis are read with their state. UI tests (IOS-11.2) add
+  `performAccessibilityAudit()` on the same screens.
+
 ## Before release
 
 - Re-export sky and thumbnail images at @3x (the handoff ships @2x only).

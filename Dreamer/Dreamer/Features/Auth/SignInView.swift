@@ -151,6 +151,7 @@ struct SignInView: View {
         .glassCard(radius: DS.Radius.option)
         .onTapGesture { viewModel.dismissError() }
         .accessibilityElement(children: .combine)
+        .accessibilityAction(named: "Dismiss") { viewModel.dismissError() }
     }
 
     private var legalLine: some View {

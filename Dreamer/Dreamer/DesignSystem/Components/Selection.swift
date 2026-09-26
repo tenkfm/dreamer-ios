@@ -267,7 +267,8 @@ struct DreamerToggleStyle: ToggleStyle {
         .onTapGesture { configuration.isOn.toggle() }
         .sensoryFeedback(.selection, trigger: configuration.isOn)
         .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isButton)
+        // Read as a switch ("On, switch button"), like the system toggle it replaces.
+        .accessibilityAddTraits(.isToggle)
         .accessibilityValue(configuration.isOn ? "On" : "Off")
         .accessibilityAction { configuration.isOn.toggle() }
     }
