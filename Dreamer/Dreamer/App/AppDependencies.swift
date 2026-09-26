@@ -169,7 +169,15 @@ final class AppDependencies {
         let tokens = TokenManager(store: KeychainStore()) { refreshToken throws(APIError) in
             try await publicClient.refreshTokens(refreshToken: refreshToken)
         }
-        let api = APIClient(baseURL: baseURL, tokens: tokens, extraMiddlewares: [reporting], reporter: crashReporter)
+        // App Attest: its own client registers keys, so the attested client never waits on itself.
+        let attestor = AppAttestor(service: SystemAppAttestService(),
+                                   backend: APIClient(baseURL: baseURL, tokens: tokens, extraMiddlewares: [reporting],
+                                                      reporter: crashReporter),
+                                   store: KeychainStore(),
+                                   enforced: featureFlags.isEnabled(.attestationEnforced))
+        let attestation = AttestationMiddleware(attestor: attestor, userID: { await tokens.userID })
+        let api = APIClient(baseURL: baseURL, tokens: tokens, extraMiddlewares: [reporting], innerMiddlewares: [attestation],
+                            reporter: crashReporter)
         // The journal is cached next to the drafts; without the local store it lives in memory.
         let dreamStore: any DreamStore = container.map { CachedDreamStore(container: $0, remote: api) }
             ?? InMemoryDreamStore(seed: [])

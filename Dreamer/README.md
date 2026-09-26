@@ -367,6 +367,23 @@ the user could refuse. A refusal changes nothing else in the app. `NSUserTrackin
 is in Info.plist. Debug: `-askTracking` with `-debugScreen paywall` (mock mode otherwise counts as
 answered "no").
 
+## App Attest
+
+`Services/AppAttest.swift` proves to the backend that requests which cost money come from the real
+app. These are the protected operations: `createDream`, `retryDream`, `regenerateImage`,
+`requestDreamAudio`, `recordingUploadUrl` and `transcribeRecording`. Each account has one key.
+`AppAttestor` generates it, gets `POST /v1/attest/challenge`, attests it with
+`clientDataHash = SHA256(challenge)`, and registers it with `POST /v1/attest/keys`, only once even
+when requests race; the key ids are kept in the Keychain. `AttestationMiddleware` sits inside the
+retry, so each attempt gets a fresh assertion because the counter only goes up. It adds
+`X-App-Attest-Key-Id` and `X-App-Attest-Assertion` = base64 of
+`generateAssertion(SHA256("<METHOD> <path?query>\n" + body))` over the exact bytes it sends. A lost
+key is replaced. In soft mode (the `attestationEnforced` flag off, as the backend is now) a device
+that cannot attest, like the simulator, sends without the headers. With the flag on it stops
+before sending. Registration uses a separate client, so the attested client never waits on
+itself. The check against staging with enforcement on needs a TestFlight build and the App
+Attest capability (see Blockers).
+
 ## Crash reporting
 
 Sentry (`Services/CrashReporter.swift`, SPM product `Sentry-Dynamic`: the static product drops

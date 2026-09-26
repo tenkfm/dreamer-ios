@@ -23,6 +23,7 @@ final class StubURLProtocol: URLProtocol {
     /// A client whose every request goes to `handler`.
     static func makeClient(tokens: (any AccessTokenProvider)? = nil,
                            middlewares: [any ClientMiddleware] = [],
+                           innerMiddlewares: [any ClientMiddleware] = [],
                            retry: RetryMiddleware = RetryMiddleware(baseDelay: .milliseconds(1)),
                            reporter: (any CrashReporter)? = nil,
                            handler: @escaping Handler) -> (APIClient, host: String) {
@@ -32,7 +33,8 @@ final class StubURLProtocol: URLProtocol {
         configuration.protocolClasses = [StubURLProtocol.self]
         let session = URLSession(configuration: configuration)
         return (APIClient(baseURL: URL(string: "https://\(host)")!, tokens: tokens, session: session,
-                          extraMiddlewares: middlewares, retry: retry, reporter: reporter), host)
+                          extraMiddlewares: middlewares, innerMiddlewares: innerMiddlewares, retry: retry,
+                          reporter: reporter), host)
     }
 
     static func requests(for host: String) -> [URLRequest] {

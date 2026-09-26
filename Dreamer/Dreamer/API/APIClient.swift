@@ -26,6 +26,7 @@ final class APIClient: Sendable {
          tokens: (any AccessTokenProvider)?,
          session: URLSession = APIClient.makeSession(),
          extraMiddlewares: [any ClientMiddleware] = [],
+         innerMiddlewares: [any ClientMiddleware] = [],
          retry: RetryMiddleware = RetryMiddleware(),
          reporter: (any CrashReporter)? = nil) {
         self.baseURL = baseURL
@@ -37,6 +38,8 @@ final class APIClient: Sendable {
         // token as a thrown APIError and retry after refresh.
         var middlewares: [any ClientMiddleware] = extraMiddlewares
         middlewares.append(retry)
+        // Inside the retry: work that must be redone per attempt (App Attest assertions).
+        middlewares.append(contentsOf: innerMiddlewares)
         if let tokens {
             middlewares.append(AuthMiddleware(tokens: tokens))
         }
