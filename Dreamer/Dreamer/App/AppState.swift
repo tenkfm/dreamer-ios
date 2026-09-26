@@ -15,7 +15,14 @@ final class AppState {
     var preferredLens: Lens { didSet { persist() } }
     private(set) var subscription: SubscriptionStatus { didSet { persist() } }
     private(set) var paywallBypassed: Bool { didSet { persist() } }
-    var reminders: ReminderSettings { didSet { persist() } }
+    var reminders: ReminderSettings {
+        didSet {
+            persist()
+            syncReminderSettings(from: oldValue)
+        }
+    }
+    /// The server's profile is being applied: nothing to send back.
+    @ObservationIgnored private var applyingServerProfile = false
     /// The signed-in account; nil when signed out.
     private(set) var userID: String? { didSet { persist() } }
 
@@ -167,7 +174,27 @@ final class AppState {
         let parts = profile.reminder.time.split(separator: ":").compactMap { Int($0) }
         if parts.count == 2 { updated.reminderMinutes = parts[0] * 60 + parts[1] }
         updated.nightModeAfter9 = profile.nightMode
+        applyingServerProfile = true
         reminders = updated
+        applyingServerProfile = false
+    }
+
+    /// Reminder, its time and night mode live in the profile too (`PATCH /v1/me`); the Face ID lock
+    /// is this device's choice only.
+    private func syncReminderSettings(from old: ReminderSettings) {
+        guard !applyingServerProfile else { return }
+        var update = ProfileUpdate()
+        if old.morningReminder != reminders.morningReminder { update.reminderEnabled = reminders.morningReminder }
+        if old.reminderMinutes != reminders.reminderMinutes {
+            update.reminderTime = String(format: "%02d:%02d", reminders.reminderMinutes / 60, reminders.reminderMinutes % 60)
+        }
+        if old.nightModeAfter9 != reminders.nightModeAfter9 { update.nightMode = reminders.nightModeAfter9 }
+        if update != ProfileUpdate() { changeProfile(update) }
+    }
+
+    /// The time zone changed (travel): the server's insights and reminders follow it.
+    func timeZoneChanged(to zone: TimeZone = .current) {
+        changeProfile(ProfileUpdate(timezone: zone.identifier))
     }
 
     /// The session ended (signed out, or the backend revoked it): back to sign-in, keeping the

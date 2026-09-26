@@ -4,6 +4,7 @@ import SwiftUI
 /// 14 Settings (pushed from Home).
 struct SettingsView: View {
     @Environment(ReminderController.self) private var reminders
+    @Environment(AppLock.self) private var appLock
     @State private var viewModel: SettingsViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
@@ -46,6 +47,11 @@ struct SettingsView: View {
             .scrollIndicators(.hidden)
         }
         .trackScreen(.settings)
+        .alert("Dreamer", isPresented: lockAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(appLock.alertMessage ?? "")
+        }
         .sheet(item: $viewModel.activeSheet) { sheet in
             Group {
                 switch sheet {
@@ -93,7 +99,7 @@ struct SettingsView: View {
             SettingsDivider()
             toggleRow("moon", "Night mode after 9 PM", isOn: $viewModel.nightModeAfter9)
             SettingsDivider()
-            toggleRow("lock", "Lock journal with Face ID", isOn: $viewModel.lockWithFaceID)
+            toggleRow("lock", "Lock journal with Face ID", isOn: lockBinding)
         }
     }
 
@@ -126,6 +132,16 @@ struct SettingsView: View {
             SettingsRow(systemImage: icon, title: title) { SettingsValue(value: value) }
         }
         .buttonStyle(.plain)
+    }
+
+    /// Turning the lock on checks Face ID (or the passcode) first.
+    private var lockBinding: Binding<Bool> {
+        Binding(get: { viewModel.lockWithFaceID },
+                set: { isOn in Task { await appLock.setEnabled(isOn) } })
+    }
+
+    private var lockAlert: Binding<Bool> {
+        Binding(get: { appLock.alertMessage != nil }, set: { if !$0 { appLock.alertMessage = nil } })
     }
 
     /// Turning the reminder on asks for the permission when it was never asked.
@@ -289,4 +305,6 @@ private struct SheetTitleBar: View {
     NavigationStack {
         SettingsView(viewModel: SettingsViewModel(appState: state, purchases: MockPurchaseService(), account: MockAccountActions()))
     }
+    .environment(ReminderController.preview)
+    .environment(AppLock(appState: state, authenticator: MockAuthenticator()))
 }

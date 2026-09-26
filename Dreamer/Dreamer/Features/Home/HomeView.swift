@@ -156,4 +156,5 @@ private struct DraftStatusPill: View {
     HomeView(viewModel: HomeViewModel(appState: state, store: InMemoryDreamStore(), catalog: MockSymbolCatalog()))
         .environment(AppDependencies.preview())
         .environment(ReminderController.preview)
+        .environment(AppLock(appState: .preview(), authenticator: MockAuthenticator()))
 }

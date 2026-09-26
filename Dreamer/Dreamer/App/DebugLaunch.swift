@@ -64,6 +64,8 @@ enum DebugLaunch {
         if let forcedNightMode, forcedNightMode != state.isNightMode { state.toggleNightMode() }
         // Screenshots stay clean; `-askReminder` shows the reminder pre-prompt on Home.
         state.reminderPromptShown = !ProcessInfo.processInfo.arguments.contains("-askReminder")
+        // `-lockJournal`: the journal lock is on (the simulator has no Face ID, so it stays locked).
+        if ProcessInfo.processInfo.arguments.contains("-lockJournal") { state.reminders.lockWithFaceID = true }
         if screen == .paywall { state.signedIn(userID: "debug-user", isNewUser: true) }
         guard onboardingStep == nil else { return state }
         state.signedIn(userID: "debug-user", isNewUser: false)

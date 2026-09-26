@@ -4,6 +4,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(ReminderController.self) private var reminders
+    @Environment(AppLock.self) private var appLock
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.scenePhase) private var scenePhase
 
@@ -58,7 +59,8 @@ struct RootView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
-            // The reminder follows the local 7:30 after travel.
+            // The reminder follows the local 7:30 after travel, and the server's day boundaries too.
+            appState.timeZoneChanged()
             Task { await reminders.reschedule() }
         }
         .overlay {
@@ -97,6 +99,17 @@ struct RootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { appState.refreshClock() }
+        }
+        .overlay {
+            // Above everything, the pre-prompts included: nothing of the journal shows while locked.
+            if appLock.isLocked || appLock.isShielded {
+                LockScreen(onUnlock: appLock.isLocked ? { Task { await appLock.unlock() } } : nil)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.soft(0.3), value: appLock.isLocked || appLock.isShielded)
+        .task(id: scenePhase) {
+            await appLock.sceneChanged(active: scenePhase == .active, background: scenePhase == .background)
         }
         .task(id: AnalyticsContext(preferredLens: appState.preferredLens, paywallVariant: appState.paywallVariant)) {
             // Every later event carries the lens and the paywall variant.
@@ -159,6 +172,7 @@ struct RootView: View {
     RootView()
         .environment(AppDependencies.preview())
         .environment(ReminderController.preview)
+        .environment(AppLock(appState: .preview(), authenticator: MockAuthenticator()))
         .environment(AppState.preview(onboardingCompleted: false))
 }
 

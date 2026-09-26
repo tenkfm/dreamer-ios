@@ -298,6 +298,20 @@ still works; account deletion removes it on the server. The backend's pushes (`i
 `push_opened {type}`. The open app does not show them, because the screen already shows the
 dream. Real pushes need the APNs key on the backend and a device (see Blockers).
 
+## Settings sync and journal lock
+
+The morning reminder, its time and night mode are part of the account (IOS-07.3). A change in
+Settings is queued in `AppState.unsyncedProfile` and sent with `PATCH /v1/me` (see Lenses and
+notes), and so is the time zone after travel. A profile applied from the server is never sent
+back. The Face ID lock is this device's choice only.
+
+"Lock journal with Face ID" (`Services/AppLock.swift`): turning it on asks for Face ID, Touch ID
+or the passcode first, so nobody locks themselves out, and an iPhone without either is told how
+to set one up. While it is on, the app opens covered by `LockScreen` and asks at once, locks
+again whenever it goes to the background, and hides its content in the app switcher. The
+passcode is the fallback (`deviceOwnerAuthentication`). `NSFaceIDUsageDescription` is in
+Info.plist. Debug: `-lockJournal`.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
@@ -519,7 +533,7 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
 interpretation support symbol record details analysis`. Debug screens use mock services (`-liveServices`
 to talk to the backend instead); `-mockServices` does the same for a normal launch,
-`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-askReminder` for the reminder offer, `-debugTime HH:mm` for the Home greeting, `-night` or `-day` to force the appearance,
+`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-askReminder` for the reminder offer, `-lockJournal` for the Face ID lock, `-debugTime HH:mm` for the Home greeting, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.
 

@@ -52,6 +52,8 @@ final class AppDependencies {
     @ObservationIgnored let notificationScheduler: any NotificationScheduling
     /// This install's push token on the backend (nil registry in mock mode).
     @ObservationIgnored let pushDevices: PushDevices
+    /// Face ID / passcode for the journal lock.
+    @ObservationIgnored let authenticator: any DeviceAuthenticator
     let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
@@ -85,7 +87,9 @@ final class AppDependencies {
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
          makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() },
          trackingPermission: any TrackingPermission = mockTrackingPermission(),
-         notificationScheduler: any NotificationScheduling = MockNotificationScheduler()) {
+         notificationScheduler: any NotificationScheduling = MockNotificationScheduler(),
+         authenticator: any DeviceAuthenticator = MockAuthenticator()) {
+        self.authenticator = authenticator
         self.notificationScheduler = notificationScheduler
         pushDevices = PushDevices(registry: api, environment: AppConfig.current.pushEnvironment)
         self.mode = mode
@@ -153,7 +157,8 @@ final class AppDependencies {
                 instagramAppID: config.facebookAppID,
                 makeSpeechService: { MockSpeechService(liveText: mockTranscriber() == nil) },
                 makeReadAloudService: { SpeechSynthesizerReadAloudService() },
-                notificationScheduler: SystemNotificationScheduler()
+                notificationScheduler: SystemNotificationScheduler(),
+                authenticator: SystemAuthenticator()
             )
         }
 
@@ -202,7 +207,8 @@ final class AppDependencies {
             },
             makeSpeechPermissions: { SystemSpeechPermissions() },
             trackingPermission: SystemTrackingPermission(),
-            notificationScheduler: SystemNotificationScheduler()
+            notificationScheduler: SystemNotificationScheduler(),
+            authenticator: SystemAuthenticator()
         )
     }
 

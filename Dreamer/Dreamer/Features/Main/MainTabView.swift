@@ -159,5 +159,6 @@ struct ViewModelHost<ViewModel: AnyObject, Content: View>: View {
     MainTabView()
         .environment(AppDependencies.preview())
         .environment(ReminderController.preview)
+        .environment(AppLock(appState: .preview(), authenticator: MockAuthenticator()))
         .environment(AppState.preview())
 }
