@@ -1,8 +1,8 @@
 import Foundation
 import Observation
 
-/// Paged first-launch flow: 3 intro pages, 2 quiz questions, account, paywall.
-/// The step follows the pager, so buttons and swipes go through the same `go(to:)`.
+/// First-launch flow: 3 intro pages, 2 quiz questions, account, paywall.
+/// Buttons and swipes go through the same `go(to:)`.
 @MainActor
 @Observable
 final class OnboardingViewModel {
@@ -65,8 +65,8 @@ final class OnboardingViewModel {
         if let name = self.step.analyticsName { analytics.track(.onboardingStepViewed(step: name)) }
     }
 
-    /// Pages the pager shows: nothing after the account step until there is an account, so a
-    /// swipe cannot skip signing in.
+    /// Steps that can be reached: nothing after the account step until there is an account, so
+    /// nothing can skip signing in.
     var reachableSteps: [Step] {
         appState.isSignedIn ? Step.allCases : Step.allCases.filter { $0 <= .account }
     }

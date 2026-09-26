@@ -8,6 +8,10 @@ extension Animation {
         .timingCurve(0.22, 0.8, 0.26, 1, duration: duration)
     }
 
+    /// A screen replacing another like a navigation push (onboarding -> account -> paywall):
+    /// critically damped, so the screens glide in without the soft curve's jump at the start.
+    static let push = Animation.smooth(duration: 0.5)
+
     /// Button press, 0.18 s.
     static let press = Animation.timingCurve(0.3, 0.7, 0.4, 1, duration: 0.18)
 
@@ -64,6 +68,9 @@ extension EnvironmentValues {
     /// False while a view is built but not on screen yet (e.g. the next page of a pager).
     /// Entrance animations wait for it to become true, then play once.
     @Entry var entranceActive: Bool = true
+    /// False on a screen that arrives with a transition of its own (a push): its elements come
+    /// with it instead of rising one by one after it has landed.
+    @Entry var entranceAnimated: Bool = true
 }
 
 // MARK: - Enter-up entrance
@@ -73,12 +80,14 @@ struct EnterUp: ViewModifier {
     var distance: CGFloat = 18
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.entranceActive) private var entranceActive
+    @Environment(\.entranceAnimated) private var entranceAnimated
     @State private var shown = false
 
     func body(content: Content) -> some View {
-        content
-            .opacity(shown || reduceMotion ? 1 : 0)
-            .offset(y: shown || reduceMotion ? 0 : distance)
+        let visible = shown || reduceMotion || !entranceAnimated
+        return content
+            .opacity(visible ? 1 : 0)
+            .offset(y: visible ? 0 : distance)
             .onAppear { if entranceActive { reveal() } }
             .onChange(of: entranceActive) { _, active in if active { reveal() } }
     }

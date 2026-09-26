@@ -225,8 +225,17 @@ Onboarding: Welcome -> Record intro -> Understand -> quiz -> **account** -> payw
 account step (`Features/Auth`) has Sign in with Apple and an email link ("Check your inbox", resend
 with a 30 s cooldown; the backend allows 5 emails an hour). The design has no account screen: it is
 built from the design system after the web handoff's spec. "I already have an account" opens the
-same step as "Welcome back"; a returning account skips the rest of onboarding. The pager shows no
-page after the account step until the user is signed in, so a swipe cannot skip it.
+same step as "Welcome back"; a returning account skips the rest of onboarding. Nothing after the
+account step can be reached until the user is signed in.
+
+The intro pages and the quiz are one screen (`OnboardingPagesView`): the top bar, the page dots and
+"Continue" stay while only the content between them changes (a short slide and fade in the
+direction of the move), the panoramic sky pans with the steps, and the top bar morphs from the logo
+and "Skip" to Back and the quiz progress, which fills from 1 of 2 to 2 of 2. Swipes left and right
+page as the buttons do. The account step and the paywall are separate screens that come in like a
+navigation push (`Animation.push`). The staggered entrance plays only when the flow first appears;
+after that the transitions carry every change. `-debugAdvance` walks the flow by itself, for
+watching or recording the changes.
 `AuthService` (`APIAuthService` / `MockAuthService`) stores tokens through `TokenManager`; at
 launch the Keychain decides whether the user is still signed in.
 
@@ -621,7 +630,8 @@ DreamerUITests/   XCUITest: critical scenarios and accessibility audits
   navigation paths, queued profile changes) and persists preferences through `PreferencesStore`.
 - **AppDependencies** is the composition root, injected with `.environment(_:)`. `live()` picks
   live or mock services once per launch (see below).
-- **Navigation**: a paged `OnboardingFlowView`; `MainTabView` keeps one `NavigationStack` per tab
+- **Navigation**: `OnboardingFlowView` (one screen for the intro and quiz, pushes to the account
+  and the paywall); `MainTabView` keeps one `NavigationStack` per tab
   with typed `Route` paths in `AppState`; Record -> Details -> Analysis is a `fullScreenCover`, and
   on finish the Interpretation is pushed on the Today stack. Notification taps go through
   `NotificationRouter` to `AppState.handle(_:)`.
@@ -669,7 +679,7 @@ xcrun simctl launch booted com.braincode.dreamer.staging -debugScreen journal -n
 | `-lockJournal` | The Face ID lock is on |
 | `-micPermission notDetermined\|denied\|restricted` | Microphone permission states |
 | `-featureFlag name=true\|false` | Overrides a remote flag |
-| `-debugAdvance` | An onboarding page taps "Continue" by itself after 2 s |
+| `-debugAdvance` | The onboarding taps "Continue" by itself every 2.5 s, up to the account step |
 | `-uiTesting`, `-uiTestOpenEmailLink` | UI tests: fresh preferences; the mock "opens" the sign-in link |
 | `-crashTestNonFatal`, `-crashTestCrash` | Sentry checks (Debug and Staging) |
 

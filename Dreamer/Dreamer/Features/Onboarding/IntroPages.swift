@@ -2,22 +2,19 @@ import SwiftUI
 
 // MARK: - Shared layout
 
-/// Intro page frame: header, hero, title + body, page dots, CTA and "I already have an account".
-/// Scrolls on small screens so nothing clips.
-private struct IntroPageLayout<Header: View, Hero: View>: View {
-    var title: String
-    var message: String
-    var pageIndex: Int
-    var ctaTitle: String
-    var onContinue: () -> Void
-    var onExistingAccount: () -> Void
-    @ViewBuilder var header: () -> Header
+/// Intro page content: hero, then title and body. The top bar, the page dots and the CTA belong to
+/// the flow (OnboardingPagesView), so they stay put while this changes. Scrolls on small screens
+/// so nothing clips.
+private struct IntroContentLayout<Top: View, Hero: View>: View {
+    var title: LocalizedStringKey
+    var message: LocalizedStringKey
+    @ViewBuilder var top: () -> Top
     @ViewBuilder var hero: () -> Hero
 
     var body: some View {
         FillingScrollView {
             VStack(spacing: 0) {
-                header()
+                top()
                 Spacer(minLength: 16)
                 hero()
                 Spacer(minLength: 24)
@@ -26,80 +23,33 @@ private struct IntroPageLayout<Header: View, Hero: View>: View {
                         .textStyle(.display)
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
-                        .enterUp(0.4)
+                        .enterUp(0.25)
                     Text(message)
                         .textStyle(.body, color: DS.Palette.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, DS.Space.text - DS.Space.cta)
-                        .enterUp(0.55)
+                        .enterUp(0.35)
                 }
                 .fixedSize(horizontal: false, vertical: true)
-                // The flow draws one shared, live PageDots here (see OnboardingFlowView).
-                PageDotsSlot(pageIndex: pageIndex)
-                    .padding(.top, 34)
-                VStack(spacing: 8) {
-                    PrimaryButton(title: ctaTitle, action: onContinue)
-                    TextLinkButton(title: "I already have an account", action: onExistingAccount)
-                }
-                .padding(.top, 20)
-                .padding(.bottom, 8)
-                .enterUp(0.9)
             }
             .padding(.horizontal, DS.Space.cta)
         }
     }
 }
 
-/// Reserves the page-dots space on an intro page and reports where it is, so the flow can draw
-/// a single indicator there that stays put while the pages slide.
-struct PageDotsSlot: View {
-    var pageIndex: Int
-
-    var body: some View {
-        Color.clear
-            .frame(width: 60, height: 8)
-            .anchorPreference(key: PageDotsSlotKey.self, value: .center) { [pageIndex: $0] }
-            .accessibilityHidden(true)
-    }
-}
-
-struct PageDotsSlotKey: PreferenceKey {
-    static let defaultValue: [Int: Anchor<CGPoint>] = [:]
-
-    static func reduce(value: inout [Int: Anchor<CGPoint>], nextValue: () -> [Int: Anchor<CGPoint>]) {
-        value.merge(nextValue()) { $1 }
-    }
-}
-
-/// Logo centered with "Skip" on the right (pages 2-3).
-private struct LogoSkipHeader: View {
-    var onSkip: () -> Void
-
-    var body: some View {
-        HeaderBar(center: { Logo() }, trailing: {
-            SkyTextButton(title: "Skip", action: onSkip)
-        })
-        // HeaderBar keeps its own screen margin; this only cancels the content's CTA margin, so the
-        // header buttons stand where they do on every other screen.
-        .padding(.horizontal, -DS.Space.cta)
-        .enterUp(0.1)
+extension IntroContentLayout where Top == EmptyView {
+    init(title: LocalizedStringKey, message: LocalizedStringKey, @ViewBuilder hero: @escaping () -> Hero) {
+        self.init(title: title, message: message, top: { EmptyView() }, hero: hero)
     }
 }
 
 // MARK: - 01 Welcome
 
-struct WelcomePage: View {
-    var onContinue: () -> Void
-    var onExistingAccount: () -> Void
-
+struct WelcomeContent: View {
     var body: some View {
-        IntroPageLayout(
+        IntroContentLayout(
             title: "Your dreams are\ntalking to you",
-            message: "Tell a dream in 10 seconds after you wake up. Get a personal interpretation every morning.",
-            pageIndex: 0,
-            ctaTitle: "Get started",
-            onContinue: onContinue,
-            onExistingAccount: onExistingAccount
+            message: "Tell a dream in 10 seconds after you wake up. Get a personal interpretation every morning."
         ) {
             VStack(spacing: 6) {
                 Logo(large: true)
@@ -109,12 +59,11 @@ struct WelcomePage: View {
                     .foregroundStyle(DS.Palette.white)
                     .skyTextShadow()
             }
-            .padding(.top, 44)
             .enterUp(0.15)
         } hero: {
             OrbView(glyph: .moon, size: .onboarding)
                 .padding(.top, 40)
-                .enterUp(0.3)
+                .enterUp(0.2)
                 .accessibilityHidden(true)
         }
     }
@@ -122,34 +71,24 @@ struct WelcomePage: View {
 
 // MARK: - 02 Record
 
-struct RecordIntroPage: View {
-    var onContinue: () -> Void
-    var onSkip: () -> Void
-    var onExistingAccount: () -> Void
-
+struct RecordIntroContent: View {
     var body: some View {
-        IntroPageLayout(
+        IntroContentLayout(
             title: "Catch it before it fades",
-            message: "Say your dream out loud in 10 seconds. We write it down while you are still half asleep.",
-            pageIndex: 1,
-            ctaTitle: "Continue",
-            onContinue: onContinue,
-            onExistingAccount: onExistingAccount
+            message: "Say your dream out loud in 10 seconds. We write it down while you are still half asleep."
         ) {
-            LogoSkipHeader(onSkip: onSkip)
-        } hero: {
             VStack(spacing: 30) {
                 OrbView(glyph: .mic, size: .onboarding)
-                    .enterUp(0.3)
+                    .enterUp(0.1)
                     .accessibilityHidden(true)
-                TypewriterText(text: MockData.onboardingQuote, startDelay: 0.9)
+                TypewriterText(text: MockData.onboardingQuote, startDelay: 0.7)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
                     .glassCard(radius: DS.Radius.option)
                     .padding(.horizontal, 36 - DS.Space.cta)
-                    .enterUp(0.5)
+                    .enterUp(0.2)
             }
         }
     }
@@ -157,25 +96,15 @@ struct RecordIntroPage: View {
 
 // MARK: - 03 Understand
 
-struct UnderstandPage: View {
-    var onContinue: () -> Void
-    var onSkip: () -> Void
-    var onExistingAccount: () -> Void
-
+struct UnderstandContent: View {
     var body: some View {
-        IntroPageLayout(
+        IntroContentLayout(
             title: "Understand it. Then see it.",
-            message: "A personal interpretation, the symbols behind it and an image of your dream.",
-            pageIndex: 2,
-            ctaTitle: "Get started",
-            onContinue: onContinue,
-            onExistingAccount: onExistingAccount
+            message: "A personal interpretation, the symbols behind it and an image of your dream."
         ) {
-            LogoSkipHeader(onSkip: onSkip)
-        } hero: {
             VStack(spacing: 18) {
                 FannedImages()
-                    .enterUp(0.3)
+                    .enterUp(0.1)
                 HStack(spacing: 8) {
                     TwinklingSparkle(size: 12)
                     Text("Stairs · Roots · A voice")
@@ -185,7 +114,7 @@ struct UnderstandPage: View {
                 .padding(.horizontal, 16)
                 .frame(height: 32)
                 .glassCapsule()
-                .enterUp(0.5)
+                .enterUp(0.2)
             }
             .padding(.top, 30)
         }
@@ -223,13 +152,13 @@ private struct FannedImages: View {
 }
 
 #Preview("Welcome") {
-    ZStack { SkyBackground(kind: .full); WelcomePage(onContinue: {}, onExistingAccount: {}) }
+    ZStack { SkyBackground(kind: .full); WelcomeContent() }
 }
 
 #Preview("Record intro") {
-    ZStack { SkyBackground(kind: .full); RecordIntroPage(onContinue: {}, onSkip: {}, onExistingAccount: {}) }
+    ZStack { SkyBackground(kind: .full); RecordIntroContent() }
 }
 
 #Preview("Understand") {
-    ZStack { SkyBackground(kind: .full); UnderstandPage(onContinue: {}, onSkip: {}, onExistingAccount: {}) }
+    ZStack { SkyBackground(kind: .full); UnderstandContent() }
 }

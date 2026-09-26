@@ -36,7 +36,7 @@ final class DreamerUITests: XCTestCase {
         element.tap()
     }
 
-    /// The pager keeps every onboarding page in the hierarchy: tap the one on screen.
+    /// A leaving screen stays in the hierarchy while it animates out: tap the one on screen.
     @MainActor
     private func tapVisible(_ query: XCUIElementQuery, timeout: TimeInterval = 10) {
         let deadline = Date.now.addingTimeInterval(timeout)

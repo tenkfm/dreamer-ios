@@ -1,15 +1,11 @@
 import SwiftUI
 
-// MARK: - Shared scaffold
+// MARK: - Shared layout
 
-/// Quiz frame: back button + progress, centered title, options, pinned "Continue".
-private struct QuizScaffold<Options: View>: View {
-    var title: String
-    var progress: Double
-    var previousProgress: Double
-    var stepLabel: String
-    var onBack: () -> Void
-    var onContinue: () -> Void
+/// Quiz question content: centered title and the options. Back, the progress and "Continue" belong
+/// to the flow (OnboardingPagesView), so only this changes between the questions.
+private struct QuizContentLayout<Options: View>: View {
+    var title: LocalizedStringKey
     @ViewBuilder var options: () -> Options
 
     var body: some View {
@@ -19,10 +15,10 @@ private struct QuizScaffold<Options: View>: View {
                     .textStyle(.display)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, DS.Space.text)
-                    .padding(.top, 76)
+                    .padding(.top, 56)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
-                    .enterUp(0.3)
+                    .enterUp(0.1)
                 VStack(spacing: DS.Space.stack) {
                     options()
                 }
@@ -32,55 +28,22 @@ private struct QuizScaffold<Options: View>: View {
             }
         }
         .scrollBounceBehavior(.basedOnSize)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            HeaderBar(leading: {
-                GlassIconButton(systemImage: "chevron.left", accessibilityLabel: "Back", action: onBack)
-            }, center: {
-                HStack(spacing: 12) {
-                    // The bar repeats the label for the eye; VoiceOver reads the label only.
-                    ProgressCapsule(value: progress, initialValue: previousProgress)
-                        .accessibilityHidden(true)
-                    Text(stepLabel)
-                        .font(DreamerFont.fixed(12))
-                        .foregroundStyle(DS.Palette.white)
-                        .skyTextShadow()
-                        .accessibilityLabel("Question \(stepLabel)")
-                }
-                .padding(.leading, DS.Size.iconButton + 16)
-                .padding(.trailing, DS.Size.iconButton + 8)
-            })
-            .enterUp(0.1)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            PrimaryButton(title: "Continue", action: onContinue)
-                .padding(.horizontal, DS.Space.cta)
-                .padding(.bottom, 8)
-                .enterUp(0.9)
-        }
+        .scrollIndicators(.hidden)
     }
 }
 
 // MARK: - 04 Goal
 
-struct QuizGoalView: View {
+struct QuizGoalContent: View {
     @Bindable var viewModel: OnboardingViewModel
-    var onBack: () -> Void
-    var onContinue: () -> Void
 
     var body: some View {
-        QuizScaffold(
-            title: "What brings you to Dreamer?",
-            progress: 0.5,
-            previousProgress: 0,
-            stepLabel: "1 of 2",
-            onBack: onBack,
-            onContinue: onContinue
-        ) {
+        QuizContentLayout(title: "What brings you to Dreamer?") {
             ForEach(Array(Goal.allCases.enumerated()), id: \.element) { index, goal in
                 RadioOptionCard(title: goal.title, glyph: goal.glyph, isSelected: viewModel.goal == goal) {
                     viewModel.goal = goal
                 }
-                .enterUp(0.45 + Double(index) * 0.15)
+                .enterUp(0.2 + Double(index) * 0.08)
             }
         }
     }
@@ -88,25 +51,16 @@ struct QuizGoalView: View {
 
 // MARK: - 05 Lens
 
-struct QuizLensView: View {
+struct QuizLensContent: View {
     @Bindable var viewModel: OnboardingViewModel
-    var onBack: () -> Void
-    var onContinue: () -> Void
 
     var body: some View {
-        QuizScaffold(
-            title: "Which lens feels closer to you?",
-            progress: 1,
-            previousProgress: 0.5,
-            stepLabel: "2 of 2",
-            onBack: onBack,
-            onContinue: onContinue
-        ) {
+        QuizContentLayout(title: "Which lens feels closer to you?") {
             ForEach(Array(Lens.allCases.enumerated()), id: \.element) { index, lens in
                 RadioOptionCard(title: lens.title, subtitle: lens.summary, isSelected: viewModel.lens == lens) {
                     viewModel.lens = lens
                 }
-                .enterUp(0.45 + Double(index) * 0.15)
+                .enterUp(0.2 + Double(index) * 0.08)
             }
         }
     }
@@ -115,7 +69,6 @@ struct QuizLensView: View {
 #Preview("Quiz goal") {
     ZStack {
         SkyBackground(kind: .top)
-        QuizGoalView(viewModel: OnboardingViewModel(appState: .preview(onboardingCompleted: false), step: .quizGoal),
-                     onBack: {}, onContinue: {})
+        QuizGoalContent(viewModel: OnboardingViewModel(appState: .preview(onboardingCompleted: false), step: .quizGoal))
     }
 }

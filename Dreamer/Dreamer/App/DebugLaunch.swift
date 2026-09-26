@@ -21,7 +21,7 @@ enum DebugLaunch {
         return Screen(rawValue: arguments[index + 1])
     }()
 
-    /// `-debugAdvance`: the onboarding taps "Continue" by itself after 2 s.
+    /// `-debugAdvance`: the onboarding taps "Continue" by itself every 2.5 s, up to the account step.
     static let autoAdvances = ProcessInfo.processInfo.arguments.contains("-debugAdvance")
 
     /// `-night` / `-day`; nil follows the 9 PM schedule.
