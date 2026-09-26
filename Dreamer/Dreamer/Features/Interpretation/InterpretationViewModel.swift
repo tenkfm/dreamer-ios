@@ -243,7 +243,8 @@ final class InterpretationViewModel {
         if loadedImage == nil { imagePhase = .loading }
         do {
             let data = try await imageLoader.imageData(dreamID: dreamID, image: info, size: .full)
-            guard let image = UIImage(data: data) else { throw APIError.invalidResponse(status: nil) }
+            // The hero spans the screen width at 380 pt tall; the saved file keeps full size.
+            guard let image = ImageDownsampler.image(from: data, pointSize: 600) else { throw APIError.invalidResponse(status: nil) }
             loadedImageData = data
             loadedImage = image
             imagePhase = .ready

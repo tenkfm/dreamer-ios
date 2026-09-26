@@ -29,6 +29,7 @@ struct LibraryView: View {
                         .padding(.top, 14)
                         .enterUp(0.45)
                     grid
+                        .environment(\.lightweightGlass, true)
                         .padding(.horizontal, DS.Space.screen)
                         .padding(.top, 14)
                         .enterUp(0.55)
@@ -108,7 +109,8 @@ private struct SymbolTile: View {
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
         .task(id: symbol.imageURL) {
-            image = await viewModel.imageData(for: symbol).flatMap(UIImage.init(data:))
+            // Tiles are about 180 pt wide.
+            image = await viewModel.imageData(for: symbol).flatMap { ImageDownsampler.image(from: $0, pointSize: 200) }
         }
     }
 }

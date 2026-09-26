@@ -257,7 +257,8 @@ final class JournalViewModel {
     func thumbnail(for row: Row) async -> UIImage? {
         guard let images, let url = row.thumbnailURL,
               let data = try? await images.thumbnailData(dreamID: row.id, url: url) else { return nil }
-        return UIImage(data: data)
+        // The row shows it at 56 pt.
+        return ImageDownsampler.image(from: data, pointSize: 56)
     }
 
     // MARK: Actions

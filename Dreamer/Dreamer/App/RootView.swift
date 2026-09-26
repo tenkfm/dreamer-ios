@@ -72,6 +72,9 @@ struct RootView: View {
             }
         }
         .animation(.soft(0.5), value: reminders.isPrePromptPresented)
+        #if DEBUG || STAGING
+        .onAppear { LaunchMetrics.firstFrameShown() }
+        #endif
         .task {
             // Install attribution and the ad networks start with the tracking answer (at once when
             // the user answered before; otherwise after the question).

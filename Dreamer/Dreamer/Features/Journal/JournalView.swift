@@ -86,6 +86,10 @@ struct JournalView: View {
     }
 
     @ViewBuilder private var list: some View {
+        listContent.environment(\.lightweightGlass, true)
+    }
+
+    @ViewBuilder private var listContent: some View {
         if viewModel.isEmpty && viewModel.isSearchInFlight {
             ProgressView()
                 .frame(maxWidth: .infinity)

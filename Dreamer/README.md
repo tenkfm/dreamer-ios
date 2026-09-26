@@ -601,6 +601,15 @@ KIE_API_KEY=... python3 scripts/generate_night_skies.py SkyTopNight
 
 Results land in `build/night_skies/`; copy the ones you like into the matching image set.
 
+## Performance
+
+`docs/performance.md` covers IOS-10.1: what changed, with before and after numbers.
+- Looping animations pause off screen and in the background.
+- Long lists use `lightweightGlass`, with no live blur per card.
+- Images decode at their display size (`ImageDownsampler`).
+- `LaunchMetrics` logs the time to the first frame in Debug and Staging builds.
+It also describes the Instruments checks that need an iPhone 12.
+
 ## Accessibility and motion
 
 All loops (orb breathing, sky drift, waveforms, sparkles, thumbs) run on `TimelineView` and freeze

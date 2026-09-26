@@ -43,11 +43,18 @@ struct LoopingView<Content: View>: View {
     @ViewBuilder var content: (TimeInterval) -> Content
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+    /// Off screen (another tab, a pushed screen) the timeline stops: no frames nobody sees.
+    @State private var isVisible = false
+
+    private var paused: Bool { isPaused || reduceMotion || !isVisible || scenePhase != .active }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: nil, paused: isPaused || reduceMotion)) { context in
+        TimelineView(.animation(minimumInterval: nil, paused: paused)) { context in
             content(reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate)
         }
+        .onAppear { isVisible = true }
+        .onDisappear { isVisible = false }
     }
 }
 

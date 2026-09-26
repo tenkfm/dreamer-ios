@@ -36,11 +36,18 @@ enum GlassStyle {
     var shadowY: CGFloat { switch self { case .card: 10; case .tabBar, .selected: 12; case .option: 8 } }
 }
 
+extension EnvironmentValues {
+    /// Long lists (Journal, Library): no blur layer per card. The blur is only 30 % strong, so the
+    /// cards look the same, but dozens of live blurs cost frames while scrolling on older iPhones.
+    @Entry var lightweightGlass = false
+}
+
 struct GlassBackground<S: InsettableShape>: ViewModifier {
     var shape: S
     var style: GlassStyle = .card
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.lightweightGlass) private var lightweightGlass
 
     func body(content: Content) -> some View {
         let night = colorScheme == .dark
@@ -48,7 +55,11 @@ struct GlassBackground<S: InsettableShape>: ViewModifier {
             .background {
                 ZStack {
                     // Light blur of what is behind. Kept subtle so the card does not turn grey.
-                    shape.fill(.ultraThinMaterial).opacity(0.3)
+                    if lightweightGlass {
+                        shape.fill(Color.white.opacity(night ? 0.02 : 0.1))
+                    } else {
+                        shape.fill(.ultraThinMaterial).opacity(0.3)
+                    }
                     // At night a navy veil keeps light glyphs readable over bright dream images;
                     // on the night background itself it is invisible.
                     if night { shape.fill(DS.Palette.background.opacity(0.4)) }
