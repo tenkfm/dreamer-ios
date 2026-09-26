@@ -90,6 +90,15 @@ platform :ios do
         sleep(shot["wait"])
         sh("xcrun simctl io #{udid} screenshot #{File.join(raw_dir, "#{shot['name']}.png").shellescape}")
       end
+      # Unframed screens for App Store Connect review fields (the paywall for subscription review).
+      review_dir = File.expand_path("review", __dir__)
+      FileUtils.mkdir_p(review_dir)
+      (config["review_shots"] || []).each do |shot|
+        sh("xcrun simctl launch --terminate-running-process #{udid} #{bundle_id} " \
+           "#{(config['arguments'] + ['-debugScreen', shot['screen']]).join(' ')}")
+        sleep(shot["wait"])
+        sh("xcrun simctl io #{udid} screenshot #{File.join(review_dir, "#{shot['name']}.png").shellescape}")
+      end
     ensure
       sh("xcrun simctl status_bar #{udid} clear")
     end

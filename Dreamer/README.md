@@ -390,6 +390,14 @@ uploads. They cover:
 in App Store Connect. The contact details of the review and whether a demo account is wanted
 anyway are Tony's to fill in (see Blockers).
 
+## App Store Connect
+
+`docs/app-store-connect.md` lists everything the App Store Connect record needs: the app record,
+the subscription group with localized names and the review screenshot (`fastlane/review/paywall.png`
+from `fastlane screenshots`), the age-rating answers, export compliance
+(`ITSAppUsesNonExemptEncryption` = NO) and App Privacy, all taken from what the code does. Entering
+them in App Store Connect waits for Tony's "yes"; the open values are in the Blockers.
+
 ## App icon
 
 `AppIcon` is a single 1024 image with the iOS 18 appearances: the light artwork, a dark variant

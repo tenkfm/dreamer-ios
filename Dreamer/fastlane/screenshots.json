@@ -8,5 +8,8 @@
     { "name": "04_details",        "screen": "details",        "wait": 3, "caption": "Add how it felt\nfor a deeper reading" },
     { "name": "05_journal",        "screen": "journal",        "wait": 3, "caption": "Watch your patterns\ntake shape" },
     { "name": "06_library",        "screen": "library",        "wait": 3, "caption": "Look up what\nany symbol means" }
+  ],
+  "review_shots": [
+    { "name": "paywall", "screen": "paywall", "wait": 3 }
   ]
 }
