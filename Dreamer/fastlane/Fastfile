@@ -96,6 +96,42 @@ platform :ios do
     sh("python3 #{File.expand_path('../scripts/frame_screenshots.py', __dir__).shellescape}")
   end
 
+  desc "A short screen recording of the review scenario (Home -> Record -> Details -> Analysis ->"
+  desc "Interpretation) on mock data, for the App Review notes: fastlane/review/demo.mp4"
+  lane :review_video do
+    config = JSON.parse(File.read(File.expand_path("screenshots.json", __dir__)))
+    udid = boot_simulator(name: config["device"])
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      configuration: "Debug",
+      destination: "platform=iOS Simulator,id=#{udid}",
+      derived_data_path: DERIVED_DATA,
+      skip_archive: true,
+      skip_codesigning: true,
+      skip_package_ipa: true,
+      xcargs: PLUGIN_XCARGS
+    )
+    bundle_id = BUNDLE_IDS.fetch("Debug")
+    sh("xcrun simctl install #{udid} #{File.join(DERIVED_DATA, "Build/Products/Debug-iphonesimulator/#{SCHEME}.app").shellescape}")
+    output = File.expand_path("review/demo.mp4", __dir__)
+    FileUtils.mkdir_p(File.dirname(output))
+    FileUtils.rm_f(output)
+    base = config["arguments"].join(" ")
+    recorder = Process.spawn("xcrun", "simctl", "io", udid, "recordVideo", "--codec=h264", "--force", output)
+    begin
+      sleep(1)
+      [["home", 3], ["record", 7], ["details", 3], ["analysis", 7], ["interpretation", 6]].each do |screen, seconds|
+        sh("xcrun simctl launch --terminate-running-process #{udid} #{bundle_id} #{base} -debugScreen #{screen}")
+        sleep(seconds)
+      end
+    ensure
+      Process.kill("INT", recorder)
+      Process.wait(recorder)
+    end
+    UI.success("Review video: #{output}")
+  end
+
   desc "Upload the metadata (fastlane/metadata) and screenshots to App Store Connect, no binary"
   desc "Needs the App Store Connect API key (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT)"
   lane :upload_store do

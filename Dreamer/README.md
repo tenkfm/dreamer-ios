@@ -375,6 +375,21 @@ change. `bundle exec fastlane upload_store` sends the metadata and the screensho
 Connect with `deliver`, without a binary. It needs the App Store Connect API key (see Blockers).
 To change the story, edit the screens, waits and captions in `screenshots.json`.
 
+## App Review
+
+`fastlane/metadata/review_information/notes.txt` holds the notes for App Review, which deliver
+uploads. They cover:
+- sign-in with Sign in with Apple: the reviewer's own Apple ID works, so no demo account is
+  needed;
+- the subscription group, with sandbox purchases and Restore;
+- a sample dream to paste through the keyboard, to reach an interpretation without speaking;
+- how AI content is framed, including the crisis support screen;
+- every permission, and account deletion.
+`bundle exec fastlane review_video` records the scenario on mock data (Home -> Record -> Details
+-> Analysis -> Interpretation, about 30 s) into `fastlane/review/demo.mp4` (git-ignored), to attach
+in App Store Connect. The contact details of the review and whether a demo account is wanted
+anyway are Tony's to fill in (see Blockers).
+
 ## App icon
 
 `AppIcon` is a single 1024 image with the iOS 18 appearances: the light artwork, a dark variant

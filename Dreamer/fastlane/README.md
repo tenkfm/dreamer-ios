@@ -37,6 +37,16 @@ App Store screenshots: each screen of fastlane/screenshots.json opened with -deb
 
 mock data, with a clean status bar, then captioned by scripts/frame_screenshots.py
 
+### ios review_video
+
+```sh
+[bundle exec] fastlane ios review_video
+```
+
+A short screen recording of the review scenario (Home -> Record -> Details -> Analysis ->
+
+Interpretation) on mock data, for the App Review notes: fastlane/review/demo.mp4
+
 ### ios upload_store
 
 ```sh

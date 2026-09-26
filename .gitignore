@@ -22,6 +22,7 @@ build/
 **/fastlane/Preview.html
 **/fastlane/screenshots/**/*.png
 **/fastlane/test_output/
+**/fastlane/review/
 
 # Local secrets (see Config/Secrets.example.xcconfig)
 **/Config/Secrets.xcconfig
