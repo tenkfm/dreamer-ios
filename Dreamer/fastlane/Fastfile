@@ -8,6 +8,7 @@
 #   bundle exec fastlane certificates                         # match: fetch signing assets
 #   bundle exec fastlane signed_build configuration:Staging   # signed .ipa with match profiles
 #   bundle exec fastlane upload_dsyms                         # dSYMs of the last archive to Sentry
+#   bundle exec fastlane beta configuration:Staging           # signed build to internal TestFlight
 #   bundle exec fastlane screenshots                          # App Store screenshots (6.9" and 6.5")
 #   bundle exec fastlane upload_store                         # metadata + screenshots to App Store Connect
 
@@ -239,9 +240,27 @@ platform :ios do
       derived_data_path: DERIVED_DATA,
       output_directory: File.expand_path("../build/archive", __dir__),
       export_method: "app-store",
-      xcargs: PLUGIN_XCARGS
+      xcargs: [PLUGIN_XCARGS, options[:build_number] && "CURRENT_PROJECT_VERSION=#{options[:build_number]}"].compact.join(" ")
     )
     upload_dsyms if ENV["SENTRY_AUTH_TOKEN"]
+  end
+
+  desc "A signed build to internal TestFlight testers (never external: that needs Tony's yes)"
+  desc "Options: configuration (Staging, default, or Release). The build number is TestFlight's latest + 1"
+  lane :beta do |options|
+    configuration = options[:configuration] || "Staging"
+    bundle_id = BUNDLE_IDS.fetch(configuration)
+    api_key = asc_api_key
+    build_number = latest_testflight_build_number(app_identifier: bundle_id, api_key: api_key, initial_build_number: 0) + 1
+    signed_build(configuration: configuration, build_number: build_number)
+    upload_to_testflight(
+      api_key: api_key,
+      app_identifier: bundle_id,
+      ipa: Dir[File.expand_path("../build/archive/*.ipa", __dir__)].max_by { |file| File.mtime(file) },
+      skip_waiting_for_build_processing: true,
+      distribute_external: false
+    )
+    UI.success("#{configuration} build #{build_number} uploaded for internal testers")
   end
 
   desc "Upload the dSYMs of the last build to Sentry (SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT; needs sentry-cli)"

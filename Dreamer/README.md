@@ -24,6 +24,16 @@ tasks and progress: `../../Dreamer-iOS-Tasks`.
 Debug and Staging builds talk to the staging backend. Without an account there, use
 `-mockServices` (the default for `-debugScreen`) for a fully local app.
 
+## Guides
+
+- `docs/release.md`: signing with match, internal TestFlight (`fastlane beta`), App Store release,
+  hotfix
+- `docs/analytics.md`: events, flags, and how to see PostHog, Sentry and RevenueCat while
+  debugging
+- `docs/app-store-connect.md`: everything the App Store Connect record needs
+- `docs/qa-checklist.md`: the manual pass before App Review
+- `docs/performance.md`: measurements and the Instruments checks on devices
+
 ## Environments
 
 Three configurations, each driven by an xcconfig in `Config/` and read at runtime by `AppConfig`:
