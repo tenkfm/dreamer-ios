@@ -17,6 +17,8 @@ struct AppConfig: Sendable, Equatable {
     let sentryDSN: String?
     /// Instagram Stories needs the Meta app id in its share URL; nil hides the Stories button.
     let facebookAppID: String?
+    /// Which APNs the device token belongs to (the aps-environment entitlement of the build).
+    let pushEnvironment: PushEnvironment
 
     static let current = AppConfig(infoDictionary: Bundle.main.infoDictionary ?? [:])
 
@@ -39,5 +41,6 @@ struct AppConfig: Sendable, Equatable {
         postHogHost = value("DreamerPostHogHost").flatMap(URL.init(string:))
         sentryDSN = value("DreamerSentryDSN")
         facebookAppID = value("DreamerFacebookAppID")
+        pushEnvironment = value("DreamerAPSEnvironment") == "production" ? .production : .sandbox
     }
 }

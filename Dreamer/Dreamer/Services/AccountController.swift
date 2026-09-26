@@ -15,11 +15,15 @@ final class AccountController: AccountActions {
     private let dreamStore: any DreamStore
     private let drafts: DraftQueue?
     private let appState: AppState
-    /// SDK identities (RevenueCat, analytics, crash reports) and later the push token.
+    /// SDK identities (RevenueCat, analytics, crash reports, attribution, caches).
     private let unlink: @MainActor () async -> Void
+    /// The push token on the backend; needs the session, so it runs before the logout.
+    private let unregisterPush: @MainActor () async -> Void
 
     init(auth: any AuthService, dreamStore: any DreamStore, drafts: DraftQueue? = nil, appState: AppState,
-         unlink: @escaping @MainActor () async -> Void) {
+         unlink: @escaping @MainActor () async -> Void,
+         unregisterPush: @escaping @MainActor () async -> Void = {}) {
+        self.unregisterPush = unregisterPush
         self.auth = auth
         self.dreamStore = dreamStore
         self.drafts = drafts
@@ -28,6 +32,7 @@ final class AccountController: AccountActions {
     }
 
     func signOut() async {
+        await unregisterPush()
         await auth.signOut()
         await clearDevice()
         // Preferences and quiz answers stay: the next sign-in on this iPhone is "Welcome back".

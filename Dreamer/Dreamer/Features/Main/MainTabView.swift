@@ -111,7 +111,8 @@ private struct RouteDestination: View {
                 appState: appState, purchases: dependencies.purchases,
                 account: AccountController(auth: dependencies.auth, dreamStore: dependencies.dreamStore,
                                            drafts: dependencies.drafts, appState: appState,
-                                           unlink: dependencies.unlinkAccount),
+                                           unlink: dependencies.unlinkAccount,
+                                           unregisterPush: dependencies.unregisterPush),
                 analytics: dependencies.analytics))
         case .interpretation(let id):
             ViewModelHost {

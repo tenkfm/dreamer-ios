@@ -288,6 +288,16 @@ changes, so 7:30 stays local after travel. Tapping a notification goes through `
 `AppState.handle(_:)`: the reminder opens Record, a push about a dream opens it, and the trial
 reminder opens Settings. Debug: `-askReminder` with `-debugScreen home`.
 
+Pushes (IOS-07.2, `Services/PushDevices.swift`): once the user allows notifications and has an
+account, the app asks APNs for a token. `PushDevices` registers it with
+`POST /v1/devices {token (hex), environment}`, once per account and token; `environment` follows
+the build's `aps-environment`, which is sandbox in Debug and production in Staging/TestFlight and
+Release. Sign-out removes the token with `DELETE /v1/devices` before the logout, while the session
+still works; account deletion removes it on the server. The backend's pushes (`interpretation_ready`,
+`image_ready` with `dreamId`) open that dream from a warm or cold start and send
+`push_opened {type}`. The open app does not show them, because the screen already shows the
+dream. Real pushes need the APNs key on the backend and a device (see Blockers).
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the

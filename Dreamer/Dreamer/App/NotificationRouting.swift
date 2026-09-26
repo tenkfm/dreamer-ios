@@ -46,8 +46,31 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         await MainActor.run { NotificationRouter.shared.receive(link, pushType: pushType) }
     }
 
+    /// The backend's pushes say a dream is ready, which the open app already shows; our reminders
+    /// still appear as banners.
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                             willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        [.banner, .sound]
+        notification.request.content.userInfo["type"] == nil ? [.banner, .sound] : []
+    }
+
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        MainActor.assumeIsolated { PushRegistration.shared.received(deviceToken) }
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
+        // No push on the simulator or without the capability; reminders still work.
+    }
+}
+
+/// The APNs token of this install, as the backend stores it (hex).
+@MainActor
+@Observable
+final class PushRegistration {
+    static let shared = PushRegistration()
+
+    private(set) var token: String?
+
+    func received(_ deviceToken: Data) {
+        token = deviceToken.map { String(format: "%02x", $0) }.joined()
     }
 }

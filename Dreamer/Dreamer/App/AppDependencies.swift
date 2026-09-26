@@ -50,6 +50,8 @@ final class AppDependencies {
     let trackingConsent: TrackingConsent
     /// Local notifications (the morning reminder, the trial reminder).
     @ObservationIgnored let notificationScheduler: any NotificationScheduling
+    /// This install's push token on the backend (nil registry in mock mode).
+    @ObservationIgnored let pushDevices: PushDevices
     let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
@@ -85,6 +87,7 @@ final class AppDependencies {
          trackingPermission: any TrackingPermission = mockTrackingPermission(),
          notificationScheduler: any NotificationScheduling = MockNotificationScheduler()) {
         self.notificationScheduler = notificationScheduler
+        pushDevices = PushDevices(registry: api, environment: AppConfig.current.pushEnvironment)
         self.mode = mode
         self.api = api
         self.tokens = tokens
@@ -317,6 +320,11 @@ extension AppDependencies {
     /// Everything that measures installs, started with the tracking answer.
     var measurement: MeasurementStack {
         MeasurementStack(attribution: attribution, adNetworks: adNetworks)
+    }
+
+    /// Sign-out: remove the push token while the session can still do it.
+    func unregisterPush() async {
+        await pushDevices.unregister(token: PushRegistration.shared.token)
     }
 
     func unlinkAccount() async {

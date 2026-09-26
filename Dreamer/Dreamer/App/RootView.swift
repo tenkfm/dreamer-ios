@@ -46,6 +46,17 @@ struct RootView: View {
             guard scenePhase == .active else { return }
             await reminders.reschedule()
         }
+        .task(id: PushTrigger(userID: appState.userID, token: PushRegistration.shared.token,
+                              allowed: reminders.permission == .authorized)) {
+            // Pushes need the notification permission and an account: ask APNs for a token, then
+            // tell the backend (once per account and token).
+            guard appState.isSignedIn, reminders.permission == .authorized else { return }
+            if PushRegistration.shared.token == nil {
+                UIApplication.shared.registerForRemoteNotifications()
+            } else {
+                await dependencies.pushDevices.register(token: PushRegistration.shared.token, userID: appState.userID)
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
             // The reminder follows the local 7:30 after travel.
             Task { await reminders.reschedule() }
@@ -165,4 +176,10 @@ private struct ReminderTrigger: Equatable {
     var dreams: Int
     var trialEndsAt: Date?
     var active: Bool
+}
+
+private struct PushTrigger: Equatable {
+    var userID: String?
+    var token: String?
+    var allowed: Bool
 }

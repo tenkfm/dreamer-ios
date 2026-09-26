@@ -128,7 +128,7 @@ struct NotificationLinkTests {
     @Test func linksComeFromRemindersAndPushes() {
         let id = UUID()
         #expect(NotificationLink(userInfo: ["link": "record"]) == .record)
-        #expect(NotificationLink(userInfo: ["type": "dream_ready", "dreamId": id.uuidString]) == .dream(id))
+        #expect(NotificationLink(userInfo: ["type": "interpretation_ready", "dreamId": id.uuidString]) == .dream(id))
         #expect(NotificationLink(userInfo: ["type": "something_else"]) == nil)
     }
 
