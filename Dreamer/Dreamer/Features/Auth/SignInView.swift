@@ -2,7 +2,8 @@ import AuthenticationServices
 import SwiftUI
 
 /// Account step of onboarding, built from the design system (the design has no account screen):
-/// full sky, logo, title, Sign in with Apple, a glass email field and the legal line.
+/// full sky, logo, title, Sign in with Apple, Sign in with Google (when the build has a Google
+/// client), a glass email field and the legal line.
 /// After an email is sent: "Check your inbox" with the envelope orb and "Resend".
 /// Draws no background: it sits on the onboarding sky.
 struct SignInView: View {
@@ -11,6 +12,7 @@ struct SignInView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.openURL) private var openURL
+    @Environment(\.webAuthenticationSession) private var webAuthenticationSession
     @State private var appleNonce = ""
     @FocusState private var emailFocused: Bool
 
@@ -68,6 +70,7 @@ struct SignInView: View {
 
             VStack(spacing: 14) {
                 appleButton
+                if viewModel.isGoogleAvailable { googleButton }
                 orDivider
                 GlassTextField(systemImage: "envelope", placeholder: "Your email", text: $viewModel.email,
                                contentType: .emailAddress, keyboard: .emailAddress, submitLabel: .continue) {
@@ -119,6 +122,21 @@ struct SignInView: View {
             if viewModel.workingMethod == .apple {
                 Capsule().fill(.black.opacity(0.35))
                 ProgressView().tint(.white)
+            }
+        }
+        .disabled(viewModel.isWorking)
+    }
+
+    private var googleButton: some View {
+        GoogleSignInButton(mode: viewModel.mode, isLoading: viewModel.workingMethod == .google) {
+            emailFocused = false
+            Task {
+                await viewModel.signInWithGoogle { [webAuthenticationSession] url, scheme in
+                    // The shared browser session: someone already signed in to Google in Safari
+                    // only picks the account instead of typing a password in a fresh sheet.
+                    try await webAuthenticationSession.authenticate(using: url, callbackURLScheme: scheme,
+                                                                    preferredBrowserSession: .shared)
+                }
             }
         }
         .disabled(viewModel.isWorking)
@@ -248,6 +266,6 @@ private struct ResendButton: View {
 #Preview("Sign up") {
     ZStack {
         SkyBackground(kind: .full)
-        SignInView(viewModel: SignInViewModel(mode: .signUp, auth: MockAuthService()) { _ in }, onBack: {})
+        SignInView(viewModel: SignInViewModel(mode: .signUp, auth: MockAuthService(), google: MockGoogleSignIn()) { _ in }, onBack: {})
     }
 }

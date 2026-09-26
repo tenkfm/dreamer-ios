@@ -126,6 +126,8 @@ enum AnalyticsEvent: Equatable, Sendable {
 
 enum SignInMethod: String, Sendable {
     case apple, email
+    /// Not in the tracking plan yet (blocker IOS-02.6): used for the button state, never tracked.
+    case google
 }
 
 /// Where a dream card or image went (the tracking plan's `dream_shared.target`).

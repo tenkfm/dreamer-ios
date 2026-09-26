@@ -81,6 +81,9 @@ private struct LoggingAuth: AuthService {
     func signInWithApple(_ credential: AppleCredential) async throws(APIError) -> AuthSession {
         try await base.signInWithApple(credential)
     }
+    func signInWithGoogle(_ credential: GoogleCredential) async throws(APIError) -> AuthSession {
+        try await base.signInWithGoogle(credential)
+    }
     func requestEmailLink(email: String) async throws(APIError) { try await base.requestEmailLink(email: email) }
     func verifyEmailLink(token: String) async throws(APIError) -> AuthSession { try await base.verifyEmailLink(token: token) }
     func signOut() async { log.withLock { $0.append("logout") } }

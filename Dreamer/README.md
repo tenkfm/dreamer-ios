@@ -236,6 +236,17 @@ lists `applinks:$(API_HOST)` and the backend serves the AASA file from that host
 AppState, which keeps it until the account step verifies it (so a cold start works too). An
 expired link offers "Send a new link" to the address requested on this device.
 
+Sign in with Google sits under the Apple button (`Services/GoogleSignIn.swift`,
+`Features/Auth/GoogleSignInButton.swift`). There is no Google SDK: the OAuth flow for native apps
+runs in the system sheet (SwiftUI `webAuthenticationSession`) with PKCE, a state and a nonce; the
+code is redeemed on the device, and only Google's id token and the nonce go to the backend. The
+button follows Google's branding (the four-color "G", white by day, near-black at night, "Sign
+up/in with Google"); its colors are `DS.Brand`. `GOOGLE_IOS_CLIENT_ID` (Shared.xcconfig, one iOS
+client per bundle id) turns it on in live builds; mock mode always shows it and signs in without a
+browser. The backend has no Google endpoint yet, so `APIAuthService.signInWithGoogle` fails with
+`notConfigured` and nothing is tracked for it (the plan allows only `apple | email`): blocker
+IOS-02.6. Set the client id only once the endpoint exists.
+
 Settings has "Sign out" and "Delete account and all dreams" (`AccountController`). Sign-out calls
 `POST /v1/auth/logout` (best effort, works offline), forgets the tokens, clears the dreams cached
 for the account and unlinks the SDKs; the next sign-in is "Welcome back". Deletion shows a sheet

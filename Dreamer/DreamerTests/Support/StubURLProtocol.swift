@@ -37,6 +37,15 @@ final class StubURLProtocol: URLProtocol {
                           reporter: reporter), host)
     }
 
+    /// A plain session whose requests to `host` go to `handler`, for code that talks to a third
+    /// party without APIClient (Google's token endpoint). One test per host, or they collide.
+    static func makeSession(host: String, handler: @escaping Handler) -> URLSession {
+        handlers.withLock { $0[host] = handler }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [StubURLProtocol.self]
+        return URLSession(configuration: configuration)
+    }
+
     static func requests(for host: String) -> [URLRequest] {
         recorded.withLock { $0[host] ?? [] }
     }

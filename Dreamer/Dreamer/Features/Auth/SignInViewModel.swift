@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Account step: Sign in with Apple or an email link.
+/// Account step: Sign in with Apple, with Google or an email link.
 @MainActor
 @Observable
 final class SignInViewModel {
@@ -30,16 +30,19 @@ final class SignInViewModel {
     private(set) var resendAvailableAt: Date?
 
     private let auth: any AuthService
+    private let google: (any GoogleSignInProvider)?
     private let analytics: any Analytics
     private let onSignedIn: (AuthSession) -> Void
     private let now: () -> Date
 
     static let resendCooldown: TimeInterval = 30
 
-    init(mode: Mode, auth: any AuthService, analytics: any Analytics = NoopAnalytics(),
+    init(mode: Mode, auth: any AuthService, google: (any GoogleSignInProvider)? = nil,
+         analytics: any Analytics = NoopAnalytics(),
          now: @escaping () -> Date = Date.init, onSignedIn: @escaping (AuthSession) -> Void) {
         self.mode = mode
         self.auth = auth
+        self.google = google
         self.analytics = analytics
         self.now = now
         self.onSignedIn = onSignedIn
@@ -129,6 +132,42 @@ final class SignInViewModel {
         if !cancelled {
             error = ErrorState(kind: .serverError, title: String(localized: "Sign in with Apple didn’t work"),
                                message: String(localized: "Please try again, or continue with your email."), action: .dismiss)
+        }
+    }
+
+    // MARK: Google
+
+    var isGoogleAvailable: Bool { google != nil }
+
+    /// `browser` shows Google's page in the system sheet (the view's `webAuthenticationSession`).
+    func signInWithGoogle(using browser: @escaping WebAuthenticator) async {
+        guard let google, !isWorking else { return }
+        // No sign_in_started: the tracking plan allows only apple and email (blocker IOS-02.6), and
+        // an event with a value the plan does not know would be dropped or skew the funnel.
+        error = nil
+        workingMethod = .google
+        isWorking = true
+        let credential: GoogleCredential
+        do {
+            credential = try await google.signIn(using: browser)
+        } catch {
+            isWorking = false
+            workingMethod = nil
+            switch error {
+            case .cancelled:
+                break
+            case .offline:
+                self.error = ErrorState(APIError.offline)
+            case .failed:
+                self.error = ErrorState(kind: .serverError, title: String(localized: "Sign in with Google didn’t work"),
+                                        message: String(localized: "Please try again, or use another way to sign in."),
+                                        action: .dismiss)
+            }
+            return
+        }
+        await perform(.google) { [auth, onSignedIn] () throws(APIError) in
+            let session = try await auth.signInWithGoogle(credential)
+            onSignedIn(session)
         }
     }
 

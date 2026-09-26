@@ -111,7 +111,8 @@ struct OnboardingFlowView: View {
             QuizLensView(viewModel: viewModel, onBack: back, onContinue: next)
         case .account:
             ViewModelHost {
-                SignInViewModel(mode: viewModel.accountMode, auth: dependencies.auth, analytics: dependencies.analytics) { session in
+                SignInViewModel(mode: viewModel.accountMode, auth: dependencies.auth, google: dependencies.googleSignIn,
+                                analytics: dependencies.analytics) { session in
                     Task {
                         // The paywall variant decides where a new account goes next.
                         let subscription = try? await dependencies.subscriptionStatus.subscription()

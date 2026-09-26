@@ -22,7 +22,7 @@ change to it goes through the backend (a blocker, never an edit from this repo).
 | --- | --- | --- |
 | `onboarding_step_viewed` | `step` (welcome, record, understand, quizGoal, quizLens, paywall; the account step is not in the plan yet) | `OnboardingViewModel` |
 | `quiz_answered` | `question` (goal, lens), `answer` | `OnboardingViewModel` |
-| `sign_in_started` | `method` (apple, email) | `SignInViewModel` |
+| `sign_in_started` | `method` (apple, email; Google is not in the plan yet, so it sends nothing) | `SignInViewModel` |
 | `paywall_viewed` | `placement` (onboarding, settings, limit), `variant` | `PaywallViewModel` (once per screen) |
 | `plan_selected`, `purchase_started` | `plan` (yearly, weekly) | `PaywallViewModel` |
 | `record_started` | - | `RecordViewModel` (once per recording) |

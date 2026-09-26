@@ -18,6 +18,8 @@
 	<string>$(APS_ENVIRONMENT)</string>
 	<key>DreamerFacebookAppID</key>
 	<string>$(FACEBOOK_APP_ID)</string>
+	<key>DreamerGoogleClientID</key>
+	<string>$(GOOGLE_IOS_CLIENT_ID)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSFaceIDUsageDescription</key>

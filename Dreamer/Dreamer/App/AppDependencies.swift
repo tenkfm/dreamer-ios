@@ -19,6 +19,8 @@ final class AppDependencies {
     /// Nil in mock mode.
     let tokens: TokenManager?
     let auth: any AuthService
+    /// Nil hides the Google button: live builds without an iOS client id for Google.
+    @ObservationIgnored let googleSignIn: (any GoogleSignInProvider)?
     let profiles: any ProfileService
     let subscriptionStatus: any SubscriptionStatusService
     let analytics: any Analytics
@@ -63,6 +65,7 @@ final class AppDependencies {
          api: APIClient? = nil,
          tokens: TokenManager? = nil,
          auth: any AuthService = MockAuthService(),
+         googleSignIn: (any GoogleSignInProvider)? = MockGoogleSignIn(),
          profiles: any ProfileService = MockProfileService(),
          subscriptionStatus: any SubscriptionStatusService = MockSubscriptionStatusService(),
          analytics: any Analytics = NoopAnalytics(),
@@ -96,6 +99,7 @@ final class AppDependencies {
         self.api = api
         self.tokens = tokens
         self.auth = auth
+        self.googleSignIn = googleSignIn
         self.profiles = profiles
         self.subscriptionStatus = subscriptionStatus
         self.analytics = analytics
@@ -190,6 +194,7 @@ final class AppDependencies {
             api: api,
             tokens: tokens,
             auth: APIAuthService(client: api, tokens: tokens),
+            googleSignIn: config.googleOAuthClient.map { WebGoogleSignIn(client: $0) },
             profiles: APIProfileService(client: api),
             subscriptionStatus: APISubscriptionStatusService(client: api),
             analytics: analytics,

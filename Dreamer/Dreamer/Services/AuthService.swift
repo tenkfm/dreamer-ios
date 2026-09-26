@@ -15,6 +15,8 @@ struct AppleCredential: Sendable, Equatable {
 /// Sign-in and session lifecycle. Successful sign-ins store the tokens before returning.
 protocol AuthService: Sendable {
     func signInWithApple(_ credential: AppleCredential) async throws(APIError) -> AuthSession
+    /// Exchanges a Google id token for a session.
+    func signInWithGoogle(_ credential: GoogleCredential) async throws(APIError) -> AuthSession
     /// Sends the email with the sign-in link (always accepted, 5 an hour per address).
     func requestEmailLink(email: String) async throws(APIError)
     /// The token from the universal link `https://<api host>/auth/verify?token=...`.
@@ -38,6 +40,12 @@ struct APIAuthService: AuthService {
                                                        familyName: credential.familyName)
         await tokens.start(session)
         return session
+    }
+
+    /// The contract has no Google endpoint yet (blocker IOS-02.6): the button stays hidden in live
+    /// builds until `GOOGLE_IOS_CLIENT_ID` is set, and that waits for the endpoint.
+    func signInWithGoogle(_ credential: GoogleCredential) async throws(APIError) -> AuthSession {
+        throw .notConfigured
     }
 
     func requestEmailLink(email: String) async throws(APIError) {
@@ -81,6 +89,11 @@ actor MockAuthService: AuthService {
     }
 
     func signInWithApple(_ credential: AppleCredential) async throws(APIError) -> AuthSession {
+        try? await Task.sleep(for: delay)
+        return makeSession()
+    }
+
+    func signInWithGoogle(_ credential: GoogleCredential) async throws(APIError) -> AuthSession {
         try? await Task.sleep(for: delay)
         return makeSession()
     }
