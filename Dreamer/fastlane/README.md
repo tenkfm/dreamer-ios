@@ -103,6 +103,28 @@ Needs MATCH_GIT_URL, MATCH_PASSWORD, APPLE_TEAM_ID and the App Store Connect API
 
 Archive a signed build with match profiles: configuration Staging (default) or Release
 
+### ios beta
+
+```sh
+[bundle exec] fastlane ios beta
+```
+
+A signed build to TestFlight. The build number is TestFlight's latest + 1
+
+Options: configuration (Staging, default, or Release); external:true also sends it to the external
+
+group 'Beta' for Apple's beta review - only after Tony's explicit yes
+
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+The App Store version: a signed Release build (build number = TestFlight's latest + 1), uploaded
+
+with the metadata and screenshots of fastlane/. Never submits unless submit:true - Tony's yes first
+
 ### ios upload_dsyms
 
 ```sh
