@@ -39,6 +39,7 @@ struct LibraryView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .animation(.soft(0.4), value: viewModel.symbols)
+        .task(id: viewModel.category) { await viewModel.refresh() }
     }
 
     private var categories: some View {
@@ -56,7 +57,11 @@ struct LibraryView: View {
     }
 
     @ViewBuilder private var grid: some View {
-        if viewModel.symbols.isEmpty {
+        if viewModel.symbols.isEmpty && viewModel.isLoading {
+            ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 30)
+        } else if viewModel.symbols.isEmpty {
             Text("Nothing found. Try another word.")
                 .textStyle(.body, color: DS.Palette.textTertiary)
                 .frame(maxWidth: .infinity)
@@ -65,7 +70,7 @@ struct LibraryView: View {
             LazyVGrid(columns: columns, spacing: DS.Space.stack) {
                 ForEach(viewModel.symbols) { symbol in
                     Button { viewModel.open(symbol) } label: {
-                        SymbolTile(symbol: symbol)
+                        SymbolTile(symbol: symbol, viewModel: viewModel)
                     }
                     .buttonStyle(PressableButtonStyle())
                 }
@@ -77,10 +82,12 @@ struct LibraryView: View {
 /// Image on top, glass footer with title and meaning.
 private struct SymbolTile: View {
     var symbol: LibrarySymbol
+    var viewModel: LibraryViewModel
+    @State private var image: UIImage?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            DreamImage.image(named: symbol.imageName)
+            (image.map(Image.init(uiImage:)) ?? DreamImage.image(named: symbol.imageName))
                 .resizable()
                 .scaledToFill()
                 .frame(height: 96)
@@ -99,6 +106,9 @@ private struct SymbolTile: View {
         .multilineTextAlignment(.leading)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
+        .task(id: symbol.imageURL) {
+            image = await viewModel.imageData(for: symbol).flatMap(UIImage.init(data:))
+        }
     }
 }
 

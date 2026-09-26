@@ -106,13 +106,19 @@ final class HomeViewModel {
     var dreamCount: Int { store.summaries.count }
 
     func refreshInsights() async {
+        async let popular: Void = refreshPopularSymbols()
         await insights?.refresh()
+        await popular
+    }
+
+    private func refreshPopularSymbols() async {
+        try? await catalog.refresh(category: .popular)
     }
 
     // MARK: Library preview
 
     var featuredSymbols: [LibrarySymbol] {
-        Array(catalog.symbols.filter { $0.categories.contains(.popular) }.prefix(6))
+        Array(catalog.symbols(in: .popular).prefix(6))
     }
 
     // MARK: Actions

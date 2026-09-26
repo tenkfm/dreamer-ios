@@ -82,7 +82,7 @@ actor DreamImageCache {
     }
 
     /// Stores `data`; files of this dream that `isStale` says will never show again are removed.
-    func store(_ data: Data, for key: String, isStale: (String) -> Bool = { _ in false }) {
+    func store(_ data: Data, for key: String, isStale: @Sendable (String) -> Bool = { _ in false }) {
         remember(data, for: key)
         if let files = try? FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)) {
             for file in files where isStale(file) {

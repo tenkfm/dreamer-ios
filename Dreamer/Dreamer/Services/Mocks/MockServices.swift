@@ -225,8 +225,28 @@ struct MockDreamSubmitter: DreamSubmitter {
     }
 }
 
-struct MockSymbolCatalog: SymbolCatalog {
+@MainActor
+final class MockSymbolCatalog: SymbolCatalog {
     let symbols = MockData.librarySymbols
+
+    func symbols(in category: SymbolCategory) -> [LibrarySymbol] {
+        symbols.filter { $0.categories.contains(category) }
+    }
+
+    func symbol(id: LibrarySymbol.ID) -> LibrarySymbol? { symbols.first { $0.id == id } }
+
+    func refresh(category: SymbolCategory) async throws(APIError) {}
+
+    func search(_ query: String) async throws(APIError) -> [LibrarySymbol] {
+        symbols.filter { $0.title.localizedCaseInsensitiveContains(query) || $0.meaning.localizedCaseInsensitiveContains(query) }
+    }
+
+    func loadSymbol(id: LibrarySymbol.ID) async throws(APIError) -> LibrarySymbol {
+        guard let symbol = symbol(id: id) else { throw APIError.server(.init(code: .notFound, message: "", status: 404)) }
+        return symbol
+    }
+
+    func imageData(for symbol: LibrarySymbol) async -> Data? { nil }
 }
 
 /// Silent read-out that advances progress on a timer. For previews and tests.

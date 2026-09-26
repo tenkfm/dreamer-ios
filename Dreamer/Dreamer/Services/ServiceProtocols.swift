@@ -129,14 +129,23 @@ extension ReadAloudService {
     func prepare(_ item: ReadAloudItem) {}
 }
 
-/// Library content.
-protocol SymbolCatalog: Sendable {
+/// Library content: reads from the device (the library works offline once opened), async calls
+/// bring the server's.
+@MainActor
+protocol SymbolCatalog: AnyObject {
+    /// Every symbol on the device, in the server's order.
     var symbols: [LibrarySymbol] { get }
+    /// The symbols of a category, as last loaded.
+    func symbols(in category: SymbolCategory) -> [LibrarySymbol]
+    /// The symbol in full when it was opened before, else its list entry.
     func symbol(id: LibrarySymbol.ID) -> LibrarySymbol?
-}
-
-extension SymbolCatalog {
-    func symbol(id: LibrarySymbol.ID) -> LibrarySymbol? { symbols.first { $0.id == id } }
+    func refresh(category: SymbolCategory) async throws(APIError)
+    /// Server search over titles and meanings (all categories).
+    func search(_ query: String) async throws(APIError) -> [LibrarySymbol]
+    /// The symbol in full: every lens, the question, related symbols.
+    func loadSymbol(id: LibrarySymbol.ID) async throws(APIError) -> LibrarySymbol
+    /// The tile or hero image (cached on the device); nil in mock mode (the asset shows).
+    func imageData(for symbol: LibrarySymbol) async -> Data?
 }
 
 /// Saves a dream image to the user's photo library.

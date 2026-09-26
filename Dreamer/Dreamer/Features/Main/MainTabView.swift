@@ -116,8 +116,11 @@ private struct RouteDestination: View {
                 InterpretationView(viewModel: viewModel)
             }
         case .symbol(let id):
-            if let symbol = dependencies.catalog.symbol(id: id) {
-                SymbolDetailView(symbol: symbol)
+            ViewModelHost {
+                SymbolDetailViewModel(slug: id, catalog: dependencies.catalog, appState: appState,
+                                      analytics: dependencies.analytics)
+            } content: { viewModel in
+                SymbolDetailView(viewModel: viewModel)
             }
         }
     }

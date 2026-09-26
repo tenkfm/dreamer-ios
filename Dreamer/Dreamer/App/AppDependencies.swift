@@ -159,7 +159,7 @@ final class AppDependencies {
             dreamStore: dreamStore,
             analysis: APIDreamAnalysisService(client: api),
             purchases: livePurchases(config: config),
-            catalog: MockSymbolCatalog(),
+            catalog: APISymbolCatalog(remote: api),
             imageSaver: PhotoLibraryImageSaver(),
             featureFlags: featureFlags,
             crashReporter: crashReporter,

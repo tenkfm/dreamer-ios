@@ -49,7 +49,7 @@ enum SymbolCategory: String, CaseIterable, Codable, Sendable, Identifiable {
 }
 
 /// A dream symbol in the Library.
-struct LibrarySymbol: Identifiable, Hashable, Sendable {
+struct LibrarySymbol: Identifiable, Hashable, Sendable, Codable {
     /// The backend slug (`teeth-falling-out`).
     let id: String
     var title: String

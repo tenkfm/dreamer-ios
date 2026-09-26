@@ -123,6 +123,16 @@ cache. A long press offers "Delete dream", confirmed first, which calls `DELETE 
 and then forgets the dream on the device. Interpretation shows the cached dream and fetches the
 fresh one; when the dream is not cached yet, it shows a spinner.
 
+Library (IOS-06.4, `Services/APISymbolCatalog.swift`): each category loads from
+`GET /v1/library/symbols?category=`, following `nextCursor`, when it is selected; Home's thumbs use
+`popular`. Search waits 300 ms after the last change and then calls `?q=`; offline it searches the
+symbols on the device. A symbol's detail shows its cached entry at once and then loads
+`GET /v1/library/symbols/{slug}`: the full meaning, every lens, the reflection question and
+related symbols as chips that open them. Opening a detail tracks `library_symbol_opened {slug}`.
+Symbols are kept in `Caches/library.json`, and a symbol opened in full keeps its lenses when list
+refreshes come in. Pictures are cached in `Caches/SymbolImages`, keyed by symbol and link path. So
+the library works offline once it has been opened.
+
 Insights (IOS-06.3, `Services/InsightStore.swift`): Home's week strip and caption come from
 `GET /v1/insights/week`, and its insight card from `GET /v1/insights/morning`. When that answer is
 `null` the card is hidden, except for a new user with no dreams, who sees the invitation. The
