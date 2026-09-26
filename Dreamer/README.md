@@ -179,6 +179,10 @@ The purchase goes through the mock store, not StoreKit, because mock mode never 
 `fastlane ui_test iterations:10` repeats the suite until the first failure; the last run passed
 10 times in a row (30 of 30).
 
+Manual QA for internal TestFlight (IOS-11.3): `docs/qa-checklist.md` lists every screen and state
+on 3-4 devices under real conditions (dim light, bad network, interruptions, sandbox purchases,
+large text, VoiceOver), with severities for the ClickUp triage.
+
 Contract tests (IOS-11.1): `scripts/extract_openapi_examples.py` turns every response example of
 `Dreamer/API/openapi.yaml` into `DreamerTests/Fixtures/openapi-examples.json` (dates back to ISO
 8601, as the API sends them). `ContractTests` stubs the network with each success example and
