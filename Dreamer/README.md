@@ -1,11 +1,28 @@
 # Dreamer (iOS, SwiftUI)
 
-Phase 1 of the Dreamer app: all 14 designed screens, the full navigation flow and motion, running on
-mock data behind service protocols. Design handoff: `../Dreamer-iOS-Handoff`.
+Dreamer, the AI dream journal for iPhone: tell a dream, read what it may mean through three lenses,
+keep the journal. The app talks to the Dreamer backend (`../dreamerweb`, NestJS) through a
+generated OpenAPI client; RevenueCat, PostHog and Sentry are its SDKs. Every service also has a
+local mock, so the whole app runs without the network. Design handoff: `../Dreamer-iOS-Handoff`;
+tasks and progress: `../../Dreamer-iOS-Tasks`.
 
-- Xcode 26+, iOS 17.0+, iPhone only, portrait, light appearance
-- Swift 6 language mode (strict concurrency), no third-party dependencies
-- Open `Dreamer.xcodeproj` and run the `Dreamer` scheme; `Cmd+U` runs the unit tests
+- Xcode 26.2+, iOS 17.0+, iPhone only, portrait; day and night appearance
+- Swift 6 language mode (strict concurrency), SwiftUI, `@Observable` MVVM
+- Packages: swift-openapi-generator/runtime/urlsession, RevenueCat, PostHog, Sentry-Dynamic
+
+## Quick start
+
+1. Install Xcode 26.2 and Ruby 3.3.5 (`.tool-versions`), then `gem install bundler`.
+2. Optional: `cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig` and fill in the SDK keys
+   you have. Without keys each SDK stays off and the app uses its local fallback.
+3. `./run.sh` builds, boots the iPhone 17 simulator and launches the app. The first run resolves the
+   Swift packages, which takes a few minutes. In Xcode, open `Dreamer.xcodeproj` and run the
+   `Dreamer` scheme; Xcode asks once to trust the OpenAPI generator plugin.
+4. `./run.sh test` runs the unit tests, and `bundle exec fastlane ui_test` the UI tests.
+5. `./run.sh screen:interpretation` opens any screen directly on mock data (see "Debug" below).
+
+Debug and Staging builds talk to the staging backend. Without an account there, use
+`-mockServices` (the default for `-debugScreen`) for a fully local app.
 
 ## Environments
 
@@ -561,52 +578,79 @@ check in the branch protection of `main`.
 
 ```
 Dreamer/
-  App/            DreamerApp (composition root), AppState, AppDependencies, RootView, links, debug launch
+  App/            DreamerApp, AppDependencies (composition root), AppState, RootView, AppConfig,
+                  links and notifications routing, debug launch
+  API/            openapi.yaml (normalized copy of the contract), generated client config, APIClient
+                  + endpoints and mapping to domain models, middlewares (retry, auth, errors,
+                  reporting), SSE
   DesignSystem/   Tokens (Theme), motion, glass material, sky, reusable components
-  Models/         Plain Sendable value types (Dream, Lens, Emotion, Plan, Route, ...)
-  Services/       Protocols + implementations (real read-out and photo saving, mocks for the rest)
-  Features/       One folder per screen: <Screen>View + <Screen>ViewModel
-  Resources/      Asset catalog, fonts (listed under UIAppFonts in Info.plist)
-DreamerTests/     Swift Testing suites for the view models
+  Models/         Sendable value types (Dream, Lens, Emotion, Plan, Route, remote models, ...)
+  Services/       Protocols + live implementations (API, SDKs, system frameworks) and Mocks/
+  Features/       One folder per screen: <Screen>View + <Screen>ViewModel; Shared/ for common UI
+  Resources/      Asset catalog, fonts, Localizable.xcstrings, PrivacyInfo.xcprivacy
+DreamerTests/     Swift Testing: view models, services on stubbed network, contract examples
+DreamerUITests/   XCUITest: critical scenarios and accessibility audits
 ```
 
-- **Views** only render and forward user intents. They use design-system tokens only (no ad-hoc
-  hex values or font sizes).
+- **Views** only render and forward user intents, with design-system tokens only (no ad-hoc hex
+  values or font sizes).
 - **View models** are `@MainActor @Observable` classes that own screen state and talk to services
-  through protocols. They are created with explicit dependencies, so they can be tested without UI.
-- **AppState** holds session state (onboarding, lens, subscription, reminders, tab and navigation
-  paths) and persists preferences through `PreferencesStore`.
-- **AppDependencies** is the composition root, injected with `.environment(_:)`. To go live, swap
-  the mocks in `AppDependencies.live()`: `SpeechService` (SFSpeechRecognizer), `DreamAnalysisService`
-  (backend LLM), `PurchaseService` (StoreKit 2, ids `dreamer.yearly` / `dreamer.weekly`), `DreamStore`
-  (persistence).
-- **Navigation**: linear `OnboardingFlowView`; `MainTabView` keeps one `NavigationStack` per tab
-  with typed `Route` paths in `AppState`; Record -> Details -> Analysis is a `fullScreenCover`, and on
-  finish the Interpretation is pushed on the Today stack.
+  through protocols. They take their dependencies explicitly, so tests need no UI.
+- **AppState** holds session state (account, onboarding, lens, subscription, reminders, tab and
+  navigation paths, queued profile changes) and persists preferences through `PreferencesStore`.
+- **AppDependencies** is the composition root, injected with `.environment(_:)`. `live()` picks
+  live or mock services once per launch (see below).
+- **Navigation**: a paged `OnboardingFlowView`; `MainTabView` keeps one `NavigationStack` per tab
+  with typed `Route` paths in `AppState`; Record -> Details -> Analysis is a `fullScreenCover`, and
+  on finish the Interpretation is pushed on the Today stack. Notification taps go through
+  `NotificationRouter` to `AppState.handle(_:)`.
 
-## What is real vs mocked
+## Live vs mock services
 
-| Real | Mocked |
-|---|---|
-| Voice read-out (`AVSpeechSynthesizer`, progress from spoken range) | Speech-to-text (types the sample transcript) |
-| Save image to Photos (add-only permission) | Analysis (4 steps x 1.3 s, sample interpretation) |
-| Preferences persisted in `UserDefaults` | Purchases (succeed after 0.8 s) |
-| Share sheet (`ShareLink`) | Dreams (in memory, seeded with the Journal entries) |
+`AppDependencies.live()` uses the live services when the build has an API host, which Debug and
+Staging do. It uses the mocks with `-mockServices`, with `-debugScreen` (unless `-liveServices`),
+and in builds without a host (Release until the production domain exists). Previews and unit
+tests always use mocks.
+
+| Service | Live | Mock |
+|---|---|---|
+| Auth, profile, subscription status | Backend (`APIAuthService`, `APIProfileService`, ...) | Always signs in, fixed profile |
+| Dream analysis | `POST /v1/dreams` + SSE, polling fallback | 4 steps, sample interpretation streamed |
+| Journal, insights, library | `CachedDreamStore` (SwiftData), `InsightStore`, `APISymbolCatalog` | Seeded dreams and symbols, computed insights |
+| Speech-to-text | On-device `SFSpeechRecognizer`, server fallback | Types the sample transcript |
+| Read aloud | Backend ElevenLabs voice, system voice fallback | System voice |
+| Images, share card | Backend presigned links, protected cache | Asset catalog |
+| Purchases | RevenueCat (with a key), else StoreKit 2 on the local `.storekit` | Succeeds after 0.8 s |
+| Analytics, flags, crashes | PostHog, Sentry (with keys) | Debug log, code defaults |
+| Attribution, ad SDKs | Protocols ready, none registered yet (blockers) | - |
+| Reminders, Face ID, App Attest, push | System frameworks | Same (App Attest skipped on the simulator) |
 
 ## Debug: open any screen directly
 
-Debug builds accept `-debugScreen <name>` (in-memory preferences, nothing persisted):
+Debug builds accept launch arguments (in `DebugLaunch.swift` and next to the services they
+change); none of them is compiled into App Store builds.
 
 ```
-xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
+./run.sh screen:interpretation
+xcrun simctl launch booted com.braincode.dreamer.staging -debugScreen journal -night
 ```
 
-Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
-interpretation support symbol record details analysis`. Debug screens use mock services (`-liveServices`
-to talk to the backend instead); `-mockServices` does the same for a normal launch,
-`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-askReminder` for the reminder offer, `-lockJournal` for the Face ID lock, `-debugTime HH:mm` for the Home greeting, `-night` or `-day` to force the appearance,
-`-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
-You can also add these to the scheme's launch arguments.
+| Argument | Effect |
+|---|---|
+| `-debugScreen <name>` | Opens `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings deleteAccount interpretation support symbol record details analysis` on mock data |
+| `-mockServices` / `-liveServices` | All mocks for a normal launch / the backend for a debug screen |
+| `-night`, `-day` | Force the appearance |
+| `-debugTime HH:mm` | Today at that time for the Home greeting |
+| `-offline` | Shows the offline banner |
+| `-noLiveText` | Recording without live text, written down by a mock server |
+| `-imagePending` | The dream image is painted during the first seconds |
+| `-askTracking`, `-askReminder` | Show the tracking question / the reminder offer |
+| `-lockJournal` | The Face ID lock is on |
+| `-micPermission notDetermined\|denied\|restricted` | Microphone permission states |
+| `-featureFlag name=true\|false` | Overrides a remote flag |
+| `-debugAdvance` | An onboarding page taps "Continue" by itself after 2 s |
+| `-uiTesting`, `-uiTestOpenEmailLink` | UI tests: fresh preferences; the mock "opens" the sign-in link |
+| `-crashTestNonFatal`, `-crashTestCrash` | Sentry checks (Debug and Staging) |
 
 ## Night mode
 
@@ -671,6 +715,6 @@ Accessibility check (IOS-10.2):
 
 ## Before release
 
-- Re-export sky and thumbnail images at @3x (the handoff ships @2x only).
-- Add the app icon to `AppIcon`.
-- Replace the placeholder URLs in `AppLinks`.
+See `docs/release.md` for the release itself. What is still open is listed as blockers in
+`../../Dreamer-iOS-Tasks/PROGRESS.md`: the production domain, keys, accounts, legal URLs in
+`AppLinks`, the final icon and approvals.
