@@ -34,6 +34,8 @@ struct EntitlementState: Sendable, Equatable {
     var plan: Plan?
     var expiresAt: Date?
     var willRenew: Bool
+    /// In the free trial: `expiresAt` is when it turns into the paid plan.
+    var isTrial = false
 
     static let none = EntitlementState(isPremium: false, plan: nil, expiresAt: nil, willRenew: false)
 }

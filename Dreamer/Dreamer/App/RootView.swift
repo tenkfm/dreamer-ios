@@ -3,6 +3,7 @@ import SwiftUI
 /// Switches between onboarding, the hard paywall and the main app.
 struct RootView: View {
     @Environment(AppState.self) private var appState
+    @Environment(ReminderController.self) private var reminders
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.scenePhase) private var scenePhase
 
@@ -32,6 +33,32 @@ struct RootView: View {
         .preferredColorScheme(appState.isNightMode ? .dark : .light)
         // Screens draw clear sky under their headers; no iOS 26 blur at scroll edges anywhere.
         .scrollEdgeEffectsHidden()
+        .onChange(of: NotificationRouter.shared.pending, initial: true) {
+            // A tapped reminder or push (cold starts included).
+            guard let tap = NotificationRouter.shared.consume() else { return }
+            if let pushType = tap.pushType { dependencies.analytics.track(.pushOpened(type: pushType)) }
+            appState.handle(tap.link)
+        }
+        .task(id: ReminderTrigger(settings: appState.reminders, userID: appState.userID,
+                                  dreams: dependencies.dreamStore.summaries.count, trialEndsAt: appState.trialEndsAt,
+                                  active: scenePhase == .active)) {
+            // Replanned on every change that affects the reminders, and on each return to the app.
+            guard scenePhase == .active else { return }
+            await reminders.reschedule()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
+            // The reminder follows the local 7:30 after travel.
+            Task { await reminders.reschedule() }
+        }
+        .overlay {
+            if reminders.isPrePromptPresented && !dependencies.trackingConsent.isPrePromptPresented {
+                ReminderPrePrompt(minutes: appState.reminders.reminderMinutes,
+                                  onEnable: { Task { await reminders.enable() } },
+                                  onDecline: reminders.decline)
+                    .transition(.opacity.combined(with: .offset(y: 18)))
+            }
+        }
+        .animation(.soft(0.5), value: reminders.isPrePromptPresented)
         .task {
             // Install attribution and the ad networks start with the tracking answer (at once when
             // the user answered before; otherwise after the question).
@@ -120,6 +147,7 @@ struct RootView: View {
 #Preview {
     RootView()
         .environment(AppDependencies.preview())
+        .environment(ReminderController.preview)
         .environment(AppState.preview(onboardingCompleted: false))
 }
 
@@ -128,4 +156,13 @@ private struct DraftFlushTrigger: Equatable {
     var online: Bool
     var userID: String?
     var phase: ScenePhase
+}
+
+/// What the pending reminders depend on; a change replans them.
+private struct ReminderTrigger: Equatable {
+    var settings: ReminderSettings
+    var userID: String?
+    var dreams: Int
+    var trialEndsAt: Date?
+    var active: Bool
 }

@@ -4,6 +4,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel: HomeViewModel
     @Environment(AppDependencies.self) private var dependencies
+    @Environment(ReminderController.self) private var reminders
 
     init(viewModel: HomeViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -43,6 +44,8 @@ struct HomeView: View {
         // On opening and after every new or deleted dream.
         .task(id: viewModel.dreamCount) { await viewModel.refreshInsights() }
         .trackScreen(.home)
+        // The first Home after onboarding offers the morning reminder (once).
+        .task { await reminders.homeAppeared() }
     }
 
     private var header: some View {
@@ -152,4 +155,5 @@ private struct DraftStatusPill: View {
     let state = AppState.preview()
     HomeView(viewModel: HomeViewModel(appState: state, store: InMemoryDreamStore(), catalog: MockSymbolCatalog()))
         .environment(AppDependencies.preview())
+        .environment(ReminderController.preview)
 }

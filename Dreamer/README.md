@@ -273,6 +273,21 @@ deleted and never sent. Recordings are also deleted when the flow is closed, and
 the app crashed mid-flow. Debug: `-noLiveText` with `-debugScreen record` shows the fallback with a
 mock server.
 
+## Reminders and notifications
+
+`Services/Reminders.swift`: the first Home after onboarding offers the morning reminder once,
+with `ReminderPrePrompt` ("Remind me" or "Not now") before the system alert. Settings turns it on
+or off and asks for the permission when it was never asked. `ReminderPlanner` works out the next 7
+mornings at the chosen local time. Each has its own words from a gentle rotation, the first one
+mentions a streak of 2 or more mornings, and today is skipped once a dream is told. It also
+schedules the reminder the paywall promises: 2 days before a renewing trial turns paid
+(`EntitlementState.isTrial`). `ReminderController` plans them again whenever the app becomes
+active, the settings, the journal, the account or the trial change, and when the time zone
+changes, so 7:30 stays local after travel. Tapping a notification goes through `AppDelegate`
+(`UNUserNotificationCenterDelegate`) and `NotificationRouter`, which also works on cold start, to
+`AppState.handle(_:)`: the reminder opens Record, a push about a dream opens it, and the trial
+reminder opens Settings. Debug: `-askReminder` with `-debugScreen home`.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
@@ -494,7 +509,7 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
 interpretation support symbol record details analysis`. Debug screens use mock services (`-liveServices`
 to talk to the backend instead); `-mockServices` does the same for a normal launch,
-`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-debugTime HH:mm` for the Home greeting, `-night` or `-day` to force the appearance,
+`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-askReminder` for the reminder offer, `-debugTime HH:mm` for the Home greeting, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.
 

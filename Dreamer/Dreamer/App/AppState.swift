@@ -28,6 +28,10 @@ final class AppState {
     var pendingDeepLink: DeepLink?
     /// Profile sync to run for the current account (set on sign-in and at launch).
     private(set) var pendingProfileSync: ProfileSyncDirection?
+    /// When the free trial turns into the paid plan (nil: no renewing trial).
+    private(set) var trialEndsAt: Date?
+    /// The reminder pre-prompt was shown (once, on the first Home after onboarding).
+    var reminderPromptShown: Bool { didSet { persist() } }
     /// Settings changed on this device and not yet on the server (kept across launches, so an
     /// offline change is not overwritten by the next pull).
     private(set) var unsyncedProfile: ProfileUpdate? { didSet { persist() } }
@@ -74,6 +78,7 @@ final class AppState {
         storedPaywallVariant = saved.paywallVariant
         freeInterpretationsLeft = saved.freeInterpretationsLeft
         unsyncedProfile = saved.unsyncedProfile
+        reminderPromptShown = saved.reminderPromptShown
     }
 
     /// Onboarding until the user has an account and has been through it (new users) or signed
@@ -230,6 +235,8 @@ final class AppState {
     /// The store's word on access. Only for a signed-in account: purchases belong to it.
     func applyEntitlement(_ entitlement: EntitlementState) {
         guard isSignedIn else { return }
+        // The paywall promises a reminder 2 days before a renewing trial turns paid.
+        trialEndsAt = entitlement.isTrial && entitlement.willRenew ? entitlement.expiresAt : nil
         if entitlement.isPremium {
             let plan = entitlement.plan ?? subscription.plan ?? .yearly
             if subscription != .active(plan) { subscription = .active(plan) }
@@ -303,6 +310,23 @@ final class AppState {
         if canInterpret { isRecordFlowPresented = true } else { isPaywallSheetPresented = true }
     }
 
+    /// A tapped notification: the morning reminder opens Record, a push about a dream opens it,
+    /// the trial reminder opens Settings (the subscription row). Nothing before Main.
+    func handle(_ link: NotificationLink) {
+        guard rootScreen == .main else { return }
+        switch link {
+        case .record:
+            if !isRecordFlowPresented { presentRecordFlow() }
+        case .dream(let id):
+            isRecordFlowPresented = false
+            selectedTab = .journal
+            paths[.journal] = [.interpretation(id)]
+        case .subscription:
+            selectedTab = .today
+            paths[.today] = [.settings]
+        }
+    }
+
     /// Record flow finished: the cover dismisses and the interpretation is pushed on Today,
     /// so Back returns to Home.
     func finishRecordFlow(with dreamID: Dream.ID) {
@@ -326,6 +350,7 @@ final class AppState {
         preferences.paywallVariant = storedPaywallVariant
         preferences.freeInterpretationsLeft = freeInterpretationsLeft
         preferences.unsyncedProfile = unsyncedProfile
+        preferences.reminderPromptShown = reminderPromptShown
         store.save(preferences)
     }
 }

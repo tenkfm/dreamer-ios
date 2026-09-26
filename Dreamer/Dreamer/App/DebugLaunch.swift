@@ -62,6 +62,8 @@ enum DebugLaunch {
         preferences.userName = "Anna"
         let state = AppState(store: InMemoryPreferencesStore(preferences))
         if let forcedNightMode, forcedNightMode != state.isNightMode { state.toggleNightMode() }
+        // Screenshots stay clean; `-askReminder` shows the reminder pre-prompt on Home.
+        state.reminderPromptShown = !ProcessInfo.processInfo.arguments.contains("-askReminder")
         if screen == .paywall { state.signedIn(userID: "debug-user", isNewUser: true) }
         guard onboardingStep == nil else { return state }
         state.signedIn(userID: "debug-user", isNewUser: false)

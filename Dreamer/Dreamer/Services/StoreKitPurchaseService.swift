@@ -73,6 +73,14 @@ struct StoreKitPurchaseService: PurchaseService {
         }
     }
 
+    /// The free trial is the introductory offer of the yearly plan.
+    private static func isIntroductory(_ transaction: Transaction) -> Bool {
+        if #available(iOS 17.2, *) {
+            return transaction.offer?.type == .introductory
+        }
+        return transaction.offerType == .introductory
+    }
+
     static func currentEntitlement(now: Date = .now) async -> EntitlementState {
         var best: EntitlementState = .none
         for await result in Transaction.currentEntitlements {
@@ -81,7 +89,8 @@ struct StoreKitPurchaseService: PurchaseService {
             if let expiry = transaction.expirationDate, expiry < now { continue }
             let willRenew = await transaction.subscriptionStatus?.state == .subscribed
             if !best.isPremium || (transaction.expirationDate ?? .distantFuture) > (best.expiresAt ?? .distantPast) {
-                best = EntitlementState(isPremium: true, plan: plan, expiresAt: transaction.expirationDate, willRenew: willRenew)
+                best = EntitlementState(isPremium: true, plan: plan, expiresAt: transaction.expirationDate, willRenew: willRenew,
+                                        isTrial: isIntroductory(transaction))
             }
         }
         return best

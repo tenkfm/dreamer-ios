@@ -3,6 +3,7 @@ import SwiftUI
 
 /// 14 Settings (pushed from Home).
 struct SettingsView: View {
+    @Environment(ReminderController.self) private var reminders
     @State private var viewModel: SettingsViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
@@ -82,7 +83,7 @@ struct SettingsView: View {
 
     private var preferencesGroup: some View {
         SettingsGroup {
-            toggleRow("bell", "Morning reminder", isOn: $viewModel.morningReminder)
+            toggleRow("bell", "Morning reminder", isOn: reminderBinding)
             SettingsDivider()
             navigationRow("clock", "Reminder time", value: viewModel.reminderTimeText) { viewModel.activeSheet = .reminderTime }
                 .disabled(!viewModel.morningReminder)
@@ -125,6 +126,18 @@ struct SettingsView: View {
             SettingsRow(systemImage: icon, title: title) { SettingsValue(value: value) }
         }
         .buttonStyle(.plain)
+    }
+
+    /// Turning the reminder on asks for the permission when it was never asked.
+    private var reminderBinding: Binding<Bool> {
+        Binding(get: { viewModel.morningReminder },
+                set: { isOn in
+                    if isOn {
+                        Task { await reminders.enable() }
+                    } else {
+                        viewModel.morningReminder = false
+                    }
+                })
     }
 
     private var alertBinding: Binding<Bool> {

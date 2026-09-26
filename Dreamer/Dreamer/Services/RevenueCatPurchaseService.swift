@@ -102,7 +102,8 @@ struct RevenueCatPurchaseService: PurchaseService {
     static func entitlement(from info: CustomerInfo) -> EntitlementState {
         guard let premium = info.entitlements[entitlementID], premium.isActive else { return .none }
         return EntitlementState(isPremium: true, plan: Plan(productID: premium.productIdentifier),
-                                expiresAt: premium.expirationDate, willRenew: premium.willRenew)
+                                expiresAt: premium.expirationDate, willRenew: premium.willRenew,
+                                isTrial: premium.periodType == .trial)
     }
 }
 

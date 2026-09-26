@@ -2,8 +2,10 @@ import SwiftUI
 
 @main
 struct DreamerApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var dependencies: AppDependencies
     @State private var appState: AppState
+    @State private var reminders: ReminderController
 
     init() {
         let dependencies = AppDependencies.live()
@@ -21,6 +23,8 @@ struct DreamerApp: App {
         }
         _dependencies = State(initialValue: dependencies)
         _appState = State(initialValue: appState)
+        _reminders = State(initialValue: ReminderController(scheduler: dependencies.notificationScheduler,
+                                                            appState: appState, store: dependencies.dreamStore))
     }
 
     var body: some Scene {
@@ -29,6 +33,7 @@ struct DreamerApp: App {
                 .environment(dependencies)
                 .environment(\.analytics, dependencies.analytics)
                 .environment(appState)
+                .environment(reminders)
                 .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         }
     }

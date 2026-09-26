@@ -157,5 +157,6 @@ struct ViewModelHost<ViewModel: AnyObject, Content: View>: View {
 #Preview {
     MainTabView()
         .environment(AppDependencies.preview())
+        .environment(ReminderController.preview)
         .environment(AppState.preview())
 }

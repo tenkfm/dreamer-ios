@@ -180,6 +180,7 @@ struct UserPreferences: Codable, Hashable, Sendable {
         paywallVariant = try container.decodeIfPresent(PaywallVariant.self, forKey: .paywallVariant)
         freeInterpretationsLeft = try container.decodeIfPresent(Int.self, forKey: .freeInterpretationsLeft) ?? 0
         unsyncedProfile = try container.decodeIfPresent(ProfileUpdate.self, forKey: .unsyncedProfile)
+        reminderPromptShown = try container.decodeIfPresent(Bool.self, forKey: .reminderPromptShown) ?? false
     }
 
     var onboardingCompleted = false
@@ -198,6 +199,7 @@ struct UserPreferences: Codable, Hashable, Sendable {
     var freeInterpretationsLeft = 0
     /// Profile changes made on this device that the backend has not confirmed yet.
     var unsyncedProfile: ProfileUpdate?
+    var reminderPromptShown = false
 }
 
 @MainActor

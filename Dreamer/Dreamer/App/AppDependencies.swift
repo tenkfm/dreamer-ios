@@ -48,6 +48,8 @@ final class AppDependencies {
     let adNetworks: [any AdNetworkSDK]
     /// The tracking question and the start of install measurement with its answer.
     let trackingConsent: TrackingConsent
+    /// Local notifications (the morning reminder, the trial reminder).
+    @ObservationIgnored let notificationScheduler: any NotificationScheduling
     let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
@@ -80,7 +82,9 @@ final class AppDependencies {
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
          makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() },
-         trackingPermission: any TrackingPermission = mockTrackingPermission()) {
+         trackingPermission: any TrackingPermission = mockTrackingPermission(),
+         notificationScheduler: any NotificationScheduling = MockNotificationScheduler()) {
+        self.notificationScheduler = notificationScheduler
         self.mode = mode
         self.api = api
         self.tokens = tokens
@@ -145,7 +149,8 @@ final class AppDependencies {
                 imageActions: images,
                 instagramAppID: config.facebookAppID,
                 makeSpeechService: { MockSpeechService(liveText: mockTranscriber() == nil) },
-                makeReadAloudService: { SpeechSynthesizerReadAloudService() }
+                makeReadAloudService: { SpeechSynthesizerReadAloudService() },
+                notificationScheduler: SystemNotificationScheduler()
             )
         }
 
@@ -193,7 +198,8 @@ final class AppDependencies {
                                         analytics: analytics, ttsEnabled: ttsEnabled)
             },
             makeSpeechPermissions: { SystemSpeechPermissions() },
-            trackingPermission: SystemTrackingPermission()
+            trackingPermission: SystemTrackingPermission(),
+            notificationScheduler: SystemNotificationScheduler()
         )
     }
 
