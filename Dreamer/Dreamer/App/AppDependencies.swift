@@ -44,6 +44,8 @@ final class AppDependencies {
     let insights: InsightStore?
     /// Install attribution (the MMP); a no-op until it is chosen.
     let attribution: any AttributionService
+    /// Ad networks' SDKs (Meta, TikTok); none until their app ids exist.
+    let adNetworks: [any AdNetworkSDK]
     let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
@@ -71,6 +73,7 @@ final class AppDependencies {
          shareCards: (any ShareCardProviding)? = nil,
          insights: InsightStore? = nil,
          attribution: any AttributionService = NoopAttribution(),
+         adNetworks: [any AdNetworkSDK] = [],
          instagramAppID: String? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
@@ -97,6 +100,7 @@ final class AppDependencies {
         self.shareCards = shareCards
         self.insights = insights
         self.attribution = attribution
+        self.adNetworks = adNetworks
         self.instagramAppID = instagramAppID
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
@@ -286,6 +290,11 @@ extension AppDependencies {
     }
 
     /// After sign-out, account deletion or a revoked session.
+    /// Everything that measures installs, started with the tracking answer.
+    var measurement: MeasurementStack {
+        MeasurementStack(attribution: attribution, adNetworks: adNetworks)
+    }
+
     func unlinkAccount() async {
         await imageLoader?.removeAll()
         insights?.clear()

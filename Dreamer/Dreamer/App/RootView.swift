@@ -33,8 +33,9 @@ struct RootView: View {
         // Screens draw clear sky under their headers; no iOS 26 blur at scroll edges anywhere.
         .scrollEdgeEffectsHidden()
         .task {
-            // Install attribution (the MMP), once per launch.
-            await dependencies.attribution.start()
+            // Install attribution (the MMP) and the ad networks, once per launch. The tracking
+            // answer comes with IOS-08.4; until asked, nothing may use the IDFA.
+            await dependencies.measurement.start(trackingAllowed: false)
         }
         .task {
             // Lets the 9 PM / 5 AM schedule switch while the app stays open.

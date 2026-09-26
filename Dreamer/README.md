@@ -308,6 +308,13 @@ sends revenue events itself. Until the MMP (AppsFlyer or Adjust) and its dev key
 `NoopAttribution` is used and nothing is attributed (see Blockers). The chosen SDK plugs in behind
 the protocol, and its key goes into `Secrets.xcconfig`.
 
+Ad networks (IOS-08.3): the Meta SDK (with Aggregated Event Measurement) and the TikTok Events SDK
+plug in as `AdNetworkSDK`s. `MeasurementStack` starts them with the attribution once per launch
+and passes on the user's tracking answer. Trials and purchases reach Meta and TikTok through the
+MMP, and SKAN conversion values follow the MMP's schema. None of them is registered until the
+Meta App ID and client token, the TikTok App ID and the SKAN schema exist (see Blockers). Their
+SKAdNetwork ids go into Info.plist together with the SDKs.
+
 ## Crash reporting
 
 Sentry (`Services/CrashReporter.swift`, SPM product `Sentry-Dynamic`: the static product drops

@@ -43,3 +43,22 @@ struct AttributionTests {
         #expect(purchases.attributionIDs.isEmpty)
     }
 }
+
+struct MeasurementStackTests {
+    final class SpyNetwork: AdNetworkSDK, @unchecked Sendable {
+        let name: String
+        private let starts = OSAllocatedUnfairLock<[Bool]>(initialState: [])
+        var started: [Bool] { starts.withLock { $0 } }
+        init(name: String) { self.name = name }
+        func start(trackingAllowed: Bool) async { starts.withLock { $0.append(trackingAllowed) } }
+    }
+
+    @Test func everySDKGetsTheTrackingAnswer() async {
+        let attribution = RecordingAttribution()
+        let meta = SpyNetwork(name: "meta")
+        let tiktok = SpyNetwork(name: "tiktok")
+        await MeasurementStack(attribution: attribution, adNetworks: [meta, tiktok]).start(trackingAllowed: true)
+        #expect(attribution.starts == [true])
+        #expect(meta.started == [true] && tiktok.started == [true])
+    }
+}
