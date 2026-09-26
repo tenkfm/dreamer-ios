@@ -343,6 +343,9 @@ extension AppDependencies {
 
     func unlinkAccount() async {
         await imageLoader?.removeAll()
+        // Nothing of the account stays: recordings waiting for upload, any URL cache entry.
+        RecordingFiles.purge()
+        URLCache.shared.removeAllCachedResponses()
         insights?.clear()
         attribution.setUserID(nil)
         await purchases.logOut()

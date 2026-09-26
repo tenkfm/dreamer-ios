@@ -124,7 +124,7 @@ struct RemoteDreamImageLoader: DreamImageLoading {
     let cache: DreamImageCache
     let actions: any DreamImageActions
 
-    init(session: URLSession = .shared, cache: DreamImageCache = DreamImageCache(), actions: any DreamImageActions) {
+    init(session: URLSession = APIClient.mediaSession, cache: DreamImageCache = DreamImageCache(), actions: any DreamImageActions) {
         self.session = session
         self.cache = cache
         self.actions = actions

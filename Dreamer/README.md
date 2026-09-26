@@ -446,6 +446,25 @@ uploads. They cover:
 in App Store Connect. The contact details of the review and whether a demo account is wanted
 anyway are Tony's to fill in (see Blockers).
 
+## Data on the device
+
+Everything with dream content has complete file protection (unreadable while the phone is
+locked):
+- the SwiftData store (drafts, journal, dreams in full) in Application Support/Dreamer;
+- `insights.json`;
+- the dream image cache;
+- recordings waiting for upload.
+Tokens and App Attest key ids live in the Keychain
+(`AfterFirstUnlockThisDeviceOnly`). API answers are never written to the shared URL cache
+(`urlCache = nil`, no cookies). Media behind presigned links download through an ephemeral
+session, and the app keeps its own protected caches. Sign-out and account deletion empty all of
+them: journal, drafts, image cache, insights, recordings, URL cache, SDK identities. Nothing is
+printed. The only `os.Logger` lines are an analytics debug line in Debug builds (event names and
+enum values) and a write failure without details. There are no ATS exceptions and no plain
+`http://`. `PrivacyGuardTests` fails the build when any of this regresses. To check a device:
+`log stream --device --predicate 'process == "Dreamer"'` while telling a dream and signing in by
+email; neither the dream text nor the email may appear.
+
 ## Privacy manifest
 
 `Dreamer/Resources/PrivacyInfo.xcprivacy` declares:

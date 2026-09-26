@@ -60,8 +60,21 @@ final class APIClient: Sendable {
         configuration.timeoutIntervalForRequest = 30
         configuration.waitsForConnectivity = false
         configuration.httpAdditionalHeaders = ["Accept": "application/json"]
+        // Answers carry dream texts: never written to the shared URL cache on disk, no cookies.
+        configuration.urlCache = nil
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.httpShouldSetCookies = false
         return URLSession(configuration: configuration)
     }
+
+    /// For media behind presigned links (dream images, cards, symbol pictures): in memory only,
+    /// the app keeps its own protected caches.
+    static let mediaSession: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.urlCache = nil
+        configuration.timeoutIntervalForRequest = 30
+        return URLSession(configuration: configuration)
+    }()
 
     /// Runs a generated call and turns every failure into `APIError`.
     func perform<Output>(operation: String = #function, _ call: () async throws -> Output) async throws(APIError) -> Output {

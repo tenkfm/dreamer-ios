@@ -35,7 +35,7 @@ final class APISymbolCatalog: SymbolCatalog {
 
     init(remote: any LibraryRemote, fileURL: URL? = APISymbolCatalog.defaultFileURL,
          images: DreamImageCache = DreamImageCache(directory: URL.cachesDirectory.appending(path: "SymbolImages", directoryHint: .isDirectory)),
-         session: URLSession = .shared) {
+         session: URLSession = APIClient.mediaSession) {
         self.remote = remote
         self.fileURL = fileURL
         self.images = images
