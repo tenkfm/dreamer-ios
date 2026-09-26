@@ -123,6 +123,16 @@ cache. A long press offers "Delete dream", confirmed first, which calls `DELETE 
 and then forgets the dream on the device. Interpretation shows the cached dream and fetches the
 fresh one; when the dream is not cached yet, it shows a spinner.
 
+Insights (IOS-06.3, `Services/InsightStore.swift`): Home's week strip and caption come from
+`GET /v1/insights/week`, and its insight card from `GET /v1/insights/morning`. When that answer is
+`null` the card is hidden, except for a new user with no dreams, who sees the invitation. The
+Journal summary comes from `GET /v1/insights/month`: count, ring (dreams / nights so far), top
+symbol and emotion shares; an empty month says "Tell a dream and your month will take shape here".
+The three are fetched together when Home opens, after every new or deleted dream, and on Journal
+refresh. The last answers are kept in `Application Support/Dreamer/insights.json` (complete
+protection), so the numbers show offline and at launch, and the file is removed at sign-out.
+Mock mode computes the same numbers from the stored dreams.
+
 Search (IOS-06.2): the search field and the emotion chips under it wait 350 ms after the last change,
 then call `GET /v1/dreams?q=&emotion=`. The backend matches titles, symbols, the text and the
 interpretation, and every word works as a prefix. Rows then show the `snippet` with the matched

@@ -204,8 +204,8 @@ struct RecordingUpload: Sendable, Equatable {
 
 // MARK: - Insights
 
-struct WeekInsight: Sendable, Equatable {
-    struct Day: Sendable, Equatable {
+struct WeekInsight: Sendable, Equatable, Codable {
+    struct Day: Sendable, Equatable, Codable {
         var date: Date
         var letter: String
         var caught: Bool
@@ -216,20 +216,20 @@ struct WeekInsight: Sendable, Equatable {
     var count: Int
 }
 
-struct MorningInsight: Sendable, Equatable, Decodable {
+struct MorningInsight: Sendable, Equatable, Codable {
     var symbol: String
     var count: Int
     var text: String
 }
 
-struct MonthInsight: Sendable, Equatable {
-    struct EmotionShare: Sendable, Equatable {
+struct MonthInsight: Sendable, Equatable, Codable {
+    struct EmotionShare: Sendable, Equatable, Codable {
         var emotion: Emotion
         /// 0...1
         var share: Double
     }
 
-    struct RecurringSymbol: Sendable, Equatable {
+    struct RecurringSymbol: Sendable, Equatable, Codable {
         var keyword: String
         var count: Int
     }

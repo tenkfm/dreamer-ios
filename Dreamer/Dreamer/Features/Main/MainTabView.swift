@@ -60,9 +60,11 @@ struct MainTabView: View {
     @ViewBuilder private func root(for tab: AppTab) -> some View {
         switch tab {
         case .today:
-            HomeView(viewModel: HomeViewModel(appState: appState, store: dependencies.dreamStore, catalog: dependencies.catalog))
+            HomeView(viewModel: HomeViewModel(appState: appState, store: dependencies.dreamStore, catalog: dependencies.catalog,
+                                              insights: dependencies.insights))
         case .journal:
-            JournalView(viewModel: JournalViewModel(appState: appState, store: dependencies.dreamStore, images: dependencies.imageLoader))
+            JournalView(viewModel: JournalViewModel(appState: appState, store: dependencies.dreamStore, images: dependencies.imageLoader,
+                                                    insights: dependencies.insights))
         case .library:
             LibraryView(viewModel: LibraryViewModel(appState: appState, catalog: dependencies.catalog))
         }

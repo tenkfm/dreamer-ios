@@ -40,6 +40,8 @@ struct HomeView: View {
             .scrollBounceBehavior(.basedOnSize)
         }
         .sensoryFeedback(.impact(weight: .light), trigger: viewModel.isNightMode)
+        // On opening and after every new or deleted dream.
+        .task(id: viewModel.dreamCount) { await viewModel.refreshInsights() }
     }
 
     private var header: some View {
@@ -79,7 +81,13 @@ struct HomeView: View {
         .padding(.horizontal, DS.Space.screen)
     }
 
-    private var insightCard: some View {
+    @ViewBuilder private var insightCard: some View {
+        if viewModel.showsInsightCard {
+            insightCardContent
+        }
+    }
+
+    private var insightCardContent: some View {
         Group {
             if let insight = viewModel.insight {
                 InsightCard(overline: "Your morning insight", text: insight, buttonTitle: "See the pattern") {

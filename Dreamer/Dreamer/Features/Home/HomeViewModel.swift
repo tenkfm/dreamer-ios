@@ -7,14 +7,17 @@ final class HomeViewModel {
     private let appState: AppState
     private let store: any DreamStore
     private let catalog: any SymbolCatalog
+    /// The backend's insights; nil in mock mode, where they are computed from the stored dreams.
+    private let insights: InsightStore?
     private let now: () -> Date
     private let calendar: Calendar
 
-    init(appState: AppState, store: any DreamStore, catalog: any SymbolCatalog,
+    init(appState: AppState, store: any DreamStore, catalog: any SymbolCatalog, insights: InsightStore? = nil,
          now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
         self.appState = appState
         self.store = store
         self.catalog = catalog
+        self.insights = insights
         self.now = now
         var calendar = calendar
         calendar.firstWeekday = 2 // Week strip runs Monday..Sunday.
@@ -49,6 +52,14 @@ final class HomeViewModel {
     }
 
     var weekDays: [WeekDayState] {
+        if let week = insights?.week {
+            let formatter = DateFormatter()
+            formatter.calendar = calendar
+            formatter.dateFormat = "EEEE"
+            return week.days.enumerated().map { index, day in
+                WeekDayState(id: index, letter: day.letter, isDone: day.caught, accessibilityName: formatter.string(from: day.date))
+            }
+        }
         let letters = ["M", "T", "W", "T", "F", "S", "S"]
         let formatter = DateFormatter()
         formatter.calendar = calendar
@@ -63,7 +74,7 @@ final class HomeViewModel {
     }
 
     var weekCaption: String {
-        let count = dreamsThisWeek.count
+        let count = insights?.week?.count ?? dreamsThisWeek.count
         return switch count {
         case 0: "No dreams caught yet this week"
         case 1: "1 dream caught this week"
@@ -73,8 +84,9 @@ final class HomeViewModel {
 
     // MARK: Insight
 
-    /// The most repeated symbol this week, if any repeats.
+    /// The backend's morning insight, or (mock mode) the most repeated symbol this week.
     var insight: String? {
+        if let insights { return insights.morning?.text }
         let dreams = dreamsThisWeek
         let counts = dreams.reduce(into: [String: Int]()) { counts, dream in
             for keyword in Set(dream.symbols) { counts[keyword, default: 0] += 1 }
@@ -84,6 +96,18 @@ final class HomeViewModel {
     }
 
     let insightPlaceholder = "Tell a dream each morning and your patterns will appear here."
+
+    /// The backend says nothing yet (null): no card, except for a new user, who gets the invitation.
+    var showsInsightCard: Bool {
+        insight != nil || insights == nil || (store.summaries.isEmpty && (insights?.month?.dreamCount ?? 0) == 0)
+    }
+
+    /// Changes when a dream is added or removed, so the insights are asked again.
+    var dreamCount: Int { store.summaries.count }
+
+    func refreshInsights() async {
+        await insights?.refresh()
+    }
 
     // MARK: Library preview
 

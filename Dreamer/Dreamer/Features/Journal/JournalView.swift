@@ -167,6 +167,10 @@ private struct JournalSummaryCard: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("\(summary.dreamCount) dreams this month")
             }
+            if summary.dreamCount == 0 {
+                Text("Tell a dream and your month will take shape here.")
+                    .textStyle(.secondary, color: DS.Palette.textTertiary)
+            }
             if !summary.distribution.isEmpty {
                 DistributionBar(shares: summary.distribution)
                 FlowLayout(spacing: 14, lineSpacing: 6) {
@@ -191,14 +195,14 @@ private struct DistributionBar: View {
 
     var body: some View {
         GeometryReader { geo in
-            let total = max(shares.map(\.count).reduce(0, +), 1)
+            let total = max(shares.map(\.share).reduce(0, +), 0.0001)
             let spacing: CGFloat = 4
             let available = geo.size.width - spacing * CGFloat(shares.count - 1)
             HStack(spacing: spacing) {
                 ForEach(shares) { share in
                     Capsule()
                         .fill(share.emotion.color)
-                        .frame(width: available * CGFloat(share.count) / CGFloat(total))
+                        .frame(width: available * CGFloat(share.share / total))
                 }
             }
         }

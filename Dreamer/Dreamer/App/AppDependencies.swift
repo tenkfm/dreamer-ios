@@ -40,6 +40,8 @@ final class AppDependencies {
     let imageActions: (any DreamImageActions)?
     /// The backend's 9:16 share card (nil in mock mode: the dream image is shared).
     let shareCards: (any ShareCardProviding)?
+    /// The backend's week, morning and month insights (nil in mock mode: computed from the dreams).
+    let insights: InsightStore?
     let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
@@ -65,6 +67,7 @@ final class AppDependencies {
          imageLoader: (any DreamImageLoading)? = nil,
          imageActions: (any DreamImageActions)? = nil,
          shareCards: (any ShareCardProviding)? = nil,
+         insights: InsightStore? = nil,
          instagramAppID: String? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
@@ -89,6 +92,7 @@ final class AppDependencies {
         self.imageLoader = imageLoader
         self.imageActions = imageActions
         self.shareCards = shareCards
+        self.insights = insights
         self.instagramAppID = instagramAppID
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
@@ -165,6 +169,7 @@ final class AppDependencies {
             imageLoader: RemoteDreamImageLoader(actions: api),
             imageActions: api,
             shareCards: APIShareCardProvider(client: api),
+            insights: InsightStore(service: api),
             instagramAppID: config.facebookAppID,
             makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
             makeReadAloudService: {
@@ -277,6 +282,7 @@ extension AppDependencies {
     /// After sign-out, account deletion or a revoked session.
     func unlinkAccount() async {
         await imageLoader?.removeAll()
+        insights?.clear()
         await purchases.logOut()
         analytics.reset()
         crashReporter.setUserID(nil)

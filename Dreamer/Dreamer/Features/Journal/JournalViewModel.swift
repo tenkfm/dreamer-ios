@@ -19,7 +19,8 @@ final class JournalViewModel {
 
     struct EmotionShare: Equatable, Identifiable {
         var emotion: Emotion
-        var count: Int
+        /// 0...1 of the month's emotions.
+        var share: Double
         var id: Emotion { emotion }
     }
 
@@ -57,18 +58,21 @@ final class JournalViewModel {
     private let appState: AppState
     private let store: any DreamStore
     private let images: (any DreamImageLoading)?
+    /// The backend's month; nil in mock mode, where it is computed from the stored dreams.
+    private let insights: InsightStore?
     private let now: () -> Date
     private let calendar: Calendar
     private let dateFormatter: DreamDateFormatter
     private let searchDebounce: Duration
     @ObservationIgnored private var searchTask: Task<Void, Never>?
 
-    init(appState: AppState, store: any DreamStore, images: (any DreamImageLoading)? = nil,
+    init(appState: AppState, store: any DreamStore, images: (any DreamImageLoading)? = nil, insights: InsightStore? = nil,
          now: @escaping () -> Date = Date.init, calendar: Calendar = .mondayFirst,
          searchDebounce: Duration = .milliseconds(350)) {
         self.appState = appState
         self.store = store
         self.images = images
+        self.insights = insights
         self.now = now
         self.calendar = calendar
         dateFormatter = DreamDateFormatter(calendar: calendar)
@@ -83,6 +87,16 @@ final class JournalViewModel {
     }
 
     var summary: Summary {
+        if let month = insights?.month {
+            return Summary(
+                title: "Your \(month.monthName)",
+                mostFrequentSymbol: month.topSymbol,
+                dreamCount: month.dreamCount,
+                ringProgress: month.nightsSoFar > 0 ? min(1, Double(month.dreamCount) / Double(month.nightsSoFar)) : 0,
+                distribution: month.emotions.filter { $0.share > 0 }.sorted { $0.share > $1.share }
+                    .map { EmotionShare(emotion: $0.emotion, share: $0.share) }
+            )
+        }
         let dreams = dreamsThisMonth
         let today = now()
 
@@ -94,10 +108,12 @@ final class JournalViewModel {
         let daysWithDreams = Set(dreams.map { calendar.startOfDay(for: $0.createdAt) }).count
         let daysSoFar = calendar.component(.day, from: today)
 
-        let emotionCounts = dreams.flatMap(\.emotions).reduce(into: [Emotion: Int]()) { $0[$1, default: 0] += 1 }
+        let allEmotions = dreams.flatMap(\.emotions)
+        let emotionCounts = allEmotions.reduce(into: [Emotion: Int]()) { $0[$1, default: 0] += 1 }
+        let total = Double(max(allEmotions.count, 1))
         let distribution = Emotion.allCases
-            .compactMap { emotion in emotionCounts[emotion].map { EmotionShare(emotion: emotion, count: $0) } }
-            .sorted { $0.count > $1.count }
+            .compactMap { emotion in emotionCounts[emotion].map { EmotionShare(emotion: emotion, share: Double($0) / total) } }
+            .sorted { $0.share > $1.share }
 
         return Summary(
             title: "Your \(dateFormatter.month(today))",
@@ -209,6 +225,7 @@ final class JournalViewModel {
         guard !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
+        async let month: Void = refreshMonth()
         do {
             try await store.refresh()
         } catch .offline {
@@ -216,6 +233,11 @@ final class JournalViewModel {
         } catch {
             if store.summaries.isEmpty { toastMessage = ErrorState(error).message }
         }
+        await month
+    }
+
+    private func refreshMonth() async {
+        await insights?.refresh()
     }
 
     /// The last row appeared: the next page.
