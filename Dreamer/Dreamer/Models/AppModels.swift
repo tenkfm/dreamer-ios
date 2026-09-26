@@ -15,8 +15,8 @@ enum Plan: String, CaseIterable, Codable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .yearly: "Yearly"
-        case .weekly: "Weekly"
+        case .yearly: String(localized: "Yearly")
+        case .weekly: String(localized: "Weekly")
         }
     }
 }

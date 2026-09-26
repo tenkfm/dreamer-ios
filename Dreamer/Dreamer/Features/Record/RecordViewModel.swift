@@ -57,11 +57,11 @@ final class RecordViewModel {
 
         var message: String {
             switch self {
-            case .offline: "You’re offline. Try again when you’re connected, or type your dream."
-            case .uploadFailed: "We couldn’t send your recording. Try again, or type your dream."
-            case .limitReached: "That’s all the voice we can write down today. Please type your dream."
-            case .unavailable: "We couldn’t write down your recording. Please type your dream."
-            case .noWords: "We couldn’t hear any words. Continue recording or type your dream."
+            case .offline: String(localized: "You’re offline. Try again when you’re connected, or type your dream.")
+            case .uploadFailed: String(localized: "We couldn’t send your recording. Try again, or type your dream.")
+            case .limitReached: String(localized: "That’s all the voice we can write down today. Please type your dream.")
+            case .unavailable: String(localized: "We couldn’t write down your recording. Please type your dream.")
+            case .noWords: String(localized: "We couldn’t hear any words. Continue recording or type your dream.")
             }
         }
 
@@ -194,9 +194,9 @@ final class RecordViewModel {
 
     var pauseMessage: String? {
         switch pauseReason {
-        case .interruption: "Paused for a call. Your words are saved."
-        case .background: "Paused while Dreamer was away. Your words are saved."
-        case .timeLimit: "That’s five minutes - your dream is saved. Tap “I’m done”."
+        case .interruption: String(localized: "Paused for a call. Your words are saved.")
+        case .background: String(localized: "Paused while Dreamer was away. Your words are saved.")
+        case .timeLimit: String(localized: "That’s five minutes - your dream is saved. Tap “I’m done”.")
         case .user, nil:
             if case .failed(let failure) = serverTranscription { failure.message } else { nil }
         }

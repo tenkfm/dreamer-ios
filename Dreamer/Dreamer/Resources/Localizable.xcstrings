@@ -1,0 +1,254 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "": {
+      "shouldTranslate": false
+    },
+    "%@%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@%2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "%@, %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, %2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "%lld": {
+      "shouldTranslate": false
+    },
+    "%lld dreams this month": {},
+    "%lld percent": {},
+    "%lld s left": {},
+    "12": {
+      "shouldTranslate": false
+    },
+    "A dream is waiting": {},
+    "A dream keeps coming back": {},
+    "A few details": {},
+    "AI dream image": {},
+    "After that your yearly plan starts. You can cancel any time in your App Store settings.": {},
+    "Allow Photos access in Settings to save": {},
+    "Almost ready": {},
+    "An image of every dream": {},
+    "Before the day begins": {},
+    "Billed every %@": {},
+    "By continuing you agree to our": {},
+    "Cancel": {},
+    "Catch it now, while you still remember.": {},
+    "Check your connection and try again.": {},
+    "Check your inbox": {},
+    "Classic meanings of dream symbols": {},
+    "Clear search": {},
+    "Collapses the text": {},
+    "Connecting with how you felt": {},
+    "Continue": {},
+    "Continue recording": {},
+    "Couldn’t delete this dream. Please try again.": {},
+    "Couldn’t make a new image. Please try again.": {},
+    "Couldn’t open Instagram": {},
+    "Couldn’t prepare your dream card. Please try again.": {},
+    "Couldn’t save the image": {},
+    "Create a new image": {},
+    "Create your account to keep your journal.": {},
+    "Delete account and all dreams": {},
+    "Delete dream": {},
+    "Delete this dream?": {},
+    "Delete your account?": {},
+    "Dismiss": {},
+    "Done": {},
+    "Dream book": {},
+    "Dreamer": {},
+    "Dreamer is catching its breath": {},
+    "Dreamer offers reflection, not medical advice.": {},
+    "Finding the key symbols": {},
+    "Free for %@, then %@ a %@. We remind you 2 days before it ends. %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Free for %1$@, then %2$@ a %3$@. We remind you 2 days before it ends. %4$@"
+          }
+        }
+      }
+    },
+    "Gentle morning reminders": {},
+    "Good afternoon": {},
+    "Good evening": {},
+    "Good morning": {},
+    "Have you had this dream before?": {},
+    "How did it feel?": {},
+    "If you are in danger or thinking about hurting yourself, call your local emergency number now.": {},
+    "It may have been deleted on another device.": {},
+    "It may have been deleted.": {},
+    "It will be removed from your journal on all your devices. This can’t be undone.": {},
+    "It’s on our side. Please try again later.": {},
+    "Keep it going - tell last night’s dream.": {},
+    "Last week": {},
+    "Lens: %@": {},
+    "Let’s take a pause": {},
+    "Listen to your interpretation": {},
+    "Loading image…": {},
+    "Loading plans": {},
+    "MMM d": {},
+    "Most frequent symbol: %@": {},
+    "Most searched dreams": {},
+    "Never": {},
+    "No dreams caught yet this week": {},
+    "No dreams match your search.": {},
+    "Not active": {},
+    "Nothing found. Try another word.": {},
+    "OK": {},
+    "Off": {},
+    "Often": {},
+    "On": {},
+    "Painting your dream…": {},
+    "Pause": {},
+    "Paused": {},
+    "Paused for a call. Your words are saved.": {},
+    "Paused while Dreamer was away. Your words are saved.": {},
+    "Personal interpretation in 3 lenses": {},
+    "Play": {},
+    "Please sign in again": {},
+    "Please try again after %@.": {},
+    "Please try again in a little while.": {},
+    "Please try again in a minute.": {},
+    "Please try again, or continue with your email.": {},
+    "Please try again. If it keeps happening, reinstall Dreamer from the App Store.": {},
+    "Please update Dreamer from the App Store and try again.": {},
+    "Private journal and recurring symbols": {},
+    "Psychology": {},
+    "Reading your dream": {},
+    "Reading your dream…": {},
+    "Recording": {},
+    "Remember my dreams better": {},
+    "Reminder time": {},
+    "Renews automatically until you cancel, at least 24 hours before the period ends. Cancel anytime in Settings.": {},
+    "Restore failed. Please try again.": {},
+    "Results": {},
+    "Save your dreams": {},
+    "Saved on your iPhone": {},
+    "Saved to Photos": {},
+    "See plans": {},
+    "Send a new link": {},
+    "Shows the full text": {},
+    "Sign in": {},
+    "Sign in to open your journal.": {},
+    "Sign in with Apple didn’t work": {},
+    "Sign out": {},
+    "Sign out of Dreamer?": {},
+    "Sign-in links work once and for 15 minutes. We can send you a new one.": {},
+    "Signing you in…": {},
+    "Signs, symbols and inner guidance": {},
+    "Some dreams carry more than a reading can hold. You don’t have to go through this alone - talking to someone you trust, or to a professional, can help.": {},
+    "Someone keeps appearing": {},
+    "Someone specific was in it": {},
+    "Something went wrong": {},
+    "Something went wrong while interpreting it. Let’s try again.": {},
+    "Sometimes": {},
+    "Spiritual": {},
+    "Stairs · Roots · A voice": {},
+    "Start your free trial to read what your dreams are saying.": {},
+    "Step %lld of %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Still half asleep?": {},
+    "Subscribe for %@ a %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Subscribe for %1$@ a %2$@"
+          }
+        }
+      }
+    },
+    "Take a minute for last night’s dream.": {},
+    "Tap to tell last night’s dream": {},
+    "Tell a dream and your month will take shape here.": {},
+    "Tell a dream each morning and your patterns will appear here.": {},
+    "Tell it before it fades.": {},
+    "That’s all the new images for today. Try again tomorrow.": {},
+    "That’s all the voice we can write down today. Please type your dream.": {},
+    "That’s five minutes - your dream is saved. Tap “I’m done”.": {},
+    "That’s the best time to tell your dream.": {},
+    "The image isn’t ready yet": {},
+    "The purchase didn’t go through. Please try again.": {},
+    "The purchase went through but access isn’t active yet. Try Restore in a moment.": {},
+    "They make your interpretation more personal.": {},
+    "This dream is no longer here": {},
+    "This dream sounds heavy": {},
+    "This is still being prepared. Try again in a moment.": {},
+    "This is taking too long": {},
+    "This link has expired": {},
+    "This symbol isn’t available offline yet.": {},
+    "This week": {},
+    "Today": {},
+    "Try %@ free": {},
+    "Try again": {},
+    "Understand my dreams": {},
+    "Unlock your interpretations": {},
+    "Voice is resting": {},
+    "Wake up to meaning": {},
+    "We couldn’t find a previous purchase.": {},
+    "We couldn’t hear any words. Continue recording or type your dream.": {},
+    "We couldn’t read this dream": {},
+    "We couldn’t read this dream right now. Please try again.": {},
+    "We couldn’t send your recording. Try again, or type your dream.": {},
+    "We couldn’t verify this app": {},
+    "We couldn’t write down your recording. Please type your dream.": {},
+    "We sent a sign-in link to %@. It works once, for 15 minutes.": {},
+    "Weekly": {},
+    "Welcome back": {},
+    "We’ll read it aloud with the iPhone voice instead.": {},
+    "What did you dream last night?": {},
+    "What your mind is working through": {},
+    "Writing your interpretation": {},
+    "YOUR DREAM JOURNAL": {},
+    "Yearly": {},
+    "Yesterday": {},
+    "Your %@": {},
+    "Your %@ subscription is restored.": {},
+    "Your dream": {},
+    "Your dream is still close. Tap to tell it.": {},
+    "Your dreams are safe on this iPhone and will sync when you’re back online.": {},
+    "Your dreams will appear here.": {},
+    "Your free week ends in 2 days": {},
+    "Your journal is locked": {},
+    "Your journal stays in your account. Sign in again to see it.": {},
+    "Your purchase is waiting for approval. Dreamer unlocks as soon as it’s approved.": {},
+    "Your session has ended. Sign in to see your journal.": {},
+    "Your thoughts": {},
+    "You’re offline": {},
+    "You’re offline. Try again when you’re connected, or type your dream.": {},
+    "You’re offline. Try deleting again when you’re connected.": {},
+    "You’re offline. We’ll read your dream as soon as you’re back online.": {},
+    "You’ve reached today’s limit. Come back after %@.": {},
+    "dream": {},
+    "dreams": {},
+    "or": {},
+    "|": {
+      "shouldTranslate": false
+    }
+  },
+  "version": "1.0"
+}

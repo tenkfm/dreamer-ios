@@ -8,17 +8,17 @@ enum Lens: String, CaseIterable, Codable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .psychology: "Psychology"
-        case .spiritual: "Spiritual"
-        case .dreamBook: "Dream book"
+        case .psychology: String(localized: "Psychology")
+        case .spiritual: String(localized: "Spiritual")
+        case .dreamBook: String(localized: "Dream book")
         }
     }
 
     var summary: String {
         switch self {
-        case .psychology: "What your mind is working through"
-        case .spiritual: "Signs, symbols and inner guidance"
-        case .dreamBook: "Classic meanings of dream symbols"
+        case .psychology: String(localized: "What your mind is working through")
+        case .spiritual: String(localized: "Signs, symbols and inner guidance")
+        case .dreamBook: String(localized: "Classic meanings of dream symbols")
         }
     }
 }
@@ -35,9 +35,9 @@ enum Recurrence: Int, CaseIterable, Codable, Sendable {
 
     var title: String {
         switch self {
-        case .never: "Never"
-        case .sometimes: "Sometimes"
-        case .often: "Often"
+        case .never: String(localized: "Never")
+        case .sometimes: String(localized: "Sometimes")
+        case .often: String(localized: "Often")
         }
     }
 }
@@ -49,10 +49,10 @@ enum Goal: String, CaseIterable, Codable, Sendable, Identifiable {
 
     var title: String {
         switch self {
-        case .understand: "Understand my dreams"
-        case .recurring: "A dream keeps coming back"
-        case .someone: "Someone keeps appearing"
-        case .remember: "Remember my dreams better"
+        case .understand: String(localized: "Understand my dreams")
+        case .recurring: String(localized: "A dream keeps coming back")
+        case .someone: String(localized: "Someone keeps appearing")
+        case .remember: String(localized: "Remember my dreams better")
         }
     }
 
@@ -169,10 +169,10 @@ enum AnalysisStep: Int, CaseIterable, Sendable {
 
     var title: String {
         switch self {
-        case .reading: "Reading your dream"
-        case .symbols: "Finding the key symbols"
-        case .feelings: "Connecting with how you felt"
-        case .writing: "Writing your interpretation"
+        case .reading: String(localized: "Reading your dream")
+        case .symbols: String(localized: "Finding the key symbols")
+        case .feelings: String(localized: "Connecting with how you felt")
+        case .writing: String(localized: "Writing your interpretation")
         }
     }
 }

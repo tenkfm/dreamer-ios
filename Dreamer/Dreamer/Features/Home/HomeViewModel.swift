@@ -29,15 +29,15 @@ final class HomeViewModel {
     var greeting: String {
         let hour = calendar.component(.hour, from: now())
         let partOfDay = switch hour {
-        case 4..<12: "Good morning"
-        case 12..<18: "Good afternoon"
-        default: "Good evening"
+        case 4..<12: String(localized: "Good morning")
+        case 12..<18: String(localized: "Good afternoon")
+        default: String(localized: "Good evening")
         }
         let name = appState.userName.trimmingCharacters(in: .whitespaces)
         return name.isEmpty ? partOfDay : "\(partOfDay), \(name)"
     }
 
-    let subtitle = "Tap to tell last night’s dream"
+    let subtitle = String(localized: "Tap to tell last night’s dream")
 
     // MARK: Week
 
@@ -76,7 +76,7 @@ final class HomeViewModel {
     var weekCaption: String {
         let count = insights?.week?.count ?? dreamsThisWeek.count
         return switch count {
-        case 0: "No dreams caught yet this week"
+        case 0: String(localized: "No dreams caught yet this week")
         case 1: "1 dream caught this week"
         default: "\(count) dreams caught this week"
         }
@@ -95,7 +95,7 @@ final class HomeViewModel {
         return "\(top.key.capitalized) appeared in \(top.value) of your dreams this week."
     }
 
-    let insightPlaceholder = "Tell a dream each morning and your patterns will appear here."
+    let insightPlaceholder = String(localized: "Tell a dream each morning and your patterns will appear here.")
 
     /// The backend says nothing yet (null): no card, except for a new user, who gets the invitation.
     var showsInsightCard: Bool {

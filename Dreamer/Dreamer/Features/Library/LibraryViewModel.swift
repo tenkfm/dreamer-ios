@@ -36,8 +36,8 @@ final class LibraryViewModel {
     }
 
     var sectionTitle: String {
-        if !trimmedQuery.isEmpty { return "Results" }
-        return category == .popular ? "Most searched dreams" : category.title
+        if !trimmedQuery.isEmpty { return String(localized: "Results") }
+        return category == .popular ? String(localized: "Most searched dreams") : category.title
     }
 
     /// On opening and on every category change; offline the cached symbols stay.

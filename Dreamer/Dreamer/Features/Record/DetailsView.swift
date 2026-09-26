@@ -11,6 +11,9 @@ struct DetailsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // 90 pt in the design; gives way on small screens (iPhone SE) before the sheet does.
+            Spacer(minLength: 40)
+                .frame(maxHeight: 90)
             Text(viewModel.transcript)
                 .textStyle(.lead, color: DS.Palette.white.opacity(0.85))
                 .multilineTextAlignment(.center)
@@ -18,7 +21,6 @@ struct DetailsView: View {
                 .truncationMode(.tail)
                 .skyTextShadow()
                 .padding(.horizontal, DS.Space.text - 4)
-                .padding(.top, 90)
                 .enterUp(0.1)
             Spacer(minLength: 24)
             BottomSheetContainer {
@@ -27,6 +29,8 @@ struct DetailsView: View {
                     ScrollView { sheetContent }.scrollIndicators(.hidden)
                 }
             }
+            // Measured first, so it falls back to scrolling when the screen is too short.
+            .layoutPriority(1)
             .offset(y: sheetShown || reduceMotion ? 0 : 700)
         }
         .onAppear {

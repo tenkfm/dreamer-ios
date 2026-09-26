@@ -47,10 +47,10 @@ final class SignInViewModel {
 
     // MARK: Copy
 
-    var title: String { mode == .signUp ? "Save your dreams" : "Welcome back" }
+    var title: String { mode == .signUp ? String(localized: "Save your dreams") : String(localized: "Welcome back") }
 
     var subtitle: String {
-        mode == .signUp ? "Create your account to keep your journal." : "Sign in to open your journal."
+        mode == .signUp ? String(localized: "Create your account to keep your journal.") : String(localized: "Sign in to open your journal.")
     }
 
     // MARK: Email
@@ -127,8 +127,8 @@ final class SignInViewModel {
         isWorking = false
         workingMethod = nil
         if !cancelled {
-            error = ErrorState(kind: .serverError, title: "Sign in with Apple didn’t work",
-                               message: "Please try again, or continue with your email.", action: .dismiss)
+            error = ErrorState(kind: .serverError, title: String(localized: "Sign in with Apple didn’t work"),
+                               message: String(localized: "Please try again, or continue with your email."), action: .dismiss)
         }
     }
 

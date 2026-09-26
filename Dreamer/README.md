@@ -601,6 +601,21 @@ KIE_API_KEY=... python3 scripts/generate_night_skies.py SkyTopNight
 
 Results land in `build/night_skies/`; copy the ones you like into the matching image set.
 
+## Screen sizes and localization
+
+All screens were checked on an iPhone SE (3rd generation, 375 x 667 pt; a simulator named
+"Dreamer SE") and on the 6.9" Pro Max (App Store screenshots). On the SE, the Details sheet now
+lets the transcript's top space give way first and scrolls when it still does not fit, so "Skip"
+is never cut off. The onboarding pages, paywall and settings were already scroll views.
+
+Strings are ready for translation in `Dreamer/Resources/Localizable.xcstrings` (source language
+English, about 190 strings). SwiftUI `Text` literals are extracted by the compiler, and the copy
+built in view models and models is `String(localized:)`: errors, captions, reminders, lens and
+emotion names, paywall terms. After changing copy, build Debug for a simulator and run
+`scripts/sync_strings.sh`, which updates the catalog and marks number-only keys as not to
+translate. Xcode does the same when the catalog is open. To add a language, add it in the
+catalog; the build then ships its `.lproj`.
+
 ## Performance
 
 `docs/performance.md` covers IOS-10.1: what changed, with before and after numbers.

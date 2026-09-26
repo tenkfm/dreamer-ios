@@ -92,7 +92,7 @@ final class JournalViewModel {
     var summary: Summary {
         if let month = insights?.month {
             return Summary(
-                title: "Your \(month.monthName)",
+                title: String(localized: "Your \(month.monthName)"),
                 mostFrequentSymbol: month.topSymbol,
                 dreamCount: month.dreamCount,
                 ringProgress: month.nightsSoFar > 0 ? min(1, Double(month.dreamCount) / Double(month.nightsSoFar)) : 0,
@@ -202,9 +202,9 @@ final class JournalViewModel {
 
     private func weekTitle(_ monday: Date) -> String {
         let thisWeek = calendar.dateInterval(of: .weekOfYear, for: now())?.start ?? now()
-        if calendar.isDate(monday, inSameDayAs: thisWeek) { return "This week" }
+        if calendar.isDate(monday, inSameDayAs: thisWeek) { return String(localized: "This week") }
         if let last = calendar.date(byAdding: .weekOfYear, value: -1, to: thisWeek), calendar.isDate(monday, inSameDayAs: last) {
-            return "Last week"
+            return String(localized: "Last week")
         }
         let sunday = calendar.date(byAdding: .day, value: 6, to: monday) ?? monday
         return dateFormatter.range(from: monday, to: sunday)
@@ -213,7 +213,7 @@ final class JournalViewModel {
     private func row(_ dream: DreamSummary) -> Row {
         Row(id: dream.id,
             // Still being read: the backend has no title yet.
-            title: dream.title ?? (dream.status == .failed ? "We couldn’t read this dream" : "Reading your dream…"),
+            title: dream.title ?? (dream.status == .failed ? String(localized: "We couldn’t read this dream") : String(localized: "Reading your dream…")),
             dateText: dateFormatter.day(dream.createdAt, now: now()),
             assetName: dream.assetName,
             thumbnailURL: dream.thumbnailURL,
@@ -287,8 +287,8 @@ final class JournalViewModel {
             try await store.delete(id: row.id)
         } catch {
             toastMessage = ErrorState(error).kind == .offline
-                ? "You’re offline. Try deleting again when you’re connected."
-                : "Couldn’t delete this dream. Please try again."
+                ? String(localized: "You’re offline. Try deleting again when you’re connected.")
+                : String(localized: "Couldn’t delete this dream. Please try again.")
         }
     }
 }

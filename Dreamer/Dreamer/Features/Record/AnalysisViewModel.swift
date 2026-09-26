@@ -79,7 +79,7 @@ final class AnalysisViewModel {
             errorState = ErrorState(error)
             errorMessage = errorState?.message
         } catch {
-            errorMessage = "We couldn’t read this dream right now. Please try again."
+            errorMessage = String(localized: "We couldn’t read this dream right now. Please try again.")
         }
     }
 }

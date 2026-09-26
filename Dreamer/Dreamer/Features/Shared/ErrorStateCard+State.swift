@@ -11,10 +11,10 @@ extension ErrorStateCard {
 extension ErrorState {
     var actionTitle: String? {
         switch action {
-        case .retry: retryAfter == nil ? "Try again" : nil
-        case .openPaywall: "See plans"
-        case .signIn: "Sign in"
-        case .requestNewLink: "Send a new link"
+        case .retry: retryAfter == nil ? String(localized: "Try again") : nil
+        case .openPaywall: String(localized: "See plans")
+        case .signIn: String(localized: "Sign in")
+        case .requestNewLink: String(localized: "Send a new link")
         case .dismiss: nil
         }
     }

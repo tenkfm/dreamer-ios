@@ -91,7 +91,7 @@ final class SettingsViewModel {
     }
 
     var subscriptionText: String {
-        appState.subscription.plan?.title ?? "Not active"
+        appState.subscription.plan?.title ?? String(localized: "Not active")
     }
 
     // MARK: Actions
@@ -111,12 +111,12 @@ final class SettingsViewModel {
             if entitlement.isPremium {
                 let plan = entitlement.plan ?? .yearly
                 appState.activateSubscription(plan)
-                alertMessage = "Your \(plan.title.lowercased()) subscription is restored."
+                alertMessage = String(localized: "Your \(plan.title.lowercased()) subscription is restored.")
             } else {
-                alertMessage = "We couldn’t find a previous purchase."
+                alertMessage = String(localized: "We couldn’t find a previous purchase.")
             }
         } catch {
-            alertMessage = "Restore failed. Please try again."
+            alertMessage = String(localized: "Restore failed. Please try again.")
         }
     }
 

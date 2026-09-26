@@ -272,8 +272,8 @@ final class InterpretationViewModel {
             imageRequest = UUID()
         } catch {
             toastMessage = switch error.code {
-            case .rateLimited, .limitReached: "That’s all the new images for today. Try again tomorrow."
-            default: "Couldn’t make a new image. Please try again."
+            case .rateLimited, .limitReached: String(localized: "That’s all the new images for today. Try again tomorrow.")
+            default: String(localized: "Couldn’t make a new image. Please try again.")
             }
         }
     }
@@ -296,7 +296,7 @@ final class InterpretationViewModel {
     /// "Share": the 9:16 card in the share sheet (which also offers Save Image).
     func share() async {
         guard !isPreparingShare, let data = await preparedCard(), let image = UIImage(data: data) else {
-            if !isPreparingShare { toastMessage = "Couldn’t prepare your dream card. Please try again." }
+            if !isPreparingShare { toastMessage = String(localized: "Couldn’t prepare your dream card. Please try again.") }
             return
         }
         shareItem = ShareItem(image: image)
@@ -305,7 +305,7 @@ final class InterpretationViewModel {
     func shareToStories() async {
         guard let instagramAppID, !isPreparingShare, let data = await preparedCard() else { return }
         if !(await InstagramStories.share(background: data, appID: instagramAppID)) {
-            toastMessage = "Couldn’t open Instagram"
+            toastMessage = String(localized: "Couldn’t open Instagram")
         }
     }
 
@@ -331,7 +331,7 @@ final class InterpretationViewModel {
     func saveImage() async {
         guard !isSavingImage else { return }
         guard imagePhase == .asset || loadedImageData != nil else {
-            toastMessage = "The image isn’t ready yet"
+            toastMessage = String(localized: "The image isn’t ready yet")
             return
         }
         isSavingImage = true
@@ -342,12 +342,12 @@ final class InterpretationViewModel {
             } else {
                 try await imageSaver.saveImage(named: imageName)
             }
-            toastMessage = "Saved to Photos"
+            toastMessage = String(localized: "Saved to Photos")
             analytics.track(.dreamShared(target: .photos))
         } catch ImageSavingError.accessDenied {
-            toastMessage = "Allow Photos access in Settings to save"
+            toastMessage = String(localized: "Allow Photos access in Settings to save")
         } catch {
-            toastMessage = "Couldn’t save the image"
+            toastMessage = String(localized: "Couldn’t save the image")
         }
     }
 

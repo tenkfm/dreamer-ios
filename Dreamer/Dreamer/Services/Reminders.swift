@@ -130,11 +130,11 @@ struct ReminderPlanner {
 
     /// Gentle, never guilt: a rotation keyed to the date, so the same morning reads the same.
     static let morningTexts: [(title: String, body: String)] = [
-        ("What did you dream last night?", "Tell it before it fades."),
-        ("Good morning", "Your dream is still close. Tap to tell it."),
-        ("A dream is waiting", "Catch it now, while you still remember."),
-        ("Before the day begins", "Take a minute for last night’s dream."),
-        ("Still half asleep?", "That’s the best time to tell your dream.")
+        (String(localized: "What did you dream last night?"), String(localized: "Tell it before it fades.")),
+        (String(localized: "Good morning"), String(localized: "Your dream is still close. Tap to tell it.")),
+        (String(localized: "A dream is waiting"), String(localized: "Catch it now, while you still remember.")),
+        (String(localized: "Before the day begins"), String(localized: "Take a minute for last night’s dream.")),
+        (String(localized: "Still half asleep?"), String(localized: "That’s the best time to tell your dream."))
     ]
 
     func morningReminders(settings: ReminderSettings, now: Date, streak: Int, toldToday: Bool) -> [LocalNotification] {
@@ -150,7 +150,7 @@ struct ReminderPlanner {
             let text: (title: String, body: String)
             if result.isEmpty && streak >= 2 {
                 // The next morning continues a streak: say so, softly.
-                text = ("\(streak) mornings in a row", "Keep it going - tell last night’s dream.")
+                text = ("\(streak) mornings in a row", String(localized: "Keep it going - tell last night’s dream."))
             } else {
                 let dayNumber = calendar.ordinality(of: .day, in: .era, for: fire) ?? offset
                 text = Self.morningTexts[dayNumber % Self.morningTexts.count]
@@ -169,8 +169,8 @@ struct ReminderPlanner {
         guard fire > now else { return nil }
         return LocalNotification(
             id: Self.trialID,
-            title: "Your free week ends in 2 days",
-            body: "After that your yearly plan starts. You can cancel any time in your App Store settings.",
+            title: String(localized: "Your free week ends in 2 days"),
+            body: String(localized: "After that your yearly plan starts. You can cancel any time in your App Store settings."),
             fireDate: calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fire),
             link: .subscription)
     }

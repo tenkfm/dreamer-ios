@@ -33,10 +33,10 @@ final class PaywallViewModel {
     var alertMessage: String?
 
     let perks = [
-        "Personal interpretation in 3 lenses",
-        "An image of every dream",
-        "Private journal and recurring symbols",
-        "Gentle morning reminders"
+        String(localized: "Personal interpretation in 3 lenses"),
+        String(localized: "An image of every dream"),
+        String(localized: "Private journal and recurring symbols"),
+        String(localized: "Gentle morning reminders")
     ]
 
     private let purchases: any PurchaseService
@@ -102,17 +102,16 @@ final class PaywallViewModel {
     // MARK: Copy (App Review 3.1.2: price, period, trial and auto-renewal next to the button)
 
     var ctaTitle: String {
-        guard let product = selectedProduct else { return "Continue" }
-        if let trial = product.trial { return "Try \(trial.period.trialPhrase) free" }
-        return "Subscribe for \(product.displayPrice) a \(product.period.phrase)"
+        guard let product = selectedProduct else { return String(localized: "Continue") }
+        if let trial = product.trial { return String(localized: "Try \(trial.period.trialPhrase) free") }
+        return String(localized: "Subscribe for \(product.displayPrice) a \(product.period.phrase)")
     }
 
     var termsText: String {
         guard let product = selectedProduct else { return "" }
-        let renewal = "Renews automatically until you cancel, at least 24 hours before the period ends. Cancel anytime in Settings."
+        let renewal = String(localized: "Renews automatically until you cancel, at least 24 hours before the period ends. Cancel anytime in Settings.")
         if let trial = product.trial {
-            return "Free for \(trial.period.trialPhrase), then \(product.displayPrice) a \(product.period.phrase). " +
-                "We remind you 2 days before it ends. \(renewal)"
+            return String(localized: "Free for \(trial.period.trialPhrase), then \(product.displayPrice) a \(product.period.phrase). We remind you 2 days before it ends. \(renewal)")
         }
         return "\(product.displayPrice) a \(product.period.phrase). \(renewal)"
     }
@@ -121,7 +120,7 @@ final class PaywallViewModel {
         if let perMonth = product.displayPricePerMonth, product.period.unit == .year {
             return "\(perMonth) a month, billed yearly"
         }
-        return "Billed every \(product.period.phrase)"
+        return String(localized: "Billed every \(product.period.phrase)")
     }
 
     func badge(for product: PaywallProduct) -> String? {
@@ -142,14 +141,14 @@ final class PaywallViewModel {
                 appState.activateSubscription(entitlement.plan ?? selectedPlan)
                 onFinish?()
             case .purchased:
-                alertMessage = "The purchase went through but access isn’t active yet. Try Restore in a moment."
+                alertMessage = String(localized: "The purchase went through but access isn’t active yet. Try Restore in a moment.")
             case .cancelled:
                 break
             case .pending:
-                alertMessage = "Your purchase is waiting for approval. Dreamer unlocks as soon as it’s approved."
+                alertMessage = String(localized: "Your purchase is waiting for approval. Dreamer unlocks as soon as it’s approved.")
             }
         } catch {
-            alertMessage = "The purchase didn’t go through. Please try again."
+            alertMessage = String(localized: "The purchase didn’t go through. Please try again.")
         }
     }
 
@@ -163,10 +162,10 @@ final class PaywallViewModel {
                 appState.activateSubscription(entitlement.plan ?? .yearly)
                 onFinish?()
             } else {
-                alertMessage = "We couldn’t find a previous purchase."
+                alertMessage = String(localized: "We couldn’t find a previous purchase.")
             }
         } catch {
-            alertMessage = "Restore failed. Please try again."
+            alertMessage = String(localized: "Restore failed. Please try again.")
         }
     }
 

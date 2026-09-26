@@ -47,10 +47,9 @@ protocol SupportContentProvider: Sendable {
 struct PendingSupportContent: SupportContentProvider {
     func content(for region: Locale.Region?) -> SupportContent {
         SupportContent(
-            title: "This dream sounds heavy",
-            message: "Some dreams carry more than a reading can hold. You don’t have to go through this alone - "
-                + "talking to someone you trust, or to a professional, can help.",
-            emergencyNote: "If you are in danger or thinking about hurting yourself, call your local emergency number now.",
+            title: String(localized: "This dream sounds heavy"),
+            message: String(localized: "Some dreams carry more than a reading can hold. You don’t have to go through this alone - talking to someone you trust, or to a professional, can help."),
+            emergencyNote: String(localized: "If you are in danger or thinking about hurting yourself, call your local emergency number now."),
             resources: []
         )
     }
