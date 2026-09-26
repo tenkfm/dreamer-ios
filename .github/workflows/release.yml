@@ -1,0 +1,85 @@
+# Manual release builds: Actions -> Release -> Run workflow. Needs the signing and App Store Connect
+# secrets (names below). Submitting for review or sending to external testers stays a separate,
+# explicit choice, and happens only after Tony's yes.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: "beta (TestFlight) or release (App Store Connect, not submitted)"
+        required: true
+        default: beta
+        type: choice
+        options: [beta, release]
+      configuration:
+        description: "beta only: Staging or Release"
+        required: true
+        default: Staging
+        type: choice
+        options: [Staging, Release]
+      external:
+        description: "beta only: also to external testers (Tony's yes first)"
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: Dreamer
+    env:
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      FASTLANE_HIDE_TIMESTAMP: "1"
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tags and commits for the TestFlight notes
+
+      - name: Select the newest Xcode 26
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.5"
+          bundler-cache: true
+          working-directory: Dreamer
+
+      # SDK keys stay in repository secrets; only their names appear here, never their values.
+      - name: Write Secrets.xcconfig from CI secrets
+        env:
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          API_HOST_RELEASE: ${{ secrets.API_HOST_RELEASE }}
+        run: ../scripts/write-secrets-xcconfig.sh
+
+      - name: Unit tests
+        run: bundle exec fastlane test
+
+      - name: TestFlight
+        if: inputs.lane == 'beta'
+        run: bundle exec fastlane beta configuration:${{ inputs.configuration }} external:${{ inputs.external }}
+
+      - name: App Store Connect (not submitted)
+        if: inputs.lane == 'release'
+        run: bundle exec fastlane release

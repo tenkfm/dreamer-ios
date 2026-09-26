@@ -82,15 +82,25 @@ group. Then run `docs/qa-checklist.md` on 3-4 devices and triage the results in 
 or a Critical means fixing it, running `beta` again, and rerunning the checklist for the affected
 area.
 
-External testers (beta review by Apple) only after Tony's yes: App Store Connect -> TestFlight ->
-the build -> External Testing.
+External testers (beta review by Apple), only after Tony's yes:
+`bundle exec fastlane beta configuration:Release external:true` sends the build to the "Beta"
+group and waits for processing. The "What to test" notes come from `release_notes.txt` plus the
+commits since the last tag.
+
+From CI: Actions -> Release -> Run workflow, lane `beta`. The workflow needs the secrets named in
+`.github/workflows/release.yml`.
 
 ## 3. App Store
 
 After Tony's yes:
 
-1. Upload the metadata and screenshots: `bundle exec fastlane upload_store`. This sends
-   `fastlane/metadata` and `fastlane/screenshots` and never submits.
+1. `bundle exec fastlane release` builds and signs the Release version (TestFlight's latest build
+   number plus one) and uploads it with the metadata of `fastlane/metadata`. It also uploads
+   `fastlane/screenshots` when a local set exists, so run `fastlane screenshots` first; without
+   one, the screenshots already in App Store Connect stay. It sets manual release and phased
+   release, and never submits. `release submit:true` submits as well, only after Tony's yes. From
+   CI: Actions -> Release, lane `release`. `upload_store` sends the metadata and screenshots alone,
+   without a build.
 2. In App Store Connect, open the version and:
    - choose the Release build;
    - check the review notes (`fastlane/metadata/review_information/notes.txt`) and attach
@@ -117,6 +127,20 @@ A problem in the live version:
 5. Submit as in step 3. For a severe problem, ask for an expedited review (App Store Connect ->
    Contact Us -> Request Expedited Review), after Tony's yes.
 6. Merge the hotfix branch back into `main`.
+
+## The first days after a release
+
+Every morning until traffic is steady (for 1.0, until 20.11), post a short summary in the release
+task:
+- **Crashes**: Sentry -> Releases -> the version: crash-free sessions and users, new issues, and
+  API error codes that grew (`error_code` tag).
+- **Reviews and ratings**: App Store Connect -> Ratings and Reviews; answer the helpful ones.
+- **Funnel**: PostHog, from install to `onboarding_step_viewed` (paywall), `paywall_viewed`,
+  `purchase_started`, trial started and paid. Compare conversion by `paywall_variant` and by the
+  tracking A/B (`attAfterFirstDream`).
+- **Server side**: interpretation failures and latency (`interpretation_failed`,
+  `interpretation_ready.latencyMs`) with the backend on call.
+- **Decision**: fine, a flag to switch off, or a hotfix (below).
 
 An App Store release cannot be rolled back. The fix is always a new version, and the flags and
 the phased-release pause are what buy the time.

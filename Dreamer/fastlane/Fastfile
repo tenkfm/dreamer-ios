@@ -9,6 +9,7 @@
 #   bundle exec fastlane signed_build configuration:Staging   # signed .ipa with match profiles
 #   bundle exec fastlane upload_dsyms                         # dSYMs of the last archive to Sentry
 #   bundle exec fastlane beta configuration:Staging           # signed build to internal TestFlight
+#   bundle exec fastlane release                              # App Store build + metadata, no submission
 #   bundle exec fastlane screenshots                          # App Store screenshots (6.9" and 6.5")
 #   bundle exec fastlane upload_store                         # metadata + screenshots to App Store Connect
 
@@ -146,12 +147,15 @@ platform :ios do
   desc "Upload the metadata (fastlane/metadata) and screenshots to App Store Connect, no binary"
   desc "Needs the App Store Connect API key (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT)"
   lane :upload_store do
+    screenshots = File.expand_path("screenshots", __dir__)
+    has_screenshots = !Dir[File.join(screenshots, "en-US", "*.png")].empty?
     deliver(
       api_key: asc_api_key,
       app_identifier: BUNDLE_IDS.fetch("Release"),
       skip_binary_upload: true,
-      overwrite_screenshots: true,
-      screenshots_path: File.expand_path("screenshots", __dir__),
+      skip_screenshots: !has_screenshots,
+      overwrite_screenshots: has_screenshots,
+      screenshots_path: screenshots,
       metadata_path: File.expand_path("metadata", __dir__),
       submit_for_review: false,
       force: true,
@@ -245,22 +249,70 @@ platform :ios do
     upload_dsyms if ENV["SENTRY_AUTH_TOKEN"]
   end
 
-  desc "A signed build to internal TestFlight testers (never external: that needs Tony's yes)"
-  desc "Options: configuration (Staging, default, or Release). The build number is TestFlight's latest + 1"
+  desc "A signed build to TestFlight. The build number is TestFlight's latest + 1"
+  desc "Options: configuration (Staging, default, or Release); external:true also sends it to the external"
+  desc "group 'Beta' for Apple's beta review - only after Tony's explicit yes"
   lane :beta do |options|
     configuration = options[:configuration] || "Staging"
     bundle_id = BUNDLE_IDS.fetch(configuration)
+    external = options[:external].to_s == "true"
     api_key = asc_api_key
     build_number = latest_testflight_build_number(app_identifier: bundle_id, api_key: api_key, initial_build_number: 0) + 1
     signed_build(configuration: configuration, build_number: build_number)
     upload_to_testflight(
       api_key: api_key,
       app_identifier: bundle_id,
-      ipa: Dir[File.expand_path("../build/archive/*.ipa", __dir__)].max_by { |file| File.mtime(file) },
-      skip_waiting_for_build_processing: true,
-      distribute_external: false
+      ipa: latest_ipa,
+      changelog: tester_notes,
+      skip_waiting_for_build_processing: !external,
+      distribute_external: external,
+      groups: external ? ["Beta"] : nil,
+      notify_external_testers: external
     )
-    UI.success("#{configuration} build #{build_number} uploaded for internal testers")
+    UI.success("#{configuration} build #{build_number} uploaded for #{external ? 'external and internal' : 'internal'} testers")
+  end
+
+  desc "The App Store version: a signed Release build (build number = TestFlight's latest + 1), uploaded"
+  desc "with the metadata and screenshots of fastlane/. Never submits unless submit:true - Tony's yes first"
+  lane :release do |options|
+    bundle_id = BUNDLE_IDS.fetch("Release")
+    api_key = asc_api_key
+    build_number = latest_testflight_build_number(app_identifier: bundle_id, api_key: api_key, initial_build_number: 0) + 1
+    signed_build(configuration: "Release", build_number: build_number)
+    # Screenshots are generated, not committed: without a local set (CI) the ones already in App
+    # Store Connect stay - overwriting with an empty folder would delete them.
+    screenshots = File.expand_path("screenshots", __dir__)
+    has_screenshots = !Dir[File.join(screenshots, "en-US", "*.png")].empty?
+    deliver(
+      api_key: api_key,
+      app_identifier: bundle_id,
+      ipa: latest_ipa,
+      metadata_path: File.expand_path("metadata", __dir__),
+      screenshots_path: screenshots,
+      skip_screenshots: !has_screenshots,
+      overwrite_screenshots: has_screenshots,
+      submit_for_review: options[:submit].to_s == "true",
+      automatic_release: false,
+      phased_release: true,
+      submission_information: { add_id_info_uses_idfa: false },
+      force: true,
+      precheck_include_in_app_purchases: false
+    )
+    UI.success("Release build #{build_number} uploaded#{options[:submit].to_s == 'true' ? ' and submitted for review' : ''}")
+  end
+
+  # The newest .ipa of build/archive.
+  private_lane :latest_ipa do
+    Dir[File.expand_path("../build/archive/*.ipa", __dir__)].max_by { |file| File.mtime(file) }
+  end
+
+  # "What to test" for TestFlight: the release notes of the version, then the commits since the last tag.
+  private_lane :tester_notes do
+    notes = File.read(File.expand_path("metadata/en-US/release_notes.txt", __dir__)).strip
+    last_tag = sh("git describe --tags --abbrev=0 2>/dev/null || true", log: false).strip
+    range = last_tag.empty? ? "-20" : "#{last_tag}..HEAD"
+    commits = sh("git log #{range} --no-merges --pretty=format:'- %s'", log: false).strip
+    [notes, commits.empty? ? nil : "Changes:\n#{commits}"].compact.join("\n\n")[0, 4000]
   end
 
   desc "Upload the dSYMs of the last build to Sentry (SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT; needs sentry-cli)"
