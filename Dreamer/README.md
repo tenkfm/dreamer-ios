@@ -167,6 +167,15 @@ answers "sign in again" - sign-in arrives with IOS-02.
 Tests use `DreamerTests/Support/StubURLProtocol.swift`; `LiveAPITests` hit staging when run with
 `TEST_RUNNER_DREAMER_LIVE_TESTS=1`.
 
+Contract tests (IOS-11.1): `scripts/extract_openapi_examples.py` turns every response example of
+`Dreamer/API/openapi.yaml` into `DreamerTests/Fixtures/openapi-examples.json` (dates back to ISO
+8601, as the API sends them). `ContractTests` stubs the network with each success example and
+runs the client's mapping. They also check that every documented error code is known to the app
+and that the paywall and rate-limit answers become the right screens. Rerun the script after
+`scripts/sync-openapi.sh`. `scripts/coverage.sh` prints the line coverage of Services and API:
+73 % now, against the target of at least 70 %. What remains uncovered wraps the system and SDKs
+(RevenueCat, StoreKit, the speech synthesizer, the microphone) and is checked on devices.
+
 ## Account
 
 Onboarding: Welcome -> Record intro -> Understand -> quiz -> **account** -> paywall -> Main. The
