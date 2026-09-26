@@ -375,6 +375,15 @@ change. `bundle exec fastlane upload_store` sends the metadata and the screensho
 Connect with `deliver`, without a binary. It needs the App Store Connect API key (see Blockers).
 To change the story, edit the screens, waits and captions in `screenshots.json`.
 
+## App icon
+
+`AppIcon` is a single 1024 image with the iOS 18 appearances: the light artwork, a dark variant
+(the same rings, orb, crescent and star on the night palette) and a tinted variant (light glyphs on
+transparency, which iOS tints). `scripts/make_icon_variants.py` draws the dark and tinted variants,
+so rerun it when the final icon changes. Debug and Staging use `AppIcon-Staging`. To check them,
+long-press the Home Screen on a device, choose Edit -> Customize, and switch Light, Dark and
+Tinted; also look at Spotlight and Settings.
+
 ## App Store metadata (ASO)
 
 `fastlane/metadata/en-US` holds the listing: name `Dreamer: AI Dream Journal`, subtitle
