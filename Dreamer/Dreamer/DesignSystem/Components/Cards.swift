@@ -139,6 +139,8 @@ struct DreamRow: View {
     var date: String
     var image: Image
     var emotion: (title: String, color: Color)?
+    /// Search: the matching fragment, matched words in `**` (shown bold).
+    var snippet: String? = nil
 
     var body: some View {
         HStack(spacing: 14) {
@@ -154,6 +156,12 @@ struct DreamRow: View {
                     if let emotion {
                         EmotionTag(title: emotion.title, color: emotion.color)
                     }
+                }
+                if let snippet {
+                    Text((try? AttributedString(markdown: snippet)) ?? AttributedString(snippet))
+                        .textStyle(.secondary, color: DS.Palette.textSecondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

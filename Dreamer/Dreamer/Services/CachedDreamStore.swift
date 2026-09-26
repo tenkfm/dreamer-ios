@@ -102,6 +102,11 @@ final class CachedDreamStore: DreamStore {
         persist()
     }
 
+    func search(query: String?, emotion: Emotion?) async throws(APIError) -> [DreamSummary] {
+        let query = query.map { String($0.prefix(100)) }
+        return try await remote.listDreams(cursor: nil, limit: 50, emotion: emotion, query: query).items
+    }
+
     // MARK: Dreams
 
     func dream(id: Dream.ID) -> Dream? {

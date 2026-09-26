@@ -123,6 +123,13 @@ cache. A long press offers "Delete dream", confirmed first, which calls `DELETE 
 and then forgets the dream on the device. Interpretation shows the cached dream and fetches the
 fresh one; when the dream is not cached yet, it shows a spinner.
 
+Search (IOS-06.2): the search field and the emotion chips under it wait 350 ms after the last change,
+then call `GET /v1/dreams?q=&emotion=`. The backend matches titles, symbols, the text and the
+interpretation, and every word works as a prefix. Rows then show the `snippet` with the matched
+words in bold (the backend marks them with `**`). Until the answer comes, and offline, the
+journal filters titles and symbols of the dreams on the device. Closing search brings back the
+whole journal.
+
 Analysis (IOS-05.1): the checklist follows the `step` events. The main lens appears under the card
 as it is written (`text` deltas; `reset: true` drops what was shown because the backend restarted
 with its fallback provider). `ready` enables "See my interpretation". A failed dream (`status: failed`

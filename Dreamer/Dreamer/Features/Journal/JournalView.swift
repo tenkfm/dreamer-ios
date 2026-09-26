@@ -16,10 +16,13 @@ struct JournalView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     header.enterUp(0.1)
                     if viewModel.isSearching {
-                        GlassSearchField(placeholder: "Search your dreams", text: $viewModel.query)
-                            .focused($searchFocused)
-                            .padding(.top, 18)
-                            .transition(.opacity.combined(with: .offset(y: -8)))
+                        VStack(alignment: .leading, spacing: 14) {
+                            GlassSearchField(placeholder: "Search your dreams", text: $viewModel.query)
+                                .focused($searchFocused)
+                            emotionFilters
+                        }
+                        .padding(.top, 18)
+                        .transition(.opacity.combined(with: .offset(y: -8)))
                     } else {
                         JournalSummaryCard(summary: viewModel.summary)
                             .padding(.top, 18)
@@ -64,8 +67,28 @@ struct JournalView: View {
         .padding(.horizontal, -DS.Space.screen)
     }
 
+    private var emotionFilters: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(Emotion.allCases) { emotion in
+                    Chip(title: emotion.title, isOn: viewModel.emotionFilter == emotion, onColor: emotion.color) {
+                        viewModel.toggleEmotionFilter(emotion)
+                    }
+                }
+            }
+            .padding(.horizontal, DS.Space.screen)
+            .padding(.vertical, 4)
+        }
+        .scrollIndicators(.hidden)
+        .padding(.horizontal, -DS.Space.screen)
+    }
+
     @ViewBuilder private var list: some View {
-        if viewModel.isEmpty {
+        if viewModel.isEmpty && viewModel.isSearchInFlight {
+            ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+        } else if viewModel.isEmpty {
             Text(viewModel.isSearching ? "No dreams match your search." : "Your dreams will appear here.")
                 .textStyle(.body, color: DS.Palette.textTertiary)
                 .frame(maxWidth: .infinity)
@@ -113,7 +136,8 @@ private struct JournalRow: View {
         DreamRow(title: row.title,
                  date: row.dateText,
                  image: thumbnail.map(Image.init(uiImage:)) ?? DreamImage.image(named: row.assetName),
-                 emotion: row.emotion.map { ($0.title, $0.color) })
+                 emotion: row.emotion.map { ($0.title, $0.color) },
+                 snippet: row.snippet)
             .task(id: row.thumbnailURL) { thumbnail = await viewModel.thumbnail(for: row) }
     }
 }

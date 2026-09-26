@@ -65,6 +65,9 @@ protocol DreamStore: AnyObject {
     func loadDream(id: Dream.ID) async throws(APIError) -> Dream
     /// Inserts a new dream or replaces the one with the same id (list entry included).
     func save(_ dream: Dream)
+    /// Server search over the text and the interpretation (`snippet` = the matching fragment).
+    /// Results are not cached: offline, the journal filters what the device has.
+    func search(query: String?, emotion: Emotion?) async throws(APIError) -> [DreamSummary]
     /// Deletes on the server, then on the device.
     func delete(id: Dream.ID) async throws(APIError)
     /// Sign-out and account deletion: the device forgets every dream.

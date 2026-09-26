@@ -184,6 +184,24 @@ final class InMemoryDreamStore: DreamStore {
         dreams.removeAll { $0.id == id }
     }
 
+    /// Like the backend: text, title and interpretation, with the matching sentence as the snippet.
+    func search(query: String?, emotion: Emotion?) async throws(APIError) -> [DreamSummary] {
+        dreams.compactMap { dream in
+            if let emotion, !dream.emotions.contains(emotion) { return nil }
+            var summary = DreamSummary(dream)
+            guard let query, !query.isEmpty else { return summary }
+            let texts = [dream.title, dream.transcript] + Lens.allCases.map { dream.interpretation?.text(for: $0) ?? "" }
+            guard let text = texts.first(where: { $0.localizedCaseInsensitiveContains(query) }) else { return nil }
+            summary.snippet = text.split(separator: ".").first { $0.localizedCaseInsensitiveContains(query) }
+                .map { sentence in
+                    // Matched words in ** like the backend's snippet.
+                    let marked = sentence.replacingOccurrences(of: query, with: "**\(query)**", options: .caseInsensitive)
+                    return marked.trimmingCharacters(in: .whitespaces) + "."
+                }
+            return summary
+        }
+    }
+
     func save(_ dream: Dream) {
         if let index = dreams.firstIndex(where: { $0.id == dream.id }) {
             dreams[index] = dream

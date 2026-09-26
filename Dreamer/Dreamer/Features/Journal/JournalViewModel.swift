@@ -31,6 +31,8 @@ final class JournalViewModel {
         var assetName: String?
         var thumbnailURL: URL?
         var emotion: Emotion?
+        /// Search: the matching fragment, matched words in `**`.
+        var snippet: String?
     }
 
     /// One week of the journal (`weekOf` = its Monday).
@@ -41,7 +43,12 @@ final class JournalViewModel {
     }
 
     var isSearching = false
-    var query = ""
+    var query = "" { didSet { if query != oldValue { scheduleSearch() } } }
+    /// Search: only dreams with this emotion.
+    var emotionFilter: Emotion? { didSet { if emotionFilter != oldValue { scheduleSearch() } } }
+    /// The server's answer for the current query (nil: none yet, the device's list is filtered meanwhile).
+    private(set) var searchResults: [DreamSummary]?
+    private(set) var isSearchInFlight = false
     private(set) var isRefreshing = false
     /// The row waiting for "Delete" to be confirmed.
     var deleteCandidate: Row?
@@ -53,15 +60,19 @@ final class JournalViewModel {
     private let now: () -> Date
     private let calendar: Calendar
     private let dateFormatter: DreamDateFormatter
+    private let searchDebounce: Duration
+    @ObservationIgnored private var searchTask: Task<Void, Never>?
 
     init(appState: AppState, store: any DreamStore, images: (any DreamImageLoading)? = nil,
-         now: @escaping () -> Date = Date.init, calendar: Calendar = .mondayFirst) {
+         now: @escaping () -> Date = Date.init, calendar: Calendar = .mondayFirst,
+         searchDebounce: Duration = .milliseconds(350)) {
         self.appState = appState
         self.store = store
         self.images = images
         self.now = now
         self.calendar = calendar
         dateFormatter = DreamDateFormatter(calendar: calendar)
+        self.searchDebounce = searchDebounce
     }
 
     // MARK: Summary
@@ -99,12 +110,57 @@ final class JournalViewModel {
 
     // MARK: List
 
+    private var trimmedQuery: String {
+        String(query.trimmingCharacters(in: .whitespacesAndNewlines).prefix(100))
+    }
+
+    private var hasSearchTerms: Bool { isSearching && (!trimmedQuery.isEmpty || emotionFilter != nil) }
+
     private var filteredDreams: [DreamSummary] {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard isSearching, !trimmed.isEmpty else { return store.summaries }
-        return store.summaries.filter {
-            ($0.title ?? "").localizedCaseInsensitiveContains(trimmed) || $0.symbols.contains { $0.localizedCaseInsensitiveContains(trimmed) }
+        guard hasSearchTerms else { return store.summaries }
+        return searchResults ?? localMatches(query: trimmedQuery, emotion: emotionFilter)
+    }
+
+    /// Offline, and while the server answers: titles and symbols of the dreams on the device.
+    private func localMatches(query: String, emotion: Emotion?) -> [DreamSummary] {
+        store.summaries.filter { dream in
+            (emotion.map { dream.emotions.contains($0) } ?? true)
+                && (query.isEmpty || (dream.title ?? "").localizedCaseInsensitiveContains(query)
+                    || dream.symbols.contains { $0.localizedCaseInsensitiveContains(query) })
         }
+    }
+
+    // MARK: Search
+
+    /// Typing pauses briefly before asking the server; every change cancels the previous ask.
+    private func scheduleSearch() {
+        searchTask?.cancel()
+        searchResults = nil
+        guard hasSearchTerms else { return }
+        let query = trimmedQuery
+        let emotion = emotionFilter
+        searchTask = Task { [weak self, searchDebounce] in
+            try? await Task.sleep(for: searchDebounce)
+            guard !Task.isCancelled else { return }
+            await self?.search(query: query, emotion: emotion)
+        }
+    }
+
+    private func search(query: String, emotion: Emotion?) async {
+        isSearchInFlight = true
+        defer { isSearchInFlight = false }
+        do {
+            let results = try await store.search(query: query.isEmpty ? nil : query, emotion: emotion)
+            guard !Task.isCancelled else { return }
+            searchResults = results
+        } catch {
+            guard !Task.isCancelled else { return }
+            searchResults = localMatches(query: query, emotion: emotion)
+        }
+    }
+
+    func toggleEmotionFilter(_ emotion: Emotion) {
+        emotionFilter = emotionFilter == emotion ? nil : emotion
     }
 
     /// Weeks newest first, in the order the backend groups them.
@@ -142,7 +198,8 @@ final class JournalViewModel {
             dateText: dateFormatter.day(dream.createdAt, now: now()),
             assetName: dream.assetName,
             thumbnailURL: dream.thumbnailURL,
-            emotion: dream.emotions.first)
+            emotion: dream.emotions.first,
+            snippet: hasSearchTerms ? dream.snippet : nil)
     }
 
     // MARK: Loading
@@ -177,7 +234,10 @@ final class JournalViewModel {
 
     func toggleSearch() {
         isSearching.toggle()
-        if !isSearching { query = "" }
+        if !isSearching {
+            query = ""
+            emotionFilter = nil
+        }
     }
 
     func open(_ row: Row) {

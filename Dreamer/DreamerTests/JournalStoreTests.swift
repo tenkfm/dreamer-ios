@@ -190,3 +190,86 @@ struct JournalListTests {
         #expect(formatter.range(from: aug31, to: calendar.date(byAdding: .day, value: 6, to: aug31)!) == "Aug 31 - Sep 6")
     }
 }
+
+@MainActor
+struct JournalSearchTests {
+    /// Answers searches after a moment, and records them.
+    final class SearchingStore: DreamStore {
+        let base = InMemoryDreamStore()
+        var searches: [String] = []
+        var failure: APIError?
+        var summaries: [DreamSummary] { base.summaries }
+        var canLoadMore: Bool { false }
+        func refresh() async throws(APIError) {}
+        func loadMore() async throws(APIError) {}
+        func dream(id: Dream.ID) -> Dream? { base.dream(id: id) }
+        func loadDream(id: Dream.ID) async throws(APIError) -> Dream { try await base.loadDream(id: id) }
+        func save(_ dream: Dream) { base.save(dream) }
+        func delete(id: Dream.ID) async throws(APIError) { try await base.delete(id: id) }
+        func deleteAll() { base.deleteAll() }
+        func search(query: String?, emotion: Emotion?) async throws(APIError) -> [DreamSummary] {
+            searches.append("\(query ?? "-")|\(emotion?.rawValue ?? "-")")
+            if let failure { throw failure }
+            return try await base.search(query: query, emotion: emotion)
+        }
+    }
+
+    private func makeViewModel(_ store: SearchingStore) -> JournalViewModel {
+        let viewModel = JournalViewModel(appState: AppState(store: InMemoryPreferencesStore()), store: store,
+                                         searchDebounce: .milliseconds(20))
+        viewModel.toggleSearch()
+        return viewModel
+    }
+
+    @Test func typingAsksTheServerOnceAfterAPause() async throws {
+        let store = SearchingStore()
+        let viewModel = makeViewModel(store)
+        viewModel.query = "s"
+        viewModel.query = "st"
+        viewModel.query = "stairs"
+        try await Task.sleep(for: .milliseconds(120))
+
+        #expect(store.searches == ["stairs|-"])
+        let rows = viewModel.sections.flatMap(\.rows)
+        #expect(rows.contains { $0.title == "The house with endless stairs" })
+        #expect(rows.allSatisfy { $0.snippet?.localizedCaseInsensitiveContains("**stairs**") == true })
+    }
+
+    @Test func searchFindsTheInterpretationToo() async throws {
+        let store = SearchingStore()
+        let viewModel = makeViewModel(store)
+        // "roots" is only in the interpretation of the stairs dream.
+        viewModel.query = "roots"
+        try await Task.sleep(for: .milliseconds(120))
+        #expect(!viewModel.sections.isEmpty)
+    }
+
+    @Test func emotionChipsFilter() async throws {
+        let store = SearchingStore()
+        let viewModel = makeViewModel(store)
+        viewModel.toggleEmotionFilter(.joy)
+        try await Task.sleep(for: .milliseconds(120))
+
+        #expect(store.searches == ["-|joy"])
+        #expect(viewModel.sections.flatMap(\.rows).allSatisfy { row in store.base.dream(id: row.id)?.emotions.contains(.joy) == true })
+        viewModel.toggleEmotionFilter(.joy)
+        #expect(viewModel.emotionFilter == nil)
+    }
+
+    @Test func offlineSearchFiltersTheDevice() async throws {
+        let store = SearchingStore()
+        store.failure = .offline
+        let viewModel = makeViewModel(store)
+        viewModel.query = "frozen"
+        try await Task.sleep(for: .milliseconds(120))
+        #expect(viewModel.sections.flatMap(\.rows).map(\.title) == ["Flying over a frozen lake"])
+    }
+
+    @Test func closingSearchShowsTheWholeJournal() {
+        let store = SearchingStore()
+        let viewModel = makeViewModel(store)
+        viewModel.query = "zzz"
+        viewModel.toggleSearch()
+        #expect(viewModel.sections.flatMap(\.rows).count == store.summaries.count)
+    }
+}
