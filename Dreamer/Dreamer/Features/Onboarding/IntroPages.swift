@@ -79,7 +79,9 @@ private struct LogoSkipHeader: View {
         HeaderBar(center: { Logo() }, trailing: {
             SkyTextButton(title: "Skip", action: onSkip)
         })
-        .padding(.horizontal, -DS.Space.cta + DS.Space.screen)
+        // HeaderBar keeps its own screen margin; this only cancels the content's CTA margin, so the
+        // header buttons stand where they do on every other screen.
+        .padding(.horizontal, -DS.Space.cta)
         .enterUp(0.1)
     }
 }

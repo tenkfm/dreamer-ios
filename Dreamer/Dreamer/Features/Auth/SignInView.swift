@@ -45,7 +45,9 @@ struct SignInView: View {
         }, center: {
             Logo()
         })
-        .padding(.horizontal, DS.Space.screen - DS.Space.cta)
+        // HeaderBar keeps its own screen margin; this only cancels the content's CTA margin, so the
+        // header buttons stand where they do on every other screen.
+        .padding(.horizontal, -DS.Space.cta)
         .enterUp(0.1)
     }
 
