@@ -89,6 +89,12 @@ protocol PurchaseService: Sendable {
     func logIn(userID: String) async
     /// Back to an anonymous purchaser after sign-out.
     func logOut() async
+    /// The MMP's install id, for the purchase integration to attribute trials and purchases.
+    func setAttribution(_ id: AttributionID)
+}
+
+extension PurchaseService {
+    func setAttribution(_ id: AttributionID) {}
 }
 
 enum ReadAloudState: Equatable, Sendable {

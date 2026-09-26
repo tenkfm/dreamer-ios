@@ -42,6 +42,8 @@ final class AppDependencies {
     let shareCards: (any ShareCardProviding)?
     /// The backend's week, morning and month insights (nil in mock mode: computed from the dreams).
     let insights: InsightStore?
+    /// Install attribution (the MMP); a no-op until it is chosen.
+    let attribution: any AttributionService
     let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
@@ -68,6 +70,7 @@ final class AppDependencies {
          imageActions: (any DreamImageActions)? = nil,
          shareCards: (any ShareCardProviding)? = nil,
          insights: InsightStore? = nil,
+         attribution: any AttributionService = NoopAttribution(),
          instagramAppID: String? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
@@ -93,6 +96,7 @@ final class AppDependencies {
         self.imageActions = imageActions
         self.shareCards = shareCards
         self.insights = insights
+        self.attribution = attribution
         self.instagramAppID = instagramAppID
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
@@ -275,6 +279,8 @@ extension AppDependencies {
     /// account), analytics and crash reports (the same id the backend uses; never an email).
     func linkAccount(userID: String) async {
         await purchases.logIn(userID: userID)
+        attribution.setUserID(userID)
+        if let id = await attribution.attributionID() { purchases.setAttribution(id) }
         analytics.identify(userID: userID)
         crashReporter.setUserID(userID)
     }
@@ -283,6 +289,7 @@ extension AppDependencies {
     func unlinkAccount() async {
         await imageLoader?.removeAll()
         insights?.clear()
+        attribution.setUserID(nil)
         await purchases.logOut()
         analytics.reset()
         crashReporter.setUserID(nil)

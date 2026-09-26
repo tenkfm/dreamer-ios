@@ -79,6 +79,16 @@ struct RevenueCatPurchaseService: PurchaseService {
         _ = try? await Purchases.shared.logIn(userID)
     }
 
+    /// `$appsflyerId` / `$adjustId` plus the device identifiers (IDFA only with tracking allowed),
+    /// so RevenueCat's MMP integration can attribute trial_start and purchase.
+    func setAttribution(_ id: AttributionID) {
+        switch id {
+        case .appsFlyer(let value): Purchases.shared.attribution.setAppsflyerID(value)
+        case .adjust(let value): Purchases.shared.attribution.setAdjustID(value)
+        }
+        Purchases.shared.attribution.collectDeviceIdentifiers()
+    }
+
     func logOut() async {
         guard !Purchases.shared.isAnonymous else { return }
         _ = try? await Purchases.shared.logOut()

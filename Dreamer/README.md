@@ -298,6 +298,16 @@ placements count as `onboarding`, Record and Analysis as `limit`; the voice swit
 flag counts as `tts_unavailable`. The account step of onboarding is not in the plan yet and is not
 sent (see Blockers).
 
+## Attribution
+
+`Services/Attribution.swift`: `AttributionService` starts install attribution once per launch,
+gets the backend user id at sign-in (`nil` at sign-out), and hands the MMP's install id to
+RevenueCat (`$appsflyerId` / `$adjustId`, plus `collectDeviceIdentifiers()`). This lets
+RevenueCat's server-side integration send trial_start and purchase to the MMP, so the app never
+sends revenue events itself. Until the MMP (AppsFlyer or Adjust) and its dev key are chosen,
+`NoopAttribution` is used and nothing is attributed (see Blockers). The chosen SDK plugs in behind
+the protocol, and its key goes into `Secrets.xcconfig`.
+
 ## Crash reporting
 
 Sentry (`Services/CrashReporter.swift`, SPM product `Sentry-Dynamic`: the static product drops
