@@ -35,7 +35,10 @@ struct OnboardingFlowView: View {
                         // Eager (not lazy) so every page has its exact frame from the first layout:
                         // the pager always starts on the bound step and button taps slide precisely.
                         HStack(spacing: 0) {
-                            ForEach(viewModel.reachableSteps, id: \.self) { step in
+                            // Every page is always there: a page added at the moment of signing in
+                            // was not laid out yet when the step moved to it, and the pager stayed
+                            // on "Signing you in…". The paywall is kept out of reach below instead.
+                            ForEach(Step.allCases, id: \.self) { step in
                                 page(for: step)
                                     .containerRelativeFrame(.horizontal)
                                     .environment(\.entranceActive, revealedSteps.contains(step))
@@ -50,6 +53,9 @@ struct OnboardingFlowView: View {
                         }
                     }
                     .scrollTargetBehavior(.paging)
+                    // Before there is an account, the account page is the end of the swipe (its Back
+                    // button still returns to the quiz).
+                    .scrollDisabled(viewModel.step == .account && !appState.isSignedIn)
                     .scrollPosition(id: stepBinding)
                     .scrollIndicators(.hidden)
                     // Layout stays inside the safe area, but shadows may spill into it.
@@ -58,6 +64,7 @@ struct OnboardingFlowView: View {
                     // touching the bound step, so the pager is re-pinned to it.
                     .onAppear { reader.scrollTo(viewModel.step) }
                     .onChange(of: colorScheme) { reader.scrollTo(viewModel.step) }
+
                 }
             }
         }

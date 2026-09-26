@@ -57,6 +57,16 @@ Upload the metadata (fastlane/metadata) and screenshots to App Store Connect, no
 
 Needs the App Store Connect API key (ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT)
 
+### ios ui_test
+
+```sh
+[bundle exec] fastlane ios ui_test
+```
+
+UI tests of the critical scenarios (mock services), 'Dreamer UITests' scheme
+
+Options: device (simulator name), iterations (repeat until the first failure, e.g. 10)
+
 ### ios test
 
 ```sh

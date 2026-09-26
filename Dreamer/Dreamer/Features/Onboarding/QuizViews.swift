@@ -37,11 +37,14 @@ private struct QuizScaffold<Options: View>: View {
                 GlassIconButton(systemImage: "chevron.left", accessibilityLabel: "Back", action: onBack)
             }, center: {
                 HStack(spacing: 12) {
+                    // The bar repeats the label for the eye; VoiceOver reads the label only.
                     ProgressCapsule(value: progress, initialValue: previousProgress)
+                        .accessibilityHidden(true)
                     Text(stepLabel)
                         .font(DreamerFont.fixed(12))
                         .foregroundStyle(DS.Palette.white)
                         .skyTextShadow()
+                        .accessibilityLabel("Question \(stepLabel)")
                 }
                 .padding(.leading, DS.Size.iconButton + 16)
                 .padding(.trailing, DS.Size.iconButton + 8)

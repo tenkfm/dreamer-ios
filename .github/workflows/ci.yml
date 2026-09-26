@@ -16,7 +16,7 @@ concurrency:
 jobs:
   test-and-build:
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: Dreamer
@@ -74,6 +74,10 @@ jobs:
       - name: Unit tests
         run: bundle exec fastlane test
 
+      # Critical scenarios end to end on mock services (IOS-11.2).
+      - name: UI tests
+        run: bundle exec fastlane ui_test
+
       - name: Release build (unsigned)
         run: bundle exec fastlane build_release
 
@@ -86,5 +90,7 @@ jobs:
             Dreamer/build/test_output/*.junit
             Dreamer/build/test_output/*.html
             Dreamer/build/test_output/*.xcresult
+            Dreamer/build/test_output/ui/*.junit
+            Dreamer/build/test_output/ui/*.xcresult
           if-no-files-found: ignore
           retention-days: 14

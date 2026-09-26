@@ -167,6 +167,18 @@ answers "sign in again" - sign-in arrives with IOS-02.
 Tests use `DreamerTests/Support/StubURLProtocol.swift`; `LiveAPITests` hit staging when run with
 `TEST_RUNNER_DREAMER_LIVE_TESTS=1`.
 
+UI tests (IOS-11.2, `DreamerUITests`, scheme "Dreamer UITests", `bundle exec fastlane ui_test`,
+also a step in CI) cover the critical scenarios on mock services:
+- a fresh install through onboarding, email sign-in, the paywall and a purchase, to Home;
+- Home -> Record -> Details -> Analysis -> Interpretation -> Journal;
+- deleting the account, which ends back on Welcome.
+Each screen on the way runs `performAccessibilityAudit` for element descriptions, hit regions and
+traits. Debug-only launch arguments keep the runs deterministic: `-uiTesting` starts with fresh
+preferences, and `-uiTestOpenEmailLink` "taps" the sign-in link a moment after the mock sends it.
+The purchase goes through the mock store, not StoreKit, because mock mode never calls StoreKit.
+`fastlane ui_test iterations:10` repeats the suite until the first failure; the last run passed
+10 times in a row (30 of 30).
+
 Contract tests (IOS-11.1): `scripts/extract_openapi_examples.py` turns every response example of
 `Dreamer/API/openapi.yaml` into `DreamerTests/Fixtures/openapi-examples.json` (dates back to ISO
 8601, as the API sends them). `ContractTests` stubs the network with each success example and

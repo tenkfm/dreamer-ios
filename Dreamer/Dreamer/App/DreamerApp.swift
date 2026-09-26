@@ -11,6 +11,10 @@ struct DreamerApp: App {
     init() {
         let dependencies = AppDependencies.live()
         var appState = AppState(store: UserDefaultsPreferencesStore())
+        #if DEBUG
+        // UI tests start every launch as a fresh install.
+        if ProcessInfo.processInfo.arguments.contains("-uiTesting") { appState = AppState(store: InMemoryPreferencesStore()) }
+        #endif
         var debugState: AppState?
         #if DEBUG
         debugState = DebugLaunch.makeAppState(dependencies: dependencies)

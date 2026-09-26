@@ -95,6 +95,16 @@ struct RootView: View {
             }
         }
         // Universal links arrive here at a cold start and while the app runs.
+        #if DEBUG
+        .onReceive(NotificationCenter.default.publisher(for: MockAuthService.linkSent)) { _ in
+            // UI tests: the user "taps the link in the email" a moment after it was sent.
+            guard ProcessInfo.processInfo.arguments.contains("-uiTestOpenEmailLink") else { return }
+            Task {
+                try? await Task.sleep(for: .seconds(1))
+                appState.handle(.emailSignIn(token: "ui-test"))
+            }
+        }
+        #endif
         .onOpenURL { url in
             if let link = DeepLink(url: url, apiHost: AppConfig.current.apiBaseURL?.host()) {
                 appState.handle(link)

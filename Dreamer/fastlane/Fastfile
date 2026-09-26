@@ -3,6 +3,7 @@
 #   bundle exec fastlane sim device:"iPhone 17 Pro" screen:journal reset:true
 #   bundle exec fastlane sim configuration:Staging            # Debug (default), Staging or Release
 #   bundle exec fastlane test
+#   bundle exec fastlane ui_test iterations:10                # UI tests, repeated until a failure
 #   bundle exec fastlane build_release                        # unsigned Release build (CI)
 #   bundle exec fastlane certificates                         # match: fetch signing assets
 #   bundle exec fastlane signed_build configuration:Staging   # signed .ipa with match profiles
@@ -155,6 +156,23 @@ platform :ios do
       force: true,
       precheck_include_in_app_purchases: false,
       run_precheck_before_submit: false
+    )
+  end
+
+  desc "UI tests of the critical scenarios (mock services), 'Dreamer UITests' scheme"
+  desc "Options: device (simulator name), iterations (repeat until the first failure, e.g. 10)"
+  lane :ui_test do |options|
+    udid = boot_simulator(name: options[:device] || DEFAULT_DEVICE)
+    iterations = (options[:iterations] || 1).to_i
+    extra = iterations > 1 ? "-test-iterations #{iterations} -run-tests-until-failure" : ""
+    run_tests(
+      project: PROJECT,
+      scheme: "Dreamer UITests",
+      destination: "platform=iOS Simulator,id=#{udid}",
+      derived_data_path: DERIVED_DATA,
+      output_directory: File.expand_path("../build/test_output/ui", __dir__),
+      result_bundle: true,
+      xcargs: "#{PLUGIN_XCARGS} #{extra}"
     )
   end
 

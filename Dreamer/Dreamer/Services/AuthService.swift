@@ -68,6 +68,9 @@ struct APIAuthService: AuthService {
 /// Local stand-in for previews, tests and `-mockServices`. Every sign-in succeeds; the email link
 /// token "expired" answers AUTH_LINK_EXPIRED so that state can be tried.
 actor MockAuthService: AuthService {
+    /// Posted when a sign-in email "was sent" (UI tests open the link, `-uiTestOpenEmailLink`).
+    static let linkSent = Notification.Name("MockAuthService.linkSent")
+
     private var nextUserIsNew: Bool
     private(set) var sentLinks: [String] = []
     private let delay: Duration
@@ -85,6 +88,7 @@ actor MockAuthService: AuthService {
     func requestEmailLink(email: String) async throws(APIError) {
         try? await Task.sleep(for: delay)
         sentLinks.append(email)
+        NotificationCenter.default.post(name: Self.linkSent, object: nil)
     }
 
     func verifyEmailLink(token: String) async throws(APIError) -> AuthSession {

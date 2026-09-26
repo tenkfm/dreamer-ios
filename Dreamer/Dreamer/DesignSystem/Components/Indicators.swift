@@ -17,12 +17,9 @@ struct PageDots: View {
                     .frame(width: 8 + 18 * activity, height: 8)
             }
         }
-        .accessibilityElement()
-        .accessibilityLabel("Step \(currentIndex + 1) of \(count)")
-    }
-
-    private var currentIndex: Int {
-        min(max(Int(position.rounded()), 0), count - 1)
+        // Decoration: an 8 pt row is no touch target, and VoiceOver moves through the pages by
+        // their titles and buttons.
+        .accessibilityHidden(true)
     }
 }
 

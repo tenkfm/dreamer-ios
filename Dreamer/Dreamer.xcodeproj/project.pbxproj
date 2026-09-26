@@ -23,11 +23,19 @@
 			remoteGlobalIDString = D7A000000000000000000020;
 			remoteInfo = Dreamer;
 		};
+		D7A000000000000000000086 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D7A000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D7A000000000000000000020;
+			remoteInfo = Dreamer;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		D7A000000000000000000002 /* Dreamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dreamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7A000000000000000000003 /* DreamerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DreamerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7A000000000000000000080 /* DreamerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DreamerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7A000000000000000000060 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
 		D7A000000000000000000061 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		D7A000000000000000000062 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
@@ -60,6 +68,11 @@
 			path = DreamerTests;
 			sourceTree = "<group>";
 		};
+		D7A000000000000000000081 /* DreamerUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DreamerUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +96,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D7A000000000000000000083 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -91,6 +111,7 @@
 			children = (
 				D7A000000000000000000004 /* Dreamer */,
 				D7A000000000000000000005 /* DreamerTests */,
+				D7A000000000000000000081 /* DreamerUITests */,
 				D7A000000000000000000070 /* Config */,
 				D7A000000000000000000007 /* Products */,
 			);
@@ -113,6 +134,7 @@
 			children = (
 				D7A000000000000000000002 /* Dreamer.app */,
 				D7A000000000000000000003 /* DreamerTests.xctest */,
+				D7A000000000000000000080 /* DreamerUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -172,6 +194,29 @@
 			productReference = D7A000000000000000000003 /* DreamerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		D7A000000000000000000082 /* DreamerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7A000000000000000000088 /* Build configuration list for PBXNativeTarget "DreamerUITests" */;
+			buildPhases = (
+				D7A000000000000000000084 /* Sources */,
+				D7A000000000000000000083 /* Frameworks */,
+				D7A000000000000000000085 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D7A000000000000000000087 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D7A000000000000000000081 /* DreamerUITests */,
+			);
+			name = DreamerUITests;
+			packageProductDependencies = (
+			);
+			productName = DreamerUITests;
+			productReference = D7A000000000000000000080 /* DreamerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -186,6 +231,10 @@
 						CreatedOnToolsVersion = 26.2;
 					};
 					D7A000000000000000000030 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = D7A000000000000000000020;
+					};
+					D7A000000000000000000082 = {
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = D7A000000000000000000020;
 					};
@@ -216,6 +265,7 @@
 			targets = (
 				D7A000000000000000000020 /* Dreamer */,
 				D7A000000000000000000030 /* DreamerTests */,
+				D7A000000000000000000082 /* DreamerUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -229,6 +279,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D7A000000000000000000033 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7A000000000000000000085 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -252,6 +309,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D7A000000000000000000084 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -263,6 +327,11 @@
 			isa = PBXTargetDependency;
 			target = D7A000000000000000000020 /* Dreamer */;
 			targetProxy = D7A000000000000000000011 /* PBXContainerItemProxy */;
+		};
+		D7A000000000000000000087 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D7A000000000000000000020 /* Dreamer */;
+			targetProxy = D7A000000000000000000086 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -499,6 +568,54 @@
 			};
 			name = Release;
 		};
+		D7A00000000000000000008A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Dreamer;
+			};
+			name = Debug;
+		};
+		D7A00000000000000000008C /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Dreamer;
+			};
+			name = Staging;
+		};
+		D7A00000000000000000008B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Dreamer;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -528,6 +645,16 @@
 				D7A000000000000000000055 /* Debug */,
 				D7A000000000000000000059 /* Staging */,
 				D7A000000000000000000056 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D7A000000000000000000088 /* Build configuration list for PBXNativeTarget "DreamerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7A00000000000000000008A /* Debug */,
+				D7A00000000000000000008C /* Staging */,
+				D7A00000000000000000008B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
