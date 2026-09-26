@@ -269,7 +269,7 @@ struct JournalAndLibraryTests {
         #expect(summary.dreamCount == 12)
         #expect(summary.mostFrequentSymbol == "stairs")
         #expect(summary.distribution.first?.emotion == .anxiety)
-        #expect(viewModel.thisMonthRows.first?.dateText == "Yesterday")
+        #expect(viewModel.sections.first?.rows.first?.dateText == "Yesterday")
     }
 
     @Test func homeInsightFindsTheRepeatedSymbol() {

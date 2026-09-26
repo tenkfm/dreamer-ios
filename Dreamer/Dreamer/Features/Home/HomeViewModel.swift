@@ -43,9 +43,9 @@ final class HomeViewModel {
         return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
     }
 
-    private var dreamsThisWeek: [Dream] {
+    private var dreamsThisWeek: [DreamSummary] {
         guard let week = calendar.dateInterval(of: .weekOfYear, for: now()) else { return [] }
-        return store.dreams.filter { week.contains($0.createdAt) }
+        return store.summaries.filter { week.contains($0.createdAt) }
     }
 
     var weekDays: [WeekDayState] {
@@ -77,7 +77,7 @@ final class HomeViewModel {
     var insight: String? {
         let dreams = dreamsThisWeek
         let counts = dreams.reduce(into: [String: Int]()) { counts, dream in
-            for keyword in Set(dream.symbols.map(\.keyword)) { counts[keyword, default: 0] += 1 }
+            for keyword in Set(dream.symbols) { counts[keyword, default: 0] += 1 }
         }
         guard let top = counts.max(by: { ($0.value, $1.key) < ($1.value, $0.key) }), top.value >= 2 else { return nil }
         return "\(top.key.capitalized) appeared in \(top.value) of your dreams this week."

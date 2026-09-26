@@ -171,7 +171,7 @@ final class DraftQueue {
 /// locked phone sync, but the text of dreams asks for more - complete protection.
 enum LocalStore {
     static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
-        let schema = Schema([DraftRecord.self])
+        let schema = Schema([DraftRecord.self, CachedDreamSummary.self, CachedDream.self])
         if inMemory {
             return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         }

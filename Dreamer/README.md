@@ -111,6 +111,18 @@ per-country help services come from `SupportContentProvider`. Until Tony approve
 `PendingSupportContent` shows a neutral draft with only "call your local emergency number" and no
 phone numbers. Debug: `-debugScreen support`.
 
+Journal (IOS-06.1, `Services/CachedDreamStore.swift`): `DreamStore` gives the screens synchronous
+reads from the device cache and async calls for the server. The live `CachedDreamStore` keeps the
+list entries and the dreams opened in full in SwiftData, in the same protected LocalStore as the
+drafts. So Journal opens at once, offline too. Opening Journal and pull-to-refresh load the first
+page of `GET /v1/dreams`, which replaces the cached list; dreams deleted on another device disappear
+along with their cached text. Older pages load when the last row appears (`nextCursor`). Rows are
+grouped by the backend's `weekOf` ("This week", "Last week", "Sep 7 - 13"; the design's month
+grouping gave way to the task's weekly one), with thumbnails from `thumbnailUrl` through the image
+cache. A long press offers "Delete dream", confirmed first, which calls `DELETE /v1/dreams/{id}`
+and then forgets the dream on the device. Interpretation shows the cached dream and fetches the
+fresh one; when the dream is not cached yet, it shows a spinner.
+
 Analysis (IOS-05.1): the checklist follows the `step` events. The main lens appears under the card
 as it is written (`text` deltas; `reset: true` drops what was shown because the backend restarted
 with its fallback provider). `ready` enables "See my interpretation". A failed dream (`status: failed`

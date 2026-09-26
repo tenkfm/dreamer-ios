@@ -62,7 +62,7 @@ struct MainTabView: View {
         case .today:
             HomeView(viewModel: HomeViewModel(appState: appState, store: dependencies.dreamStore, catalog: dependencies.catalog))
         case .journal:
-            JournalView(viewModel: JournalViewModel(appState: appState, store: dependencies.dreamStore))
+            JournalView(viewModel: JournalViewModel(appState: appState, store: dependencies.dreamStore, images: dependencies.imageLoader))
         case .library:
             LibraryView(viewModel: LibraryViewModel(appState: appState, catalog: dependencies.catalog))
         }

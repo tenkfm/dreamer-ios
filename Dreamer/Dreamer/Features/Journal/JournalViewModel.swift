@@ -1,7 +1,9 @@
 import Foundation
 import Observation
+import UIKit
 
-/// 12 Journal: monthly summary computed from stored dreams, list, and title search.
+/// 12 Journal: the month summary, the dreams grouped by week (newest first, more pages as the
+/// list scrolls), search, pull-to-refresh and deletion.
 @MainActor
 @Observable
 final class JournalViewModel {
@@ -25,22 +27,38 @@ final class JournalViewModel {
         let id: Dream.ID
         var title: String
         var dateText: String
-        var imageName: String?
+        /// Mock mode: the asset catalog image.
+        var assetName: String?
+        var thumbnailURL: URL?
         var emotion: Emotion?
+    }
+
+    /// One week of the journal (`weekOf` = its Monday).
+    struct Section: Identifiable, Equatable {
+        var id: Date
+        var title: String
+        var rows: [Row]
     }
 
     var isSearching = false
     var query = ""
+    private(set) var isRefreshing = false
+    /// The row waiting for "Delete" to be confirmed.
+    var deleteCandidate: Row?
+    var toastMessage: String?
 
     private let appState: AppState
     private let store: any DreamStore
+    private let images: (any DreamImageLoading)?
     private let now: () -> Date
     private let calendar: Calendar
     private let dateFormatter: DreamDateFormatter
 
-    init(appState: AppState, store: any DreamStore, now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
+    init(appState: AppState, store: any DreamStore, images: (any DreamImageLoading)? = nil,
+         now: @escaping () -> Date = Date.init, calendar: Calendar = .mondayFirst) {
         self.appState = appState
         self.store = store
+        self.images = images
         self.now = now
         self.calendar = calendar
         dateFormatter = DreamDateFormatter(calendar: calendar)
@@ -48,9 +66,9 @@ final class JournalViewModel {
 
     // MARK: Summary
 
-    private var dreamsThisMonth: [Dream] {
+    private var dreamsThisMonth: [DreamSummary] {
         guard let month = calendar.dateInterval(of: .month, for: now()) else { return [] }
-        return store.dreams.filter { month.contains($0.createdAt) }
+        return store.summaries.filter { month.contains($0.createdAt) }
     }
 
     var summary: Summary {
@@ -58,7 +76,7 @@ final class JournalViewModel {
         let today = now()
 
         let symbolCounts = dreams.reduce(into: [String: Int]()) { counts, dream in
-            for keyword in Set(dream.symbols.map(\.keyword)) { counts[keyword, default: 0] += 1 }
+            for keyword in Set(dream.symbols) { counts[keyword, default: 0] += 1 }
         }
         let topSymbol = symbolCounts.max { ($0.value, $1.key) < ($1.value, $0.key) }?.key
 
@@ -81,32 +99,78 @@ final class JournalViewModel {
 
     // MARK: List
 
-    private var filteredDreams: [Dream] {
+    private var filteredDreams: [DreamSummary] {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard isSearching, !trimmed.isEmpty else { return store.dreams }
-        return store.dreams.filter {
-            $0.title.localizedCaseInsensitiveContains(trimmed) || $0.transcript.localizedCaseInsensitiveContains(trimmed)
+        guard isSearching, !trimmed.isEmpty else { return store.summaries }
+        return store.summaries.filter {
+            ($0.title ?? "").localizedCaseInsensitiveContains(trimmed) || $0.symbols.contains { $0.localizedCaseInsensitiveContains(trimmed) }
         }
     }
 
-    var thisMonthRows: [Row] {
-        guard let month = calendar.dateInterval(of: .month, for: now()) else { return [] }
-        return filteredDreams.filter { month.contains($0.createdAt) }.map(row)
+    /// Weeks newest first, in the order the backend groups them.
+    var sections: [Section] {
+        var sections: [Section] = []
+        for dream in filteredDreams {
+            let week = calendar.startOfDay(for: dream.weekOf)
+            if sections.last?.id == week {
+                sections[sections.count - 1].rows.append(row(dream))
+            } else {
+                sections.append(Section(id: week, title: weekTitle(week), rows: [row(dream)]))
+            }
+        }
+        return sections
     }
 
-    var earlierRows: [Row] {
-        guard let month = calendar.dateInterval(of: .month, for: now()) else { return filteredDreams.map(row) }
-        return filteredDreams.filter { !month.contains($0.createdAt) }.map(row)
+    var isEmpty: Bool { filteredDreams.isEmpty }
+
+    var canLoadMore: Bool { store.canLoadMore && !isSearching }
+
+    private func weekTitle(_ monday: Date) -> String {
+        let thisWeek = calendar.dateInterval(of: .weekOfYear, for: now())?.start ?? now()
+        if calendar.isDate(monday, inSameDayAs: thisWeek) { return "This week" }
+        if let last = calendar.date(byAdding: .weekOfYear, value: -1, to: thisWeek), calendar.isDate(monday, inSameDayAs: last) {
+            return "Last week"
+        }
+        let sunday = calendar.date(byAdding: .day, value: 6, to: monday) ?? monday
+        return dateFormatter.range(from: monday, to: sunday)
     }
 
-    var isEmpty: Bool { thisMonthRows.isEmpty && earlierRows.isEmpty }
-
-    private func row(_ dream: Dream) -> Row {
+    private func row(_ dream: DreamSummary) -> Row {
         Row(id: dream.id,
-            title: dream.title,
+            // Still being read: the backend has no title yet.
+            title: dream.title ?? (dream.status == .failed ? "We couldn’t read this dream" : "Reading your dream…"),
             dateText: dateFormatter.day(dream.createdAt, now: now()),
-            imageName: dream.thumbnailName ?? dream.imageName,
+            assetName: dream.assetName,
+            thumbnailURL: dream.thumbnailURL,
             emotion: dream.emotions.first)
+    }
+
+    // MARK: Loading
+
+    /// On opening and on pull-to-refresh. Offline the cached journal stays (the banner says why).
+    func refresh() async {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
+        do {
+            try await store.refresh()
+        } catch .offline {
+            // The cached list is what there is.
+        } catch {
+            if store.summaries.isEmpty { toastMessage = ErrorState(error).message }
+        }
+    }
+
+    /// The last row appeared: the next page.
+    func rowAppeared(_ row: Row) async {
+        guard canLoadMore, row.id == filteredDreams.last?.id else { return }
+        try? await store.loadMore()
+    }
+
+    func thumbnail(for row: Row) async -> UIImage? {
+        guard let images, let url = row.thumbnailURL,
+              let data = try? await images.thumbnailData(dreamID: row.id, url: url) else { return nil }
+        return UIImage(data: data)
     }
 
     // MARK: Actions
@@ -118,5 +182,22 @@ final class JournalViewModel {
 
     func open(_ row: Row) {
         appState.push(.interpretation(row.id), on: .journal)
+    }
+
+    func askToDelete(_ row: Row) {
+        deleteCandidate = row
+    }
+
+    /// "Delete" confirmed: gone from the server, every device and this one.
+    func confirmDelete() async {
+        guard let row = deleteCandidate else { return }
+        deleteCandidate = nil
+        do {
+            try await store.delete(id: row.id)
+        } catch {
+            toastMessage = ErrorState(error).kind == .offline
+                ? "You’re offline. Try deleting again when you’re connected."
+                : "Couldn’t delete this dream. Please try again."
+        }
     }
 }

@@ -15,6 +15,8 @@ struct InterpretationView: View {
                 DS.Palette.background.ignoresSafeArea()
                 if let dream = viewModel.dream {
                     content(dream: dream, topInset: geo.safeAreaInsets.top)
+                } else if viewModel.isLoadingDream {
+                    ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     missingDream
                 }
@@ -29,6 +31,7 @@ struct InterpretationView: View {
             .presentationDetents([.medium, .large])
             .ignoresSafeArea()
         }
+        .task { await viewModel.refreshDream() }
         .task(id: viewModel.imageRequest) { await viewModel.loadImage() }
         .task(id: viewModel.mainLens) { viewModel.prepareVoice() }
         .onDisappear {

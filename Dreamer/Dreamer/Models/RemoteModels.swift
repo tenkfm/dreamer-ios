@@ -132,6 +132,33 @@ struct DreamSummary: Sendable, Equatable, Identifiable, Codable {
     var symbols: [String]
     /// Matching fragment when the list was searched.
     var snippet: String?
+    /// Mock mode: the thumbnail from the asset catalog (never from the backend).
+    var assetName: String? = nil
+}
+
+extension DreamSummary {
+    /// The journal entry of a dream the app has in full (a new dream, an opened one).
+    init(_ dream: Dream, calendar: Calendar = .mondayFirst) {
+        self.init(id: dream.id,
+                  createdAt: dream.createdAt,
+                  weekOf: calendar.dateInterval(of: .weekOfYear, for: dream.createdAt)?.start ?? dream.createdAt,
+                  title: dream.title.isEmpty ? nil : dream.title,
+                  status: dream.status,
+                  emotions: dream.emotions,
+                  thumbnailURL: dream.image?.thumbnailURL,
+                  symbols: dream.symbols.map(\.keyword),
+                  snippet: nil,
+                  assetName: dream.thumbnailName ?? dream.imageName)
+    }
+}
+
+extension Calendar {
+    /// The backend's weeks start on Monday (`weekOf`).
+    static var mondayFirst: Calendar {
+        var calendar = Calendar.current
+        calendar.firstWeekday = 2
+        return calendar
+    }
 }
 
 struct DreamPage: Sendable, Equatable {

@@ -8,6 +8,9 @@ import UIKit
 @Observable
 final class InterpretationViewModel {
     private(set) var dream: Dream?
+    /// Opened from the journal list without the dream on the device yet.
+    private(set) var isLoadingDream = false
+    private let dreamID: Dream.ID
     private(set) var expandedLenses: Set<Lens> = []
     private(set) var isSavingImage = false
     private(set) var imagePhase: ImagePhase = .asset
@@ -88,7 +91,9 @@ final class InterpretationViewModel {
          instagramAppID: String? = nil,
          dateFormatter: DreamDateFormatter = DreamDateFormatter()) {
         let dream = store.dream(id: dreamID)
+        self.dreamID = dreamID
         self.dream = dream
+        isLoadingDream = dream == nil
         self.notes = dream?.notes ?? ""
         self.store = store
         self.appState = appState
@@ -183,6 +188,18 @@ final class InterpretationViewModel {
 
     func stopPlayback() {
         readAloud.stop()
+    }
+
+    /// The dream from the server: fresh status, links and voice; the cached copy shows meanwhile.
+    func refreshDream() async {
+        isLoadingDream = dream == nil
+        defer { isLoadingDream = false }
+        guard var fresh = try? await store.loadDream(id: dreamID) else { return }
+        // Notes typed here and not yet confirmed win over the server's copy.
+        if let unsentNotes { fresh.notes = unsentNotes }
+        dream = fresh
+        notes = fresh.notes
+        imageRequest = UUID()
     }
 
     // MARK: Image

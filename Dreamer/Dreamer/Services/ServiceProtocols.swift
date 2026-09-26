@@ -47,13 +47,27 @@ protocol DreamAnalysisService: Sendable {
     func analyze(_ draft: DreamDraft) -> AsyncThrowingStream<AnalysisProgress, Error>
 }
 
-/// Persistence for dreams, newest first.
+/// The user's dreams: the journal list (newest first) and the dreams opened in full. Reads are
+/// synchronous from the device cache, so screens open at once; the async calls bring the server's
+/// state into it.
 @MainActor
 protocol DreamStore: AnyObject {
-    var dreams: [Dream] { get }
+    /// The journal as far as loaded, newest first.
+    var summaries: [DreamSummary] { get }
+    /// More pages wait on the server.
+    var canLoadMore: Bool { get }
+    /// The first page from the server replaces the cached list.
+    func refresh() async throws(APIError)
+    func loadMore() async throws(APIError)
+    /// The dream in full, if it is on the device.
     func dream(id: Dream.ID) -> Dream?
-    /// Inserts a new dream or replaces the one with the same id.
+    /// The dream in full from the server (fresh status and links), cached.
+    func loadDream(id: Dream.ID) async throws(APIError) -> Dream
+    /// Inserts a new dream or replaces the one with the same id (list entry included).
     func save(_ dream: Dream)
+    /// Deletes on the server, then on the device.
+    func delete(id: Dream.ID) async throws(APIError)
+    /// Sign-out and account deletion: the device forgets every dream.
     func deleteAll()
 }
 

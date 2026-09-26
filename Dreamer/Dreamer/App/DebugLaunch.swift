@@ -61,9 +61,9 @@ enum DebugLaunch {
         case .library: state.open(.library)
         case .settings, .deleteAccount: state.push(.settings, on: .today)
         case .interpretation:
-            if let dream = dependencies.dreamStore.dreams.first { state.push(.interpretation(dream.id), on: .today) }
+            if let dream = dependencies.dreamStore.summaries.first { state.push(.interpretation(dream.id), on: .today) }
         case .support:
-            if var dream = dependencies.dreamStore.dreams.first {
+            if let id = dependencies.dreamStore.summaries.first?.id, var dream = dependencies.dreamStore.dream(id: id) {
                 dream.interpretation?.safetyFlag = true
                 dream.imageName = nil
                 dependencies.dreamStore.save(dream)

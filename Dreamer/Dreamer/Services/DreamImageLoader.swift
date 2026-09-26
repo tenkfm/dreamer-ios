@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import os
 
@@ -22,6 +23,8 @@ enum DreamImageSize: String, Sendable {
 /// Image bytes of a ready dream image, from the cache or the network.
 protocol DreamImageLoading: Sendable {
     func imageData(dreamID: UUID, image: DreamImageInfo, size: DreamImageSize) async throws(APIError) -> Data
+    /// A journal thumbnail by its link (the list has no image version; the link's path changes with it).
+    func thumbnailData(dreamID: UUID, url: URL) async throws(APIError) -> Data
     /// Sign-out and account deletion: nothing of the account stays on the device.
     func removeAll() async
 }
@@ -55,7 +58,20 @@ actor DreamImageCache {
     }
 
     static func key(dreamID: UUID, version: Int, size: DreamImageSize) -> String {
-        "\(dreamID.uuidString.lowercased())-v\(version)-\(size.rawValue)"
+        "\(versionPrefix(dreamID))\(version)-\(size.rawValue)"
+    }
+
+    static func versionPrefix(_ dreamID: UUID) -> String {
+        "\(dreamID.uuidString.lowercased())-v"
+    }
+
+    static func thumbnailKey(dreamID: UUID, url: URL) -> String {
+        let digest = SHA256.hash(data: Data(url.path(percentEncoded: false).utf8)).prefix(8).map { String(format: "%02x", $0) }.joined()
+        return "\(thumbnailPrefix(dreamID))\(digest)"
+    }
+
+    static func thumbnailPrefix(_ dreamID: UUID) -> String {
+        "\(dreamID.uuidString.lowercased())-t"
     }
 
     func data(for key: String) -> Data? {
@@ -65,12 +81,11 @@ actor DreamImageCache {
         return data
     }
 
-    func store(_ data: Data, for key: String, dreamID: UUID) {
+    /// Stores `data`; files of this dream that `isStale` says will never show again are removed.
+    func store(_ data: Data, for key: String, isStale: (String) -> Bool = { _ in false }) {
         remember(data, for: key)
-        let prefix = dreamID.uuidString.lowercased() + "-"
-        // Older versions of this dream's image will never be shown again.
         if let files = try? FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)) {
-            for file in files where file.hasPrefix(prefix) && !file.hasPrefix(key) {
+            for file in files where isStale(file) {
                 try? FileManager.default.removeItem(at: directory.appending(path: file))
             }
         }
@@ -130,7 +145,22 @@ struct RemoteDreamImageLoader: DreamImageLoading {
             }
             data = try await download(url)
         }
-        await cache.store(data, for: key, dreamID: dreamID)
+        // Older versions of this dream's image will never be shown again (other sizes of this one may).
+        let current = DreamImageCache.versionPrefix(dreamID) + "\(image.version)-"
+        await cache.store(data, for: key) { file in
+            file.hasPrefix(DreamImageCache.versionPrefix(dreamID)) && !file.hasPrefix(current)
+        }
+        return data
+    }
+
+    func thumbnailData(dreamID: UUID, url: URL) async throws(APIError) -> Data {
+        let key = DreamImageCache.thumbnailKey(dreamID: dreamID, url: url)
+        if let cached = await cache.data(for: key) { return cached }
+        // An expired link fails here; the next journal refresh brings a fresh one.
+        let data = try await download(url)
+        await cache.store(data, for: key) { file in
+            file.hasPrefix(DreamImageCache.thumbnailPrefix(dreamID)) && !file.hasPrefix(key)
+        }
         return data
     }
 

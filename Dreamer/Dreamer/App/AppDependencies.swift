@@ -137,7 +137,9 @@ final class AppDependencies {
             try await publicClient.refreshTokens(refreshToken: refreshToken)
         }
         let api = APIClient(baseURL: baseURL, tokens: tokens)
-        let dreamStore = InMemoryDreamStore()
+        // The journal is cached next to the drafts; without the local store it lives in memory.
+        let dreamStore: any DreamStore = container.map { CachedDreamStore(container: $0, remote: api) }
+            ?? InMemoryDreamStore(seed: [])
         let serverSpeech = featureFlags.isEnabled(.serverSttFallback)
         let ttsEnabled = featureFlags.isEnabled(.ttsEnabled)
         // PostHog replaces this with IOS-08.1.

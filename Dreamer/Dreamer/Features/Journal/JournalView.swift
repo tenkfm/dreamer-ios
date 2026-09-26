@@ -32,8 +32,23 @@ struct JournalView: View {
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
+            .refreshable { await viewModel.refresh() }
         }
         .animation(.soft(0.4), value: viewModel.isSearching)
+        .task { await viewModel.refresh() }
+        .toast($viewModel.toastMessage)
+        .confirmationDialog("Delete this dream?", isPresented: isConfirmingDelete, titleVisibility: .visible,
+                            presenting: viewModel.deleteCandidate) { _ in
+            Button("Delete dream", role: .destructive) { Task { await viewModel.confirmDelete() } }
+            Button("Cancel", role: .cancel) { viewModel.deleteCandidate = nil }
+        } message: { _ in
+            Text("It will be removed from your journal on all your devices. This can’t be undone.")
+        }
+    }
+
+    private var isConfirmingDelete: Binding<Bool> {
+        Binding(get: { viewModel.deleteCandidate != nil },
+                set: { if !$0 { viewModel.deleteCandidate = nil } })
     }
 
     private var header: some View {
@@ -56,11 +71,13 @@ struct JournalView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 40)
         }
-        if !viewModel.thisMonthRows.isEmpty {
-            section(title: "This month", rows: viewModel.thisMonthRows, delay: 0.45)
+        ForEach(Array(viewModel.sections.enumerated()), id: \.element.id) { index, section in
+            self.section(title: section.title, rows: section.rows, delay: 0.45 + Double(min(index, 2)) * 0.15)
         }
-        if !viewModel.earlierRows.isEmpty {
-            section(title: "Earlier", rows: viewModel.earlierRows, delay: 0.6)
+        if viewModel.canLoadMore {
+            ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
         }
     }
 
@@ -70,17 +87,34 @@ struct JournalView: View {
             VStack(spacing: DS.Space.stack) {
                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                     Button { viewModel.open(row) } label: {
-                        DreamRow(title: row.title,
-                                 date: row.dateText,
-                                 image: DreamImage.image(named: row.imageName),
-                                 emotion: row.emotion.map { ($0.title, $0.color) })
+                        JournalRow(row: row, viewModel: viewModel)
                     }
                     .buttonStyle(PressableButtonStyle())
+                    .contextMenu {
+                        Button("Delete dream", systemImage: "trash", role: .destructive) { viewModel.askToDelete(row) }
+                    }
+                    .task { await viewModel.rowAppeared(row) }
                     .enterUp(delay + Double(min(index, 5)) * 0.1)
                 }
             }
         }
         .padding(.top, 30)
+    }
+}
+
+/// A dream in the list: its thumbnail from the backend (cached), the asset in mock mode, the
+/// sky while it loads or when the dream has no image yet.
+private struct JournalRow: View {
+    var row: JournalViewModel.Row
+    var viewModel: JournalViewModel
+    @State private var thumbnail: UIImage?
+
+    var body: some View {
+        DreamRow(title: row.title,
+                 date: row.dateText,
+                 image: thumbnail.map(Image.init(uiImage:)) ?? DreamImage.image(named: row.assetName),
+                 emotion: row.emotion.map { ($0.title, $0.color) })
+            .task(id: row.thumbnailURL) { thumbnail = await viewModel.thumbnail(for: row) }
     }
 }
 

@@ -27,6 +27,12 @@ struct DreamDateFormatter {
         format(date, "LLLL")
     }
 
+    /// "Sep 8 - 14", or "Aug 30 - Sep 5" across months.
+    func range(from start: Date, to end: Date) -> String {
+        let sameMonth = calendar.isDate(start, equalTo: end, toGranularity: .month)
+        return "\(format(start, "MMM d")) - \(format(end, sameMonth ? "d" : "MMM d"))"
+    }
+
     private func format(_ date: Date, _ template: String) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar

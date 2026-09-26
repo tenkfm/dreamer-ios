@@ -165,8 +165,23 @@ final class InMemoryDreamStore: DreamStore {
         dreams = seed.sorted { $0.createdAt > $1.createdAt }
     }
 
+    var summaries: [DreamSummary] { dreams.map { DreamSummary($0) } }
+    let canLoadMore = false
+
+    func refresh() async throws(APIError) {}
+    func loadMore() async throws(APIError) {}
+
     func dream(id: Dream.ID) -> Dream? {
         dreams.first { $0.id == id }
+    }
+
+    func loadDream(id: Dream.ID) async throws(APIError) -> Dream {
+        guard let dream = dream(id: id) else { throw APIError.server(.init(code: .notFound, message: "", status: 404)) }
+        return dream
+    }
+
+    func delete(id: Dream.ID) async throws(APIError) {
+        dreams.removeAll { $0.id == id }
     }
 
     func save(_ dream: Dream) {
@@ -268,6 +283,10 @@ final class MockDreamImageService: DreamImageLoading, DreamImageActions, @unchec
             throw APIError.invalidResponse(status: nil)
         }
         return data
+    }
+
+    func thumbnailData(dreamID: UUID, url: URL) async throws(APIError) -> Data {
+        try await imageData(dreamID: dreamID, image: DreamImageInfo(status: .ready, version: 1), size: .thumbnail)
     }
 
     func removeAll() async {}
