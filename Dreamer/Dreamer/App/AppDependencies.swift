@@ -150,11 +150,13 @@ final class AppDependencies {
         }
 
         // Refresh goes through a client without tokens: it must not wait for itself.
-        let publicClient = APIClient(baseURL: baseURL, tokens: nil)
+        // API failures that point to a bug or an outage become non-fatal reports (grouped by code).
+        let reporting = ErrorReportingMiddleware(reporter: crashReporter)
+        let publicClient = APIClient(baseURL: baseURL, tokens: nil, extraMiddlewares: [reporting], reporter: crashReporter)
         let tokens = TokenManager(store: KeychainStore()) { refreshToken throws(APIError) in
             try await publicClient.refreshTokens(refreshToken: refreshToken)
         }
-        let api = APIClient(baseURL: baseURL, tokens: tokens)
+        let api = APIClient(baseURL: baseURL, tokens: tokens, extraMiddlewares: [reporting], reporter: crashReporter)
         // The journal is cached next to the drafts; without the local store it lives in memory.
         let dreamStore: any DreamStore = container.map { CachedDreamStore(container: $0, remote: api) }
             ?? InMemoryDreamStore(seed: [])

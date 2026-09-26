@@ -24,6 +24,7 @@ final class StubURLProtocol: URLProtocol {
     static func makeClient(tokens: (any AccessTokenProvider)? = nil,
                            middlewares: [any ClientMiddleware] = [],
                            retry: RetryMiddleware = RetryMiddleware(baseDelay: .milliseconds(1)),
+                           reporter: (any CrashReporter)? = nil,
                            handler: @escaping Handler) -> (APIClient, host: String) {
         let host = "stub-\(UUID().uuidString.lowercased()).test"
         handlers.withLock { $0[host] = handler }
@@ -31,7 +32,7 @@ final class StubURLProtocol: URLProtocol {
         configuration.protocolClasses = [StubURLProtocol.self]
         let session = URLSession(configuration: configuration)
         return (APIClient(baseURL: URL(string: "https://\(host)")!, tokens: tokens, session: session,
-                          extraMiddlewares: middlewares, retry: retry), host)
+                          extraMiddlewares: middlewares, retry: retry, reporter: reporter), host)
     }
 
     static func requests(for host: String) -> [URLRequest] {

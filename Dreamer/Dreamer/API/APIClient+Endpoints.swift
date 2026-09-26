@@ -8,13 +8,20 @@ import OpenAPIRuntime
 extension APIClient {
     private func id(_ uuid: UUID) -> String { uuid.uuidString.lowercased() }
 
-    private func unexpected<T>(_ status: Int? = nil) throws(APIError) -> T {
+    private func unexpected<T>(_ status: Int? = nil, operation: String = #function) throws(APIError) -> T {
+        reportUnreadable(operation: operation)
         throw APIError.invalidResponse(status: status)
     }
 
-    private func body<T>(_ read: () throws -> T) throws(APIError) -> T {
-        do { return try read() } catch { throw APIError.invalidResponse(status: nil) }
+    private func body<T>(operation: String = #function, _ read: () throws -> T) throws(APIError) -> T {
+        do {
+            return try read()
+        } catch {
+            reportUnreadable(operation: operation)
+            throw APIError.invalidResponse(status: nil)
+        }
     }
+
 
     // MARK: - System
 

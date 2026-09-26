@@ -22,6 +22,8 @@ final class SentryCrashReporter: CrashReporter {
         SentrySDK.start { options in
             options.dsn = dsn
             options.environment = config.environment.rawValue
+            // Release health: crash-free sessions per version (the release is bundle id@version+build).
+            options.enableAutoSessionTracking = true
             // Privacy: screens and view hierarchies show dream texts, request URLs carry search
             // queries, and the IP address identifies the user - none of it leaves the device.
             options.sendDefaultPii = false
@@ -44,6 +46,8 @@ final class SentryCrashReporter: CrashReporter {
         SentrySDK.capture(error: error) { scope in
             if let code { scope.setTag(value: code, key: "error_code") }
             for (key, value) in context { scope.setTag(value: value, key: key) }
+            // One issue per operation and code (not per message or stack), for the API errors view.
+            if let code { scope.setFingerprint(["non-fatal", context["operation"] ?? "app", code]) }
         }
     }
 

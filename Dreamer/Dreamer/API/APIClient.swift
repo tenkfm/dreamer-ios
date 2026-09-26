@@ -19,13 +19,17 @@ final class APIClient: Sendable {
     /// Plain session for the calls outside the generated client (SSE, uploads, morningInsight).
     let session: URLSession
     let tokens: (any AccessTokenProvider)?
+    /// Unreadable answers (a contract drift) are reported here; HTTP failures by ErrorReportingMiddleware.
+    let reporter: (any CrashReporter)?
 
     init(baseURL: URL,
          tokens: (any AccessTokenProvider)?,
          session: URLSession = APIClient.makeSession(),
          extraMiddlewares: [any ClientMiddleware] = [],
-         retry: RetryMiddleware = RetryMiddleware()) {
+         retry: RetryMiddleware = RetryMiddleware(),
+         reporter: (any CrashReporter)? = nil) {
         self.baseURL = baseURL
+        self.reporter = reporter
         self.session = session
         self.tokens = tokens
         // Order matters: the first middleware is the outermost. Retry wraps everything (a retried
@@ -57,12 +61,26 @@ final class APIClient: Sendable {
     }
 
     /// Runs a generated call and turns every failure into `APIError`.
-    func perform<Output>(_ call: () async throws -> Output) async throws(APIError) -> Output {
+    func perform<Output>(operation: String = #function, _ call: () async throws -> Output) async throws(APIError) -> Output {
         do {
             return try await call()
         } catch {
-            throw APIError.unwrap(error) ?? APIError.fromTransport(error)
+            let mapped = APIError.unwrap(error) ?? APIError.fromTransport(error)
+            // Neither an HTTP error (APIError from the middlewares) nor the network: the generated
+            // client could not read the answer, which means the contract drifted.
+            let cause = (error as? ClientError)?.underlyingError ?? error
+            if case .invalidResponse = mapped, !(cause is APIError), !(cause is URLError) {
+                reportUnreadable(operation: operation)
+            }
+            throw mapped
         }
+    }
+
+    /// The answer does not match the contract: worth a report, grouped by endpoint.
+    func reportUnreadable(operation: String) {
+        let name = String(operation.prefix { $0 != "(" })
+        reporter?.recordNonFatal(APIFailure(operation: name, code: "INVALID_RESPONSE"), code: "INVALID_RESPONSE",
+                                 context: ["operation": name])
     }
 }
 

@@ -340,6 +340,29 @@ check the console. `bundle exec fastlane upload_dsyms` (also run by `signed_buil
 `SENTRY_AUTH_TOKEN` is set) uploads the archive's dSYMs; it needs `sentry-cli`, `SENTRY_ORG` and
 `SENTRY_PROJECT`.
 
+Release health (IOS-08.5): session tracking is on, so Sentry shows crash-free sessions and users
+per release (`bundle id@version+build`) and per environment. API failures that point to a bug or
+an outage are sent as non-fatal issues grouped by endpoint and code (`ErrorReportingMiddleware`,
+after retries): 5xx, `VALIDATION_FAILED`, `ATTESTATION_REQUIRED`, `CONFLICT`, and answers the app
+cannot read (reported by `APIClient`, meaning the contract drifted). Offline, sign-in, paywall,
+limit and not-found answers are normal and are not reported. A report carries the operation id
+and the code only, never the URL, the body or a header.
+
+Alerts are configured in Sentry (project settings, not app code). Set them up once the project
+and its DSN exist (see Blockers):
+1. Alerts -> Create alert -> Issues: "A new issue is created" and "The issue changes state from
+   resolved to unresolved", filtered to `level:fatal` and to `environment:production`
+   (a second rule for `staging`). Action: send a notification to the Telegram integration (or to
+   the team's email), with the action interval at 5 minutes so a test crash alerts within 15.
+2. Alerts -> Create alert -> Sessions: "Crash free session rate" below 99.5% over 1 hour for
+   `environment:production`, warning at 99.8%, with the same action.
+3. Alerts -> Create alert -> Issues: "Number of events in an issue is more than 50 in 1 hour" with
+   the filter `error_code` present, to catch an API endpoint failing for many users.
+4. Dashboards -> Release health: the widgets "Crash free sessions by release" and "Top non-fatal
+   issues by error_code" make the stability dashboard per version.
+Check the setup with a TestFlight build: launch it with `-crashTestCrash` (Staging), relaunch, and
+the alert should arrive within 15 minutes.
+
 ## Signing
 
 Certificates and profiles are shared through fastlane match (`fastlane/Matchfile`), App Store
