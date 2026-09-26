@@ -27,6 +27,7 @@ struct DreamerApp: App {
         WindowGroup {
             RootView()
                 .environment(dependencies)
+                .environment(\.analytics, dependencies.analytics)
                 .environment(appState)
                 .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         }

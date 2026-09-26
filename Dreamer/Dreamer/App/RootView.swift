@@ -48,6 +48,11 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { appState.refreshClock() }
         }
+        .task(id: AnalyticsContext(preferredLens: appState.preferredLens, paywallVariant: appState.paywallVariant)) {
+            // Every later event carries the lens and the paywall variant.
+            dependencies.analytics.setContext(AnalyticsContext(preferredLens: appState.preferredLens,
+                                                               paywallVariant: appState.paywallVariant))
+        }
         .task(id: appState.userID) {
             // Every sign-in (and a session restored at launch) links the account in the SDKs.
             if let userID = appState.userID { await dependencies.linkAccount(userID: userID) }

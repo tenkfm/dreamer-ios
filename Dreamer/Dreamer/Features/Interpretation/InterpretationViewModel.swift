@@ -190,6 +190,15 @@ final class InterpretationViewModel {
         readAloud.stop()
     }
 
+    @ObservationIgnored private var hasReportedView = false
+
+    /// The screen opened (once per screen); crisis dreams show support, not a reading.
+    func viewed() {
+        guard !hasReportedView, dream != nil, support == nil else { return }
+        hasReportedView = true
+        analytics.track(.interpretationViewed(lens: mainLens))
+    }
+
     /// The dream from the server: fresh status, links and voice; the cached copy shows meanwhile.
     func refreshDream() async {
         isLoadingDream = dream == nil
@@ -200,6 +209,7 @@ final class InterpretationViewModel {
         dream = fresh
         notes = fresh.notes
         imageRequest = UUID()
+        viewed()
     }
 
     // MARK: Image

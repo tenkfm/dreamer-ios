@@ -104,6 +104,10 @@ final class RecordViewModel {
     private let speech: any SpeechService
     private let permissions: any SpeechPermissions
     private let tick: Duration
+    private let analytics: any Analytics
+    @ObservationIgnored private var hasReportedStart = false
+    /// The keyboard was used: the dream counts as typed.
+    @ObservationIgnored private var usedKeyboard = false
     /// Nil when the serverSttFallback flag is off (or in mock mode).
     private let transcriber: (any RecordingTranscriber)?
     /// Taken from the speech service, kept until it is uploaded (or the flow is abandoned).
@@ -114,8 +118,10 @@ final class RecordViewModel {
     @ObservationIgnored private var timerTask: Task<Void, Never>?
 
     init(speech: any SpeechService, permissions: any SpeechPermissions = MockSpeechPermissions(),
-         transcriber: (any RecordingTranscriber)? = nil, tick: Duration = .seconds(1)) {
+         transcriber: (any RecordingTranscriber)? = nil, analytics: any Analytics = NoopAnalytics(),
+         tick: Duration = .seconds(1)) {
         self.speech = speech
+        self.analytics = analytics
         self.permissions = permissions
         self.transcriber = transcriber
         self.tick = tick
@@ -149,6 +155,7 @@ final class RecordViewModel {
 
     /// No microphone: write the dream down instead (the main flow never depends on permissions).
     func typeInstead() {
+        usedKeyboard = true
         pause(.user)
         serverTranscription = nil
         isTyping = true
@@ -200,6 +207,10 @@ final class RecordViewModel {
     func start() {
         guard !isRecording, elapsedSeconds < Self.timeLimit else { return }
         isRecording = true
+        if !hasReportedStart {
+            hasReportedStart = true
+            analytics.track(.recordStarted)
+        }
         pauseReason = nil
         speechError = nil
         serverTranscription = nil
@@ -274,6 +285,7 @@ final class RecordViewModel {
 
     /// Keyboard button: stop listening and let the user type or correct the text.
     func switchToTyping() {
+        usedKeyboard = true
         pause(.user)
         serverTranscription = nil
         isTyping = true
@@ -289,6 +301,7 @@ final class RecordViewModel {
         if !trimmedTranscript.isEmpty {
             // The device heard the words: the audio is not needed and does not stay.
             discardAudio()
+            analytics.track(.recordFinished(seconds: elapsedSeconds, input: usedKeyboard ? .text : .voice))
             return RecordedDream(transcript: trimmedTranscript)
         }
         guard let transcriber else { return nil }
@@ -319,6 +332,7 @@ final class RecordViewModel {
             }
             transcript = text
             serverTranscription = nil
+            analytics.track(.recordFinished(seconds: elapsedSeconds, input: .voice))
             return RecordedDream(transcript: text, recordingID: recordingID)
         } catch {
             serverTranscription = .failed(TranscriptionFailure(transcribeError: error))

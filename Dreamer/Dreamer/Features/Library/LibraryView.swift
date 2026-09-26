@@ -40,6 +40,7 @@ struct LibraryView: View {
         }
         .animation(.soft(0.4), value: viewModel.symbols)
         .task(id: viewModel.category) { await viewModel.refresh() }
+        .trackScreen(.library)
     }
 
     private var categories: some View {

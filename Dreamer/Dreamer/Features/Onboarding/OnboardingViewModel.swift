@@ -24,25 +24,26 @@ final class OnboardingViewModel {
         var usesFullSky: Bool { self != .quizGoal && self != .quizLens }
 
         /// Name for `onboarding_step_viewed`.
-        var analyticsName: String {
+        /// The tracking plan's step; nil for the account step, which the plan does not list yet.
+        var analyticsName: OnboardingStepName? {
             switch self {
-            case .welcome: "welcome"
-            case .record: "record_intro"
-            case .understand: "understand"
-            case .quizGoal: "quiz_goal"
-            case .quizLens: "quiz_lens"
-            case .account: "account"
-            case .paywall: "paywall"
+            case .welcome: .welcome
+            case .record: .record
+            case .understand: .understand
+            case .quizGoal: .quizGoal
+            case .quizLens: .quizLens
+            case .account: nil
+            case .paywall: .paywall
             }
         }
     }
 
     private(set) var step: Step = .welcome
     var goal: Goal = .understand {
-        didSet { if goal != oldValue { analytics.track(.quizAnswered(question: "goal", answer: goal.rawValue)) } }
+        didSet { if goal != oldValue { analytics.track(.quizAnswered(.goal(goal))) } }
     }
     var lens: Lens {
-        didSet { if lens != oldValue { analytics.track(.quizAnswered(question: "lens", answer: lens.rawValue)) } }
+        didSet { if lens != oldValue { analytics.track(.quizAnswered(.lens(lens))) } }
     }
     /// "Welcome back" (from "I already have an account") or "Save your dreams".
     private(set) var accountMode: SignInViewModel.Mode = .signUp
@@ -61,7 +62,7 @@ final class OnboardingViewModel {
             self.step = .account
             accountMode = .signIn
         }
-        analytics.track(.onboardingStepViewed(step: self.step.analyticsName))
+        if let name = self.step.analyticsName { analytics.track(.onboardingStepViewed(step: name)) }
     }
 
     /// Pages the pager shows: nothing after the account step until there is an account, so a
@@ -78,7 +79,7 @@ final class OnboardingViewModel {
         if previous <= .quizLens && step > .quizLens {
             appState.saveQuizAnswers(goal: goal, lens: lens)
         }
-        analytics.track(.onboardingStepViewed(step: step.analyticsName))
+        if let name = step.analyticsName { analytics.track(.onboardingStepViewed(step: name)) }
     }
 
     func next() {

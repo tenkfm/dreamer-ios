@@ -14,6 +14,16 @@ final class PaywallViewModel {
     /// Where the paywall was shown, for `paywall_viewed`.
     enum Placement: String, Sendable {
         case onboarding, gate, settings, analysis, record
+
+        /// The tracking plan knows three: the hard paywall of onboarding and its gate, Settings,
+        /// and the free interpretation used up (Record, Analysis).
+        var analytics: PaywallPlacement {
+            switch self {
+            case .onboarding, .gate: .onboarding
+            case .settings: .settings
+            case .analysis, .record: .limit
+            }
+        }
     }
 
     var selectedPlan: Plan = .yearly
@@ -52,14 +62,14 @@ final class PaywallViewModel {
     func viewed() {
         guard !hasReportedView else { return }
         hasReportedView = true
-        analytics.track(.paywallViewed(placement: placement.rawValue, variant: appState.paywallVariant.rawValue))
+        analytics.track(.paywallViewed(placement: placement.analytics, variant: appState.paywallVariant.rawValue))
     }
 
     /// A plan card was tapped.
     func select(_ plan: Plan) {
         guard plan != selectedPlan else { return }
         selectedPlan = plan
-        analytics.track(.planSelected(plan: plan.rawValue))
+        analytics.track(.planSelected(plan: plan))
     }
 
     // MARK: Products
@@ -123,7 +133,7 @@ final class PaywallViewModel {
     func purchase() async {
         guard !isBusy, selectedProduct != nil else { return }
         // trial_started / subscription_purchased come from the RevenueCat integration, not from here.
-        analytics.track(.purchaseStarted(plan: selectedPlan.rawValue))
+        analytics.track(.purchaseStarted(plan: selectedPlan))
         isPurchasing = true
         defer { isPurchasing = false }
         do {

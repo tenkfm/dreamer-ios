@@ -146,8 +146,8 @@ final class AppDependencies {
             ?? InMemoryDreamStore(seed: [])
         let serverSpeech = featureFlags.isEnabled(.serverSttFallback)
         let ttsEnabled = featureFlags.isEnabled(.ttsEnabled)
-        // PostHog replaces this with IOS-08.1.
-        let analytics: any Analytics = NoopAnalytics()
+        // Events go to PostHog when the build has its key (the debug log otherwise).
+        let analytics = AnalyticsFactory.make(config: config)
         return AppDependencies(
             mode: .live,
             api: api,

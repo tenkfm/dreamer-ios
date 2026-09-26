@@ -15,6 +15,7 @@ final class RecordFlowViewModel {
     private let analysisService: any DreamAnalysisService
     private let store: any DreamStore
     private let drafts: DraftQueue?
+    private let analytics: any Analytics
     /// One id for this dream across retries, so the backend never creates it twice.
     private let clientId = UUID().uuidString.lowercased()
     private let recordedAt = Date.now
@@ -26,12 +27,14 @@ final class RecordFlowViewModel {
     init(speech: any SpeechService,
          permissions: any SpeechPermissions = MockSpeechPermissions(),
          transcriber: (any RecordingTranscriber)? = nil,
+         analytics: any Analytics = NoopAnalytics(),
          analysisService: any DreamAnalysisService,
          store: any DreamStore,
          drafts: DraftQueue? = nil,
          onFinish: @escaping (Dream.ID) -> Void,
          onCancel: @escaping () -> Void) {
-        record = RecordViewModel(speech: speech, permissions: permissions, transcriber: transcriber)
+        record = RecordViewModel(speech: speech, permissions: permissions, transcriber: transcriber, analytics: analytics)
+        self.analytics = analytics
         self.analysisService = analysisService
         self.store = store
         self.drafts = drafts
@@ -45,6 +48,7 @@ final class RecordFlowViewModel {
         self.init(speech: dependencies.makeSpeechService(),
                   permissions: dependencies.makeSpeechPermissions(),
                   transcriber: dependencies.transcriber,
+                  analytics: dependencies.analytics,
                   analysisService: dependencies.analysis,
                   store: dependencies.dreamStore,
                   drafts: dependencies.drafts,
@@ -71,6 +75,7 @@ final class RecordFlowViewModel {
             : DreamDraft(clientId: clientId, transcript: record.trimmedTranscript)
         draft.recordedAt = recordedAt
         draft.recordingId = recordingID
+        analytics.track(.detailsSubmitted(skipped: !includeDetails, emotionsCount: draft.emotions.count))
         analysis = AnalysisViewModel(draft: draft, service: analysisService, store: store, drafts: drafts)
         step = .analysis
     }

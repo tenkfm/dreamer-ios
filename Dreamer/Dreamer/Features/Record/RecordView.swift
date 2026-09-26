@@ -67,6 +67,7 @@ struct RecordView: View {
         .animation(.soft(0.5), value: viewModel.access)
         .animation(.soft(0.4), value: viewModel.serverTranscription)
         .onAppear { viewModel.appeared() }
+        .trackScreen(.record)
         .onDisappear { viewModel.stop() }
         .sheet(isPresented: $viewModel.isTyping) {
             TypeDreamSheet(text: $viewModel.transcript)

@@ -74,6 +74,7 @@ struct OnboardingFlowView: View {
         }
         .sensoryFeedback(.selection, trigger: viewModel.step)
         #if DEBUG
+        .trackScreen(.onboarding)
         .task {
             // `-debugAdvance`: taps "Continue" after 2 s, to check the slide without a finger.
             guard DebugLaunch.autoAdvances else { return }

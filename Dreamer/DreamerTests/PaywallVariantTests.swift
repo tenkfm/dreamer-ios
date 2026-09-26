@@ -65,9 +65,10 @@ struct PaywallVariantTests {
         await viewModel.purchase()
 
         #expect(analytics.events == [
-            .paywallViewed(placement: "record", variant: "oneFree"),
-            .planSelected(plan: "weekly"),
-            .purchaseStarted(plan: "weekly")
+            // Record shows the paywall because the free interpretation is used up.
+            .paywallViewed(placement: .limit, variant: "oneFree"),
+            .planSelected(plan: .weekly),
+            .purchaseStarted(plan: .weekly)
         ])
     }
 

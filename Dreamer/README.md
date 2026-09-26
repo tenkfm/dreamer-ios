@@ -283,6 +283,21 @@ and refreshes the cache in the background, so a change applies on the next launc
 a feature mid-use. Debug builds accept overrides: `-featureFlag ttsEnabled=false`.
 The paywall variant is not a flag: the backend assigns it (`GET /v1/subscription.paywallVariant`).
 
+## Analytics
+
+`Services/Analytics.swift` is the only place with event names, properties and their allowed values.
+All of them are the client-owned events of `../dreamerweb/docs/tracking-plan.md`, with numbers and
+booleans kept typed. With `POSTHOG_API_KEY` set, `PostHogAnalytics` sends them to PostHog;
+otherwise, and in mock mode, they only go to the debug log. After sign-in the user is identified by
+the backend user id, the same distinct id the server uses, and at sign-out the identity is reset.
+Every event carries `preferred_lens` and `paywall_variant` as super properties. Screens report
+screen views with `.trackScreen(...)`. Automatic lifecycle and screen capture stay off. Dream text,
+titles, notes, emails and names are never properties (`AnalyticsTests` checks the keys against the
+backend's forbidden list). Mappings to the plan's values: the paywall's gate and onboarding
+placements count as `onboarding`, Record and Analysis as `limit`; the voice switched off by the
+flag counts as `tts_unavailable`. The account step of onboarding is not in the plan yet and is not
+sent (see Blockers).
+
 ## Crash reporting
 
 Sentry (`Services/CrashReporter.swift`, SPM product `Sentry-Dynamic`: the static product drops

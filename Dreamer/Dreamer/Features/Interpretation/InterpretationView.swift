@@ -31,7 +31,11 @@ struct InterpretationView: View {
             .presentationDetents([.medium, .large])
             .ignoresSafeArea()
         }
-        .task { await viewModel.refreshDream() }
+        .task {
+            viewModel.viewed()
+            await viewModel.refreshDream()
+        }
+        .trackScreen(.interpretation)
         .task(id: viewModel.imageRequest) { await viewModel.loadImage() }
         .task(id: viewModel.mainLens) { viewModel.prepareVoice() }
         .onDisappear {

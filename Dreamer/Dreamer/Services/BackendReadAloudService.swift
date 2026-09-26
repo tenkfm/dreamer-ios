@@ -86,11 +86,12 @@ final class BackendReadAloudService: ReadAloudService {
         stop()
         current = item
         guard ttsEnabled else {
-            readOnDevice(item, reason: "tts_disabled")
+            // Switched off by the flag: the same as the voice being unavailable.
+            readOnDevice(item, reason: .ttsUnavailable)
             return
         }
         guard let dreamID = item.dreamID else {
-            readOnDevice(item, reason: "no_dream")
+            readOnDevice(item, reason: .audioFailed)
             return
         }
         if let audio = item.audio, Self.readyURL(audio) != nil {
@@ -113,6 +114,7 @@ final class BackendReadAloudService: ReadAloudService {
     }
 
     func stop() {
+        reportStopped()
         loadTask?.cancel()
         loadTask = nil
         if usingFallback { fallback.stop() }
@@ -123,6 +125,13 @@ final class BackendReadAloudService: ReadAloudService {
         retriedLink = false
         ownState = .idle
         ownProgress = 0
+    }
+
+    /// Stopped before the end: how much was heard ("completed" in the plan covers both).
+    private func reportStopped() {
+        guard let item = current, state == .playing || state == .paused, progress > 0 else { return }
+        analytics.track(.readAloudCompleted(lens: item.lens, fallback: usingFallback,
+                                            listenedPct: Int((progress * 100).rounded())))
     }
 
     // MARK: Backend voice
@@ -195,7 +204,7 @@ final class BackendReadAloudService: ReadAloudService {
         guard let item = current, !usingFallback else { return }
         playback.stop()
         guard !retriedLink, let dreamID = item.dreamID else {
-            readOnDevice(item, reason: "playback_failed")
+            readOnDevice(item, reason: .audioFailed)
             return
         }
         retriedLink = true
@@ -207,7 +216,7 @@ final class BackendReadAloudService: ReadAloudService {
 
     // MARK: On-device voice
 
-    private func readOnDevice(_ item: ReadAloudItem, reason: String) {
+    private func readOnDevice(_ item: ReadAloudItem, reason: ReadAloudFallbackReason) {
         ownState = .idle
         usingFallback = true
         analytics.track(.readAloudFallback(lens: item.lens, reason: reason))
@@ -225,12 +234,12 @@ final class BackendReadAloudService: ReadAloudService {
         return audio.url
     }
 
-    private static func reason(for error: APIError) -> String {
+    private static func reason(for error: APIError) -> ReadAloudFallbackReason {
         switch error {
-        case .offline: "offline"
-        case .timeout: "timeout"
-        case .server(let server): server.code.rawValue.lowercased()
-        default: "failed"
+        case .offline: .network
+        case .timeout: .timeout
+        case .server(let server) where server.code == .ttsUnavailable: .ttsUnavailable
+        default: .audioFailed
         }
     }
 

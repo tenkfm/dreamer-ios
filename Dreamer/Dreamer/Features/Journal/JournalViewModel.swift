@@ -60,6 +60,7 @@ final class JournalViewModel {
     private let images: (any DreamImageLoading)?
     /// The backend's month; nil in mock mode, where it is computed from the stored dreams.
     private let insights: InsightStore?
+    private let analytics: any Analytics
     private let now: () -> Date
     private let calendar: Calendar
     private let dateFormatter: DreamDateFormatter
@@ -67,12 +68,14 @@ final class JournalViewModel {
     @ObservationIgnored private var searchTask: Task<Void, Never>?
 
     init(appState: AppState, store: any DreamStore, images: (any DreamImageLoading)? = nil, insights: InsightStore? = nil,
+         analytics: any Analytics = NoopAnalytics(),
          now: @escaping () -> Date = Date.init, calendar: Calendar = .mondayFirst,
          searchDebounce: Duration = .milliseconds(350)) {
         self.appState = appState
         self.store = store
         self.images = images
         self.insights = insights
+        self.analytics = analytics
         self.now = now
         self.calendar = calendar
         dateFormatter = DreamDateFormatter(calendar: calendar)
@@ -216,6 +219,11 @@ final class JournalViewModel {
             thumbnailURL: dream.thumbnailURL,
             emotion: dream.emotions.first,
             snippet: hasSearchTerms ? dream.snippet : nil)
+    }
+
+    /// The Journal tab was opened.
+    func opened() {
+        analytics.track(.journalOpened)
     }
 
     // MARK: Loading

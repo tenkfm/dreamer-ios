@@ -23,8 +23,11 @@ struct OnboardingTests {
         #expect(appState.goal == .recurring)
         #expect(appState.preferredLens == .spiritual)
         #expect(appState.rootScreen == .onboarding)
-        #expect(analytics.events.contains(.quizAnswered(question: "goal", answer: "recurring")))
-        #expect(analytics.events.contains(.onboardingStepViewed(step: "account")))
+        #expect(analytics.events.contains(.quizAnswered(.goal(.recurring))))
+        #expect(analytics.events.contains(.quizAnswered(.lens(.spiritual))))
+        #expect(analytics.events.contains(.onboardingStepViewed(step: .quizLens)))
+        // The account step is not in the tracking plan (blocker): nothing is sent for it.
+        #expect(analytics.events.last == .quizAnswered(.lens(.spiritual)))
     }
 
     @Test func thePaywallCannotBeReachedWithoutAnAccount() {

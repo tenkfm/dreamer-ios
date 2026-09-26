@@ -39,6 +39,8 @@ struct JournalView: View {
         }
         .animation(.soft(0.4), value: viewModel.isSearching)
         .task { await viewModel.refresh() }
+        .onAppear { viewModel.opened() }
+        .trackScreen(.journal)
         .toast($viewModel.toastMessage)
         .confirmationDialog("Delete this dream?", isPresented: isConfirmingDelete, titleVisibility: .visible,
                             presenting: viewModel.deleteCandidate) { _ in

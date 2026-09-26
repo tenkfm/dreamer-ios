@@ -42,6 +42,7 @@ struct HomeView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: viewModel.isNightMode)
         // On opening and after every new or deleted dream.
         .task(id: viewModel.dreamCount) { await viewModel.refreshInsights() }
+        .trackScreen(.home)
     }
 
     private var header: some View {

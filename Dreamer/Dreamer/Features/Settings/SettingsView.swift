@@ -44,6 +44,7 @@ struct SettingsView: View {
             }
             .scrollIndicators(.hidden)
         }
+        .trackScreen(.settings)
         .sheet(item: $viewModel.activeSheet) { sheet in
             Group {
                 switch sheet {

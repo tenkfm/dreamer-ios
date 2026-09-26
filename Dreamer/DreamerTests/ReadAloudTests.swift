@@ -95,10 +95,12 @@ struct BackendReadAloudTests {
     }
 
     @Test(arguments: [
-        (Result<DreamAudio, APIError>.failure(.server(.init(code: .ttsUnavailable, message: "", status: 503))), "tts_unavailable"),
-        (.failure(.offline), "offline")
+        (Result<DreamAudio, APIError>.failure(.server(.init(code: .ttsUnavailable, message: "", status: 503))), ReadAloudFallbackReason.ttsUnavailable),
+        (.failure(.offline), .network),
+        (.failure(.timeout), .timeout),
+        (.failure(.server(.init(code: .internalError, message: "", status: 500))), .audioFailed)
     ])
-    func unavailableVoiceReadsOnTheDevice(answer: Result<DreamAudio, APIError>, reason: String) async {
+    func unavailableVoiceReadsOnTheDevice(answer: Result<DreamAudio, APIError>, reason: ReadAloudFallbackReason) async {
         let (service, playback, fallback, analytics) = make(source: ScriptedAudioSource(request: [answer]))
 
         service.play(item())
@@ -115,7 +117,7 @@ struct BackendReadAloudTests {
         let (service, _, fallback, analytics) = make(source: ScriptedAudioSource(request: [.success(audio(.failed))]))
         service.play(item())
         await waitUntil { fallback.lastText != nil }
-        #expect(analytics.events.first == .readAloudFallback(lens: .spiritual, reason: "tts_unavailable"))
+        #expect(analytics.events.first == .readAloudFallback(lens: .spiritual, reason: .ttsUnavailable))
     }
 
     @Test func switchedOffVoiceNeverAsksTheBackend() {
@@ -127,7 +129,7 @@ struct BackendReadAloudTests {
         #expect(source.calls.isEmpty)
         #expect(playback.loads.isEmpty)
         #expect(fallback.state == .playing)
-        #expect(analytics.events.first == .readAloudFallback(lens: .spiritual, reason: "tts_disabled"))
+        #expect(analytics.events.first == .readAloudFallback(lens: .spiritual, reason: .ttsUnavailable))
     }
 
     @Test func progressFollowsTheWordTimings() {
