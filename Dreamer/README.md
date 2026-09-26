@@ -446,6 +446,16 @@ uploads. They cover:
 in App Store Connect. The contact details of the review and whether a demo account is wanted
 anyway are Tony's to fill in (see Blockers).
 
+## Privacy manifest
+
+`Dreamer/Resources/PrivacyInfo.xcprivacy` declares:
+- no tracking (it becomes true with the MMP and ad SDKs, which bring their tracking domains);
+- the data the app collects, which matches docs/app-store-connect.md;
+- the required-reason APIs: UserDefaults for its own preferences (CA92.1), and system uptime to
+  pace the recording waveform (35F9.1).
+RevenueCat, PostHog and Sentry include their own manifests. Organizer's Privacy Report of an
+archive combines them and must match the App Privacy answers.
+
 ## App Store Connect
 
 `docs/app-store-connect.md` lists everything the App Store Connect record needs: the app record,

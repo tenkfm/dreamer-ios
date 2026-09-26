@@ -79,9 +79,14 @@ This is what the app collects, taken from the code. The product board owns the f
 | User ID | Backend id; PostHog, Sentry and RevenueCat get the same id | App functionality, analytics | Yes | No |
 | Purchase history | RevenueCat | App functionality | Yes | No |
 | Product interaction | PostHog: tracking-plan events, no dream content | Analytics | Yes | No |
-| Crash data, performance data | Sentry: codes and the user id only | App functionality | Yes | No |
+| Crash data, performance data, other diagnostic data | Sentry: codes and the user id only | App functionality | Yes | No |
+| Other usage data | PostHog SDK (declared in its manifest) | Analytics | Yes | No |
 | Device ID (IDFA) | MMP and ad networks, only after the user allows tracking (IOS-08.2 to 08.4) | Third-party advertising, attribution | No | Yes |
 | Advertising data | MMP, Meta and TikTok (once integrated) | Third-party advertising | No | Yes |
+
+The app's `Dreamer/Resources/PrivacyInfo.xcprivacy` declares its own part; RevenueCat, PostHog and
+Sentry ship their manifests in their packages. Before submitting, archive in Xcode and use
+Organizer -> the archive -> Generate Privacy Report: the report must match this table.
 
 Not collected: location, contacts, photos (the app only adds images to Photos), health data,
 browsing history, search history outside the app. Search queries are sent to our backend only to
