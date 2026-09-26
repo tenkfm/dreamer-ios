@@ -375,6 +375,20 @@ change. `bundle exec fastlane upload_store` sends the metadata and the screensho
 Connect with `deliver`, without a binary. It needs the App Store Connect API key (see Blockers).
 To change the story, edit the screens, waits and captions in `screenshots.json`.
 
+## App Store metadata (ASO)
+
+`fastlane/metadata/en-US` holds the listing: name `Dreamer: AI Dream Journal`, subtitle
+`Dream meaning & psychology`, keywords, promotional text, description and release notes.
+`upload_store` sends them. The positioning is a dream journal with psychology, not fortune
+telling (App Review 4.3): the words "fortune", "horoscope", "predict" and "psychic" are
+deliberately absent. The keywords (up to 100 characters, commas, no spaces, none repeating a
+word of the name or subtitle, which Apple already indexes) cover the searches around the core
+terms "dream journal", "dream interpretation" and "dream meaning": interpreter, analysis,
+dictionary, symbols, diary, sleep, lucid, tracker, recall, nightmare, jung, reflection. The
+description repeats the auto-renewal terms App Review asks for. Still open (see Blockers): the
+primary and secondary category, the support, marketing and privacy URLs, the copyright holder,
+and Tony's approval of the texts and keywords.
+
 ## Signing
 
 Certificates and profiles are shared through fastlane match (`fastlane/Matchfile`), App Store
