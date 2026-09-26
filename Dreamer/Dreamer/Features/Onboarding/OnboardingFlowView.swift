@@ -73,8 +73,12 @@ struct OnboardingFlowView: View {
             }
         }
         .sensoryFeedback(.selection, trigger: viewModel.step)
-        #if DEBUG
         .trackScreen(.onboarding)
+        .onChange(of: viewModel.step, initial: true) { _, step in
+            // Placement A of the tracking question: right before the paywall.
+            if step == .paywall { dependencies.trackingConsent.moment(.onboardingPaywall) }
+        }
+        #if DEBUG
         .task {
             // `-debugAdvance`: taps "Continue" after 2 s, to check the slide without a finger.
             guard DebugLaunch.autoAdvances else { return }

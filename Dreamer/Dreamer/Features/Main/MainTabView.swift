@@ -73,6 +73,8 @@ struct MainTabView: View {
     private func makeRecordFlowViewModel() -> RecordFlowViewModel {
         let flow = RecordFlowViewModel(dependencies: dependencies) { dreamID in
             appState.finishRecordFlow(with: dreamID)
+            // Placement B of the tracking question: after the first interpretation.
+            dependencies.trackingConsent.moment(.firstInterpretation)
         } onCancel: {
             appState.isRecordFlowPresented = false
         }

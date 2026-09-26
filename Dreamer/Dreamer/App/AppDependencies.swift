@@ -46,6 +46,8 @@ final class AppDependencies {
     let attribution: any AttributionService
     /// Ad networks' SDKs (Meta, TikTok); none until their app ids exist.
     let adNetworks: [any AdNetworkSDK]
+    /// The tracking question and the start of install measurement with its answer.
+    let trackingConsent: TrackingConsent
     let instagramAppID: String?
     @ObservationIgnored let makeSpeechService: @MainActor () -> any SpeechService
     @ObservationIgnored let makeReadAloudService: @MainActor () -> any ReadAloudService
@@ -77,7 +79,8 @@ final class AppDependencies {
          instagramAppID: String? = nil,
          makeSpeechService: @escaping @MainActor () -> any SpeechService,
          makeReadAloudService: @escaping @MainActor () -> any ReadAloudService,
-         makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() }) {
+         makeSpeechPermissions: @escaping @MainActor () -> any SpeechPermissions = { mockSpeechPermissions() },
+         trackingPermission: any TrackingPermission = mockTrackingPermission()) {
         self.mode = mode
         self.api = api
         self.tokens = tokens
@@ -101,6 +104,9 @@ final class AppDependencies {
         self.insights = insights
         self.attribution = attribution
         self.adNetworks = adNetworks
+        trackingConsent = TrackingConsent(permission: trackingPermission, analytics: analytics,
+                                          measurement: MeasurementStack(attribution: attribution, adNetworks: adNetworks),
+                                          askAfterFirstDream: featureFlags.isEnabled(.attAfterFirstDream))
         self.instagramAppID = instagramAppID
         self.makeSpeechService = makeSpeechService
         self.makeReadAloudService = makeReadAloudService
@@ -184,7 +190,8 @@ final class AppDependencies {
                 BackendReadAloudService(source: api, fallback: SpeechSynthesizerReadAloudService(), playback: AVVoicePlayback(),
                                         analytics: analytics, ttsEnabled: ttsEnabled)
             },
-            makeSpeechPermissions: { SystemSpeechPermissions() }
+            makeSpeechPermissions: { SystemSpeechPermissions() },
+            trackingPermission: SystemTrackingPermission()
         )
     }
 
@@ -247,6 +254,15 @@ final class AppDependencies {
         #else
         return nil
         #endif
+    }
+
+    /// Mock mode answered "no" long ago, so the question never interrupts; Debug builds can show it
+    /// with `-askTracking`.
+    static func mockTrackingPermission() -> any TrackingPermission {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-askTracking") { return MockTrackingPermission() }
+        #endif
+        return MockTrackingPermission(status: .denied)
     }
 
     private static func liveNetworkMonitor() -> NetworkMonitor {

@@ -315,6 +315,19 @@ MMP, and SKAN conversion values follow the MMP's schema. None of them is registe
 Meta App ID and client token, the TikTok App ID and the SKAN schema exist (see Blockers). Their
 SKAdNetwork ids go into Info.plist together with the SDKs.
 
+## Tracking consent (ATT)
+
+`Services/TrackingConsent.swift`: the App Tracking Transparency question is asked once, at a moment
+set by the `attAfterFirstDream` flag. With the flag off (the default) it comes when onboarding
+reaches the paywall; with it on, after the first interpretation. Our explanation comes first
+(`TrackingPrePrompt`, a card over a blurred screen with a single "Continue"), then the system
+alert. The answer is sent as `att_response {status}` and passed to every measurement SDK through
+`MeasurementStack`. With an earlier answer, or on a restricted device, measurement starts at
+launch. Otherwise nothing starts until the user has answered, so no SDK can use the IDFA before
+the user could refuse. A refusal changes nothing else in the app. `NSUserTrackingUsageDescription`
+is in Info.plist. Debug: `-askTracking` with `-debugScreen paywall` (mock mode otherwise counts as
+answered "no").
+
 ## Crash reporting
 
 Sentry (`Services/CrashReporter.swift`, SPM product `Sentry-Dynamic`: the static product drops
@@ -400,7 +413,7 @@ xcrun simctl launch booted com.braincode.dreamer -debugScreen interpretation
 Names: `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings
 interpretation support symbol record details analysis`. Debug screens use mock services (`-liveServices`
 to talk to the backend instead); `-mockServices` does the same for a normal launch,
-`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-night` or `-day` to force the appearance,
+`-offline` to show the offline banner, `-noLiveText` for the server transcription fallback, `-imagePending` for an image being painted, `-askTracking` for the tracking question, `-night` or `-day` to force the appearance,
 `-debugAdvance` to let an onboarding page tap "Continue" by itself after 2 s (checks the slide).
 You can also add these to the scheme's launch arguments.
 

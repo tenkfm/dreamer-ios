@@ -16,6 +16,8 @@
 	<string>$(SENTRY_DSN)</string>
 	<key>DreamerFacebookAppID</key>
 	<string>$(FACEBOOK_APP_ID)</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Dreamer uses this to see which ads bring people to the app. Your dreams are never shared.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>instagram-stories</string>

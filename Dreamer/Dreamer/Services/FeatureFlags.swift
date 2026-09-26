@@ -10,6 +10,8 @@ enum FeatureFlag: String, CaseIterable, Sendable {
     case serverSttFallback
     /// Kill switch for dream image generation (regeneration and new images).
     case imageGenerationEnabled
+    /// A/B of the tracking question: after the first interpretation instead of before the paywall.
+    case attAfterFirstDream
 
     /// Used when the flag service is off or has never reached the server. Chosen so the app is
     /// fully usable without the network.
@@ -19,6 +21,7 @@ enum FeatureFlag: String, CaseIterable, Sendable {
         case .attestationEnforced: false
         case .serverSttFallback: true
         case .imageGenerationEnabled: true
+        case .attAfterFirstDream: false
         }
     }
 }

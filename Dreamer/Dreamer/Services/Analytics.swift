@@ -71,6 +71,8 @@ enum AnalyticsEvent: Equatable, Sendable {
     case journalOpened
     case librarySymbolOpened(slug: String)
     case pushOpened(type: String)
+    /// The App Tracking Transparency answer (IOS-08.4; not in tracking.ts yet, blocker).
+    case attResponse(status: TrackingStatus)
 
     var name: String {
         switch self {
@@ -92,6 +94,7 @@ enum AnalyticsEvent: Equatable, Sendable {
         case .journalOpened: "journal_opened"
         case .librarySymbolOpened: "library_symbol_opened"
         case .pushOpened: "push_opened"
+        case .attResponse: "att_response"
         }
     }
 
@@ -116,6 +119,7 @@ enum AnalyticsEvent: Equatable, Sendable {
         case .dreamShared(let target): ["target": .string(target.rawValue)]
         case .librarySymbolOpened(let slug): ["slug": .string(String(slug.prefix(60)))]
         case .pushOpened(let type): ["type": .string(type)]
+        case .attResponse(let status): ["status": .string(status.rawValue)]
         }
     }
 }
