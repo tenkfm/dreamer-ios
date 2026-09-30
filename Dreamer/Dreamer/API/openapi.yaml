@@ -1,10 +1,10 @@
-# Normalized copy of the Dreamer API contract 1.0.0 (dreamer-platform openapi.yaml).
+# Normalized copy of the Dreamer API contract 1.1.0 (dreamer-platform openapi.yaml).
 # Written by scripts/sync-openapi.sh - do not edit. Only change: nullable `anyOf [X, null]`
 # values became optional `X` (see scripts/normalize_openapi.py).
 openapi: 3.1.0
 info:
   title: Dreamer API
-  version: 1.0.0
+  version: 1.1.0
   description: 'API of the Dreamer iOS app (phase 1, app2app). Generated from the zod schemas in packages/shared - do not
     edit by hand; run `pnpm contract`.
 
@@ -18,12 +18,17 @@ info:
 
     The guide - auth, pagination, the event stream, idempotency, limits, webhooks: docs/api.md.'
 servers:
+- url: https://staging-api.dreamerapp.io
+  description: This server
 - url: https://{host}
   description: Production or staging
   variables:
     host:
-      default: api.example.com
-      description: api.<domain> or staging-api.<domain>
+      default: api.dreamerapp.io
+      enum:
+      - api.dreamerapp.io
+      - staging-api.dreamerapp.io
+      description: Production or staging
 - url: http://localhost:3100
   description: Local API (pnpm dev:api)
 - url: http://localhost:4010
@@ -32,7 +37,7 @@ tags:
 - name: System
   description: Liveness for probes and the deploy script
 - name: Auth
-  description: Sign in with Apple or an email link; JWT access (15 min) + rotating refresh (60 days)
+  description: Sign in with Apple, Google or an email link; JWT access (15 min) + rotating refresh (60 days)
 - name: Profile
   description: Quiz answers, lens, reminders; account deletion and data export
 - name: Dreams
@@ -119,9 +124,9 @@ paths:
                 $ref: '#/components/schemas/AuthTokens'
               example:
                 accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
-                accessExpiresAt: 2026-10-01 07:27:00+00:00
+                accessExpiresAt: '2026-10-01T07:27:00.000Z'
                 refreshToken: rt_example_refresh_token_value_0123456789
-                refreshExpiresAt: 2026-11-30 07:12:00+00:00
+                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
                 user:
                   id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
                   isNew: true
@@ -164,6 +169,87 @@ paths:
               example:
                 error:
                   code: INTERNAL_ERROR
+                  message: See the code
+  /v1/auth/google:
+    post:
+      operationId: signInWithGoogle
+      tags:
+      - Auth
+      summary: Sign in (or sign up) with Google
+      description: Verifies the ID token from Google Sign-In against Google (JWKS; audience = our OAuth client ids), links
+        an account with the same verified email or creates one, and returns tokens. PROVIDER_UNAVAILABLE while Google sign-in
+        is not configured.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleSignIn'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
+                accessExpiresAt: '2026-10-01T07:27:00.000Z'
+                refreshToken: rt_example_refresh_token_value_0123456789
+                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
+                user:
+                  id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+                  isNew: true
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '401':
+          description: 'Error: AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_INVALID_TOKEN
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+        '503':
+          description: 'Error: PROVIDER_UNAVAILABLE'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: PROVIDER_UNAVAILABLE
                   message: See the code
   /v1/auth/email/request:
     post:
@@ -242,9 +328,9 @@ paths:
                 $ref: '#/components/schemas/AuthTokens'
               example:
                 accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
-                accessExpiresAt: 2026-10-01 07:27:00+00:00
+                accessExpiresAt: '2026-10-01T07:27:00.000Z'
                 refreshToken: rt_example_refresh_token_value_0123456789
-                refreshExpiresAt: 2026-11-30 07:12:00+00:00
+                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
                 user:
                   id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
                   isNew: true
@@ -311,9 +397,9 @@ paths:
                 $ref: '#/components/schemas/AuthTokens'
               example:
                 accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
-                accessExpiresAt: 2026-10-01 07:27:00+00:00
+                accessExpiresAt: '2026-10-01T07:27:00.000Z'
                 refreshToken: rt_example_refresh_token_value_0123456789
-                refreshExpiresAt: 2026-11-30 07:12:00+00:00
+                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
                 user:
                   id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
                   isNew: false
@@ -441,7 +527,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
-                createdAt: 2026-09-20 07:00:00+00:00
+                createdAt: '2026-09-20T07:00:00.000Z'
         '401':
           description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
           content:
@@ -507,7 +593,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
-                createdAt: 2026-09-20 07:00:00+00:00
+                createdAt: '2026-09-20T07:00:00.000Z'
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -610,11 +696,11 @@ paths:
                 $ref: '#/components/schemas/DataExport'
               example:
                 format: dreamer-export-v1
-                exportedAt: 2026-09-25 09:00:00+00:00
+                exportedAt: '2026-09-25T09:00:00.000Z'
                 account:
                   id: 7d0f3c2a-5b1e-4c8d-9a6f-2e4b8c1d3f5a
                   email: anna@example.com
-                  createdAt: 2026-09-01 08:00:00+00:00
+                  createdAt: '2026-09-01T08:00:00.000Z'
                   signInMethods:
                   - apple
                   paywallVariant: hard
@@ -630,19 +716,19 @@ paths:
                     time: 07:30
                   timezone: Europe/Warsaw
                   nightMode: true
-                  createdAt: 2026-09-01 08:00:00+00:00
+                  createdAt: '2026-09-01T08:00:00.000Z'
                 subscription:
                   status: trialing
                   plan: yearly
                   store: appStore
-                  expiresAt: 2026-10-01 07:12:00+00:00
+                  expiresAt: '2026-10-01T07:12:00.000Z'
                   willRenew: true
                 devices:
                 - platform: ios
                   environment: production
                   tokenEnding: a1b2c3
-                  registeredAt: 2026-09-01 08:01:00+00:00
-                  lastSeenAt: 2026-09-25 06:58:00+00:00
+                  registeredAt: '2026-09-01T08:01:00.000Z'
+                  lastSeenAt: '2026-09-25T06:58:00.000Z'
                 dreams: []
                 aiUsage:
                 - kind: interpret
@@ -730,8 +816,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: 2026-09-24 11:12:00+00:00
-                recordedAt: 2026-09-24 11:10:00+00:00
+                createdAt: '2026-09-24T11:12:00.000Z'
+                recordedAt: '2026-09-24T11:10:00.000Z'
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -788,7 +874,7 @@ paths:
                   spiritual: null
                   dreamBook: null
                 notes: ''
-                updatedAt: 2026-09-24 11:12:30+00:00
+                updatedAt: '2026-09-24T11:12:30.000Z'
         '201':
           description: Created, interpretation queued
           content:
@@ -798,8 +884,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: 2026-09-24 11:12:00+00:00
-                recordedAt: 2026-09-24 11:10:00+00:00
+                createdAt: '2026-09-24T11:12:00.000Z'
+                recordedAt: '2026-09-24T11:10:00.000Z'
                 title: null
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -819,7 +905,7 @@ paths:
                   spiritual: null
                   dreamBook: null
                 notes: ''
-                updatedAt: 2026-09-24 11:12:30+00:00
+                updatedAt: '2026-09-24T11:12:30.000Z'
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -935,8 +1021,8 @@ paths:
               example:
                 items:
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e20
-                  createdAt: 2026-09-24 11:12:00+00:00
-                  weekOf: 2026-09-21
+                  createdAt: '2026-09-24T11:12:00.000Z'
+                  weekOf: '2026-09-21'
                   title: The house with endless stairs
                   status: ready
                   emotions:
@@ -949,8 +1035,8 @@ paths:
                   - voice
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e21
-                  createdAt: 2026-09-22 10:48:00+00:00
-                  weekOf: 2026-09-21
+                  createdAt: '2026-09-22T10:48:00.000Z'
+                  weekOf: '2026-09-21'
                   title: Flying over a frozen lake
                   status: ready
                   emotions:
@@ -962,8 +1048,8 @@ paths:
                   - stairs
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e22
-                  createdAt: 2026-09-21 11:30:00+00:00
-                  weekOf: 2026-09-21
+                  createdAt: '2026-09-21T11:30:00.000Z'
+                  weekOf: '2026-09-21'
                   title: Late for an exam I never took
                   status: ready
                   emotions:
@@ -975,8 +1061,8 @@ paths:
                   - school
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e23
-                  createdAt: 2026-09-17 10:55:00+00:00
-                  weekOf: 2026-09-14
+                  createdAt: '2026-09-17T10:55:00.000Z'
+                  weekOf: '2026-09-14'
                   title: My old dog came back
                   status: ready
                   emotions:
@@ -988,8 +1074,8 @@ paths:
                   - home
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e24
-                  createdAt: 2026-09-15 09:40:00+00:00
-                  weekOf: 2026-09-14
+                  createdAt: '2026-09-15T09:40:00.000Z'
+                  weekOf: '2026-09-14'
                   title: Chased through a night market
                   status: ready
                   emotions:
@@ -1066,8 +1152,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: 2026-09-24 11:12:00+00:00
-                recordedAt: 2026-09-24 11:10:00+00:00
+                createdAt: '2026-09-24T11:12:00.000Z'
+                recordedAt: '2026-09-24T11:10:00.000Z'
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -1124,7 +1210,7 @@ paths:
                   spiritual: null
                   dreamBook: null
                 notes: ''
-                updatedAt: 2026-09-24 11:12:30+00:00
+                updatedAt: '2026-09-24T11:12:30.000Z'
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -1209,8 +1295,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: 2026-09-24 11:12:00+00:00
-                recordedAt: 2026-09-24 11:10:00+00:00
+                createdAt: '2026-09-24T11:12:00.000Z'
+                recordedAt: '2026-09-24T11:10:00.000Z'
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -1267,7 +1353,7 @@ paths:
                   spiritual: null
                   dreamBook: null
                 notes: Work stress, for sure.
-                updatedAt: 2026-09-24 11:12:30+00:00
+                updatedAt: '2026-09-24T11:12:30.000Z'
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -1690,8 +1776,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: 2026-09-24 11:12:00+00:00
-                recordedAt: 2026-09-24 11:10:00+00:00
+                createdAt: '2026-09-24T11:12:00.000Z'
+                recordedAt: '2026-09-24T11:10:00.000Z'
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -1748,7 +1834,7 @@ paths:
                   spiritual: null
                   dreamBook: null
                 notes: ''
-                updatedAt: 2026-09-24 11:12:30+00:00
+                updatedAt: '2026-09-24T11:12:30.000Z'
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -2217,7 +2303,7 @@ paths:
               example:
                 recordingId: a3c1e5f7-2b4d-4f6a-8c0e-1f3a5c7e9b2d
                 uploadUrl: https://account.r2.cloudflarestorage.com/dreamer-media/recordings/a3c1e5f7.m4a?X-Amz-Signature=example
-                expiresAt: 2026-09-25 07:27:00+00:00
+                expiresAt: '2026-09-25T07:27:00.000Z'
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -2377,31 +2463,31 @@ paths:
                 $ref: '#/components/schemas/WeekInsight'
               example:
                 days:
-                - date: 2026-09-21
+                - date: '2026-09-21'
                   letter: M
                   caught: true
                   isToday: false
-                - date: 2026-09-22
+                - date: '2026-09-22'
                   letter: T
                   caught: true
                   isToday: false
-                - date: 2026-09-23
+                - date: '2026-09-23'
                   letter: W
                   caught: false
                   isToday: false
-                - date: 2026-09-24
+                - date: '2026-09-24'
                   letter: T
                   caught: true
                   isToday: false
-                - date: 2026-09-25
+                - date: '2026-09-25'
                   letter: F
                   caught: false
                   isToday: true
-                - date: 2026-09-26
+                - date: '2026-09-26'
                   letter: S
                   caught: false
                   isToday: false
-                - date: 2026-09-27
+                - date: '2026-09-27'
                   letter: S
                   caught: false
                   isToday: false
@@ -2818,7 +2904,7 @@ paths:
                 isPremium: true
                 plan: yearly
                 store: appStore
-                expiresAt: 2026-10-01 07:12:00+00:00
+                expiresAt: '2026-10-01T07:12:00.000Z'
                 willRenew: true
                 freeInterpretationsLeft: 0
                 paywallVariant: hard
@@ -2990,7 +3076,7 @@ paths:
                 $ref: '#/components/schemas/AttestChallenge'
               example:
                 challenge: b3JhbmdlLWx1bmFyLXN0YWlycy1kcmVhbQ
-                expiresAt: 2026-09-25 09:05:00+00:00
+                expiresAt: '2026-09-25T09:05:00.000Z'
         '401':
           description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
           content:
@@ -3438,6 +3524,7 @@ components:
                 type: string
                 enum:
                 - apple
+                - google
                 - email
             paywallVariant:
               type:
@@ -4024,6 +4111,17 @@ components:
       - recurring
       - someone
       - remember
+    GoogleSignIn:
+      type: object
+      properties:
+        idToken:
+          type: string
+          minLength: 20
+        nonce:
+          type: string
+          minLength: 1
+      required:
+      - idToken
     Health:
       type: object
       properties:

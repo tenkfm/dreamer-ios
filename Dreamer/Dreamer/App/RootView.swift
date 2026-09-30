@@ -106,6 +106,8 @@ struct RootView: View {
         }
         #endif
         .onOpenURL { url in
+            // Google Sign-In returning through its reversed-client-id scheme.
+            if GoogleSDKSignIn.handle(url) { return }
             if let link = DeepLink(url: url, apiHost: AppConfig.current.apiBaseURL?.host()) {
                 appState.handle(link)
             }

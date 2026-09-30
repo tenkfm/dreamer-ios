@@ -48,6 +48,15 @@ extension APIClient {
         return AuthSession(try body { try ok.body.json })
     }
 
+    /// The id token from Google Sign-In; links an account with the same verified email or creates one.
+    func signInWithGoogle(idToken: String, nonce: String?) async throws(APIError) -> AuthSession {
+        let output = try await perform {
+            try await client.signInWithGoogle(body: .json(.init(idToken: idToken, nonce: nonce)))
+        }
+        guard case .ok(let ok) = output else { return try unexpected() }
+        return AuthSession(try body { try ok.body.json })
+    }
+
     /// Always accepted (whether or not the address has an account).
     func requestEmailLink(email: String) async throws(APIError) {
         let output = try await perform { try await client.requestEmailLink(body: .json(.init(email: email))) }

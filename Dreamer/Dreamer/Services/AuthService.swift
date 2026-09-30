@@ -42,10 +42,10 @@ struct APIAuthService: AuthService {
         return session
     }
 
-    /// The contract has no Google endpoint yet (blocker IOS-02.6): the button stays hidden in live
-    /// builds until `GOOGLE_IOS_CLIENT_ID` is set, and that waits for the endpoint.
     func signInWithGoogle(_ credential: GoogleCredential) async throws(APIError) -> AuthSession {
-        throw .notConfigured
+        let session = try await client.signInWithGoogle(idToken: credential.idToken, nonce: credential.rawNonce)
+        await tokens.start(session)
+        return session
     }
 
     func requestEmailLink(email: String) async throws(APIError) {

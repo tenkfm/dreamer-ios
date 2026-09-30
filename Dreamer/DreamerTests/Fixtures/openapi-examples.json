@@ -1485,6 +1485,48 @@
       }
     }
   },
+  "signInWithGoogle": {
+    "200": {
+      "accessExpiresAt": "2026-10-01T07:27:00.000Z",
+      "accessToken": "eyJhbGciOiJIUzI1NiJ9.example.access",
+      "refreshExpiresAt": "2026-11-30T07:12:00.000Z",
+      "refreshToken": "rt_example_refresh_token_value_0123456789",
+      "user": {
+        "id": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+        "isNew": true
+      }
+    },
+    "400": {
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "See the code"
+      }
+    },
+    "401": {
+      "error": {
+        "code": "AUTH_INVALID_TOKEN",
+        "message": "See the code"
+      }
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    },
+    "503": {
+      "error": {
+        "code": "PROVIDER_UNAVAILABLE",
+        "message": "See the code"
+      }
+    }
+  },
   "transcribeRecording": {
     "200": {
       "recordingId": "a3c1e5f7-2b4d-4f6a-8c0e-1f3a5c7e9b2d",

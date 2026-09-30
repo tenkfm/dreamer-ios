@@ -12,7 +12,6 @@ struct SignInView: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.openURL) private var openURL
-    @Environment(\.webAuthenticationSession) private var webAuthenticationSession
     @State private var appleNonce = ""
     @FocusState private var emailFocused: Bool
 
@@ -132,14 +131,7 @@ struct SignInView: View {
     private var googleButton: some View {
         GoogleSignInButton(mode: viewModel.mode, isLoading: viewModel.workingMethod == .google) {
             emailFocused = false
-            Task {
-                await viewModel.signInWithGoogle { [webAuthenticationSession] url, scheme in
-                    // The shared browser session: someone already signed in to Google in Safari
-                    // only picks the account instead of typing a password in a fresh sheet.
-                    try await webAuthenticationSession.authenticate(using: url, callbackURLScheme: scheme,
-                                                                    preferredBrowserSession: .shared)
-                }
-            }
+            Task { await viewModel.signInWithGoogle() }
         }
         .disabled(viewModel.isWorking)
     }

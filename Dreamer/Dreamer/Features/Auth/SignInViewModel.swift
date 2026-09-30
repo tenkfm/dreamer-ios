@@ -139,17 +139,15 @@ final class SignInViewModel {
 
     var isGoogleAvailable: Bool { google != nil }
 
-    /// `browser` shows Google's page in the system sheet (the view's `webAuthenticationSession`).
-    func signInWithGoogle(using browser: @escaping WebAuthenticator) async {
+    func signInWithGoogle() async {
         guard let google, !isWorking else { return }
-        // No sign_in_started: the tracking plan allows only apple and email (blocker IOS-02.6), and
-        // an event with a value the plan does not know would be dropped or skew the funnel.
+        analytics.track(.signInStarted(method: .google))
         error = nil
         workingMethod = .google
         isWorking = true
         let credential: GoogleCredential
         do {
-            credential = try await google.signIn(using: browser)
+            credential = try await google.signIn()
         } catch {
             isWorking = false
             workingMethod = nil

@@ -1,147 +1,54 @@
-import AuthenticationServices
 import Foundation
+import GoogleSignIn
 import Testing
 @testable import Dreamer
 
-struct GoogleOAuthTests {
-    private let client = GoogleOAuthClient(clientID: "123-abc.apps.googleusercontent.com")!
-
-    @Test func onlyAnIOSClientIDIsAccepted() {
-        #expect(GoogleOAuthClient(clientID: "") == nil)
-        #expect(GoogleOAuthClient(clientID: ".apps.googleusercontent.com") == nil)
-        #expect(GoogleOAuthClient(clientID: "123-abc") == nil)
-        #expect(client.callbackScheme == "com.googleusercontent.apps.123-abc")
-        #expect(client.redirectURI == "com.googleusercontent.apps.123-abc:/oauth2redirect")
-        #expect(AppConfig(infoDictionary: ["DreamerGoogleClientID": "123-abc.apps.googleusercontent.com"]).googleOAuthClient == client)
-        // An unset build setting stays "$(GOOGLE_IOS_CLIENT_ID)": no button, not a broken one.
-        #expect(AppConfig(infoDictionary: ["DreamerGoogleClientID": "$(GOOGLE_IOS_CLIENT_ID)"]).googleOAuthClient == nil)
+struct GoogleClientIDTests {
+    @Test func onlyAnIOSClientIDTurnsTheButtonOn() {
+        #expect(GoogleClientID.validated(nil) == nil)
+        #expect(GoogleClientID.validated("") == nil)
+        #expect(GoogleClientID.validated(".apps.googleusercontent.com") == nil)
+        #expect(GoogleClientID.validated("123-abc") == nil)
+        #expect(GoogleClientID.validated("123-abc.apps.googleusercontent.com") == "123-abc.apps.googleusercontent.com")
+        #expect(AppConfig(infoDictionary: ["GIDClientID": "123-abc.apps.googleusercontent.com"]).googleClientID
+                == "123-abc.apps.googleusercontent.com")
+        // An unset build setting stays "$(GOOGLE_IOS_CLIENT_ID)": no button rather than an SDK crash.
+        #expect(AppConfig(infoDictionary: ["GIDClientID": "$(GOOGLE_IOS_CLIENT_ID)"]).googleClientID == nil)
     }
 
-    @Test func authorizationURLCarriesPKCEStateAndNonce() throws {
-        let request = GoogleAuthorizationRequest(client: client, codeVerifier: "dBjftJeZ4CVP-mJ92K9TUe0Z4NDBYZLGJK-QvjAQD8I",
-                                                 state: "state-1", nonce: "nonce-1")
-        let components = try #require(URLComponents(url: request.url, resolvingAgainstBaseURL: false))
-        let query = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value ?? "") })
-
-        #expect(components.host == "accounts.google.com")
-        #expect(query["client_id"] == client.clientID)
-        #expect(query["redirect_uri"] == client.redirectURI)
-        #expect(query["response_type"] == "code")
-        #expect(query["scope"] == "openid email profile")
-        #expect(query["code_challenge_method"] == "S256")
-        // base64url(SHA-256(verifier)) without padding.
-        #expect(query["code_challenge"] == "ZI0urbZnWWd4oIB8dsr19sBebA-PvptdgBQbVgurLgs")
-        #expect(query["state"] == "state-1")
-        #expect(query["nonce"] == "nonce-1")
-        // The verifier itself never goes to the browser.
-        #expect(!request.url.absoluteString.contains(request.codeVerifier))
+    @Test func theBuildCarriesTheClientAndItsURLScheme() throws {
+        let info = try #require(Bundle.main.infoDictionary)
+        let clientID = try #require(AppConfig(infoDictionary: info).googleClientID)
+        let types = info["CFBundleURLTypes"] as? [[String: Any]] ?? []
+        let schemes = types.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+        // Google returns through the reversed client id; without the scheme the sheet never closes.
+        let reversed = clientID.split(separator: ".").reversed().joined(separator: ".")
+        #expect(schemes.contains(reversed))
     }
 
-    @Test func everyAttemptIsFresh() {
-        let first = GoogleAuthorizationRequest(client: client)
-        let second = GoogleAuthorizationRequest(client: client)
-        #expect(first.codeVerifier.count == 64)
-        #expect(first.codeVerifier != second.codeVerifier)
-        #expect(first.state != second.state)
-        #expect(first.nonce != second.nonce)
-    }
-
-    @Test func callbackIsCheckedAgainstTheState() throws {
-        let request = GoogleAuthorizationRequest(client: client, state: "state-1")
-        let base = client.redirectURI
-        #expect(try request.authorizationCode(from: URL(string: base + "?state=state-1&code=4/abc")!) == "4/abc")
-        #expect(throws: GoogleSignInError.failed) {
-            try request.authorizationCode(from: URL(string: base + "?state=other&code=4/abc")!)
-        }
-        #expect(throws: GoogleSignInError.failed) {
-            try request.authorizationCode(from: URL(string: base + "?state=state-1")!)
-        }
-        #expect(throws: GoogleSignInError.cancelled) {
-            try request.authorizationCode(from: URL(string: base + "?error=access_denied&state=state-1")!)
-        }
-    }
-
-    @Test func tokenRequestRedeemsTheCodeWithTheVerifier() throws {
-        let request = GoogleAuthorizationRequest(client: client, codeVerifier: "verifier-1")
-        let token = request.tokenRequest(code: "4/abc")
-        #expect(token.url == GoogleAuthorizationRequest.tokenEndpoint)
-        #expect(token.httpMethod == "POST")
-        let body = try #require(token.httpBody.flatMap { String(data: $0, encoding: .utf8) })
-        let form = Dictionary(uniqueKeysWithValues: (URLComponents(string: "?" + body)?.queryItems ?? []).map { ($0.name, $0.value ?? "") })
-        #expect(form == ["code": "4/abc", "client_id": client.clientID, "code_verifier": "verifier-1",
-                         "redirect_uri": client.redirectURI, "grant_type": "authorization_code"])
-        #expect(!body.contains("secret"))
-    }
-
-    @Test func idTokenComesFromTheTokenResponse() throws {
-        #expect(try GoogleAuthorizationRequest.idToken(from: Data(#"{"access_token":"a","id_token":"eyJ.x.y"}"#.utf8)) == "eyJ.x.y")
-        #expect(throws: GoogleSignInError.failed) {
-            try GoogleAuthorizationRequest.idToken(from: Data(#"{"access_token":"a"}"#.utf8))
-        }
-    }
-
-    @Test func errorsAreSortedForTheScreen() {
-        #expect(WebGoogleSignIn.isCancellation(ASWebAuthenticationSessionError(.canceledLogin)))
-        #expect(!WebGoogleSignIn.isCancellation(URLError(.badURL)))
-        #expect(WebGoogleSignIn.isOffline(URLError(.notConnectedToInternet)))
-        #expect(!WebGoogleSignIn.isOffline(URLError(.badServerResponse)))
-    }
-}
-
-@MainActor
-struct WebGoogleSignInTests {
-    @Test func browserThenExchangeGivesTheIDTokenAndTheNonce() async throws {
-        let client = GoogleOAuthClient(clientID: "123-abc.apps.googleusercontent.com")!
-        let session = StubURLProtocol.makeSession(host: "oauth2.googleapis.com") { request in
-            let body = String(data: request.httpBody ?? Data(), encoding: .utf8) ?? ""
-            return body.contains("code=bad") ? .json(400, #"{"error":"invalid_grant"}"#)
-                                             : .json(200, #"{"access_token":"a","id_token":"eyJ.google.token"}"#)
-        }
-        let google = WebGoogleSignIn(client: client, session: session)
-        var sentNonce: String?
-        var sentScheme: String?
-
-        let credential = try await google.signIn { url, scheme in
-            sentScheme = scheme
-            let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-            let state = query.first { $0.name == "state" }?.value ?? ""
-            sentNonce = query.first { $0.name == "nonce" }?.value
-            return URL(string: "\(scheme):/oauth2redirect?state=\(state)&code=good")!
-        }
-
-        #expect(credential.idToken == "eyJ.google.token")
-        #expect(credential.rawNonce == sentNonce)
-        #expect(sentScheme == client.callbackScheme)
-
-        await #expect(throws: GoogleSignInError.failed) {
-            try await google.signIn { url, scheme in
-                let state = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "state" }?.value ?? ""
-                return URL(string: "\(scheme):/oauth2redirect?state=\(state)&code=bad")!
-            }
-        }
-        await #expect(throws: GoogleSignInError.cancelled) {
-            try await google.signIn { _, _ in throw ASWebAuthenticationSessionError(.canceledLogin) }
-        }
+    @Test func sdkErrorsAreSortedForTheScreen() {
+        let cancelled = NSError(domain: kGIDSignInErrorDomain, code: GIDSignInError.canceled.rawValue)
+        #expect(GoogleSDKSignIn.error(for: cancelled) == .cancelled)
+        #expect(GoogleSDKSignIn.error(for: URLError(.notConnectedToInternet)) == .offline)
+        #expect(GoogleSDKSignIn.error(for: NSError(domain: kGIDSignInErrorDomain, code: GIDSignInError.unknown.rawValue)) == .failed)
     }
 }
 
 @MainActor
 struct GoogleSignInViewModelTests {
-    private let browser: WebAuthenticator = { url, _ in url }
-
-    @Test func googleSignInOpensTheSessionWithoutTrackingAnUnplannedValue() async {
+    @Test func googleSignInOpensTheSessionAndIsTracked() async {
         let analytics = RecordingAnalytics()
         var received: AuthSession?
         let viewModel = SignInViewModel(mode: .signUp, auth: MockAuthService(delay: .zero),
                                         google: MockGoogleSignIn(delay: .zero), analytics: analytics) { received = $0 }
         #expect(viewModel.isGoogleAvailable)
 
-        await viewModel.signInWithGoogle(using: browser)
+        await viewModel.signInWithGoogle()
 
         #expect(received?.userID == "mock-user")
         #expect(!viewModel.isWorking)
         #expect(viewModel.workingMethod == nil)
-        #expect(analytics.events.isEmpty)
+        #expect(analytics.events == [.signInStarted(method: .google)])
     }
 
     @Test func withoutAClientTheButtonIsHidden() {
@@ -155,7 +62,7 @@ struct GoogleSignInViewModelTests {
                                             google: MockGoogleSignIn(delay: .zero, result: .failure(error))) { _ in
                 Issue.record("signed in after \(error)")
             }
-            await viewModel.signInWithGoogle(using: browser)
+            await viewModel.signInWithGoogle()
             #expect(!viewModel.isWorking)
             return viewModel
         }
@@ -164,14 +71,38 @@ struct GoogleSignInViewModelTests {
         #expect(await run(.failed).error?.title == "Sign in with Google didn’t work")
     }
 
-    @Test func liveBackendHasNoGoogleEndpointYet() async throws {
-        let (client, host) = StubURLProtocol.makeClient { _ in .empty(500) }
-        let tokens = TokenManager(store: InMemorySecureStore()) { _ throws(APIError) in throw .signedOut }
-        let auth = APIAuthService(client: client, tokens: tokens)
-        await #expect(throws: APIError.notConfigured) {
-            try await auth.signInWithGoogle(GoogleCredential(idToken: "t", rawNonce: "n"))
+    @Test func theIDTokenGoesToTheBackendAndTheSessionIsKept() async throws {
+        let recorder = BodyRecorder()
+        let (client, host) = StubURLProtocol.makeClient(middlewares: [recorder]) { request in
+            #expect(request.url?.path() == "/v1/auth/google")
+            return .json(200, """
+            {"accessToken":"acc","accessExpiresAt":"2026-10-01T07:27:00.000Z","refreshToken":"ref",
+             "refreshExpiresAt":"2026-11-30T07:12:00.000Z","user":{"id":"6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b","isNew":true}}
+            """)
         }
-        #expect(StubURLProtocol.requests(for: host).isEmpty)
+        let store = InMemorySecureStore()
+        let tokens = TokenManager(store: store) { _ throws(APIError) in throw .signedOut }
+        let auth = APIAuthService(client: client, tokens: tokens)
+
+        let session = try await auth.signInWithGoogle(GoogleCredential(idToken: String(repeating: "t", count: 30), rawNonce: "n-1"))
+
+        #expect(session.isNewUser)
+        #expect(await tokens.isSignedIn)
+        #expect(TokenManager.storedSession(in: store)?.refreshToken == "ref")
+        #expect(StubURLProtocol.requests(for: host).count == 1)
+        let body = try #require(recorder.last.flatMap { try JSONSerialization.jsonObject(with: $0) as? [String: String] })
+        #expect(body == ["idToken": String(repeating: "t", count: 30), "nonce": "n-1"])
+    }
+
+    @Test func anInvalidTokenIsASignInError() async {
+        let (client, _) = StubURLProtocol.makeClient { _ in
+            .json(401, #"{"error":{"code":"AUTH_INVALID_TOKEN","message":"Invalid Google ID token"}}"#)
+        }
+        let tokens = TokenManager(store: InMemorySecureStore()) { _ throws(APIError) in throw .signedOut }
+        let viewModel = SignInViewModel(mode: .signUp, auth: APIAuthService(client: client, tokens: tokens),
+                                        google: MockGoogleSignIn(delay: .zero)) { _ in Issue.record("signed in") }
+        await viewModel.signInWithGoogle()
+        #expect(viewModel.error != nil)
         #expect(await !tokens.isSignedIn)
     }
 }

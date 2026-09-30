@@ -15,8 +15,9 @@ SENTRY_DSN =
 // Meta app id for sharing to Instagram Stories (not a secret; value from Tony, blocker IOS-05.6).
 // Empty: the Stories button is hidden and sharing goes through the share sheet only.
 FACEBOOK_APP_ID =
-// Google Sign-In: the iOS OAuth client id ("<number>-<id>.apps.googleusercontent.com"). Not a secret,
-// but Google ties an iOS client to one bundle id, so Staging (com.braincode.dreamer.io.staging) and
-// Release need their own, e.g. GOOGLE_IOS_CLIENT_ID[config=Release] = ... (values from Tony, blocker
-// IOS-02.6). Empty: the Google button is hidden in live builds; mock mode always shows it.
-GOOGLE_IOS_CLIENT_ID =
+// Google Sign-In (GoogleSignIn-iOS): the iOS OAuth client of com.braincode.dreamer.io and its
+// reversed form, the URL scheme Google returns through. Not secrets: both ship in every app.
+// Staging (com.braincode.dreamer.io.staging) uses the same client until it has its own
+// (blocker IOS-02.6). Empty: the Google button is hidden in live builds; mock mode always shows it.
+GOOGLE_IOS_CLIENT_ID = 240861363646-iv2i51rs4dp2gc6fhvl332405f5668i9.apps.googleusercontent.com
+GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.240861363646-iv2i51rs4dp2gc6fhvl332405f5668i9

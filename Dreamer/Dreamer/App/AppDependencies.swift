@@ -194,7 +194,7 @@ final class AppDependencies {
             api: api,
             tokens: tokens,
             auth: APIAuthService(client: api, tokens: tokens),
-            googleSignIn: config.googleOAuthClient.map { WebGoogleSignIn(client: $0) },
+            googleSignIn: config.googleClientID == nil ? nil : GoogleSDKSignIn(),
             profiles: APIProfileService(client: api),
             subscriptionStatus: APISubscriptionStatusService(client: api),
             analytics: analytics,

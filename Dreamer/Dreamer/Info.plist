@@ -18,8 +18,19 @@
 	<string>$(APS_ENVIRONMENT)</string>
 	<key>DreamerFacebookAppID</key>
 	<string>$(FACEBOOK_APP_ID)</string>
-	<key>DreamerGoogleClientID</key>
+	<key>GIDClientID</key>
 	<string>$(GOOGLE_IOS_CLIENT_ID)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>google-sign-in</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(GOOGLE_REVERSED_CLIENT_ID)</string>
+			</array>
+		</dict>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSFaceIDUsageDescription</key>

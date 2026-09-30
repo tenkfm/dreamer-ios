@@ -2,7 +2,7 @@
 
 Dreamer, the AI dream journal for iPhone: tell a dream, read what it may mean through three lenses,
 keep the journal. The app talks to the Dreamer backend (`../dreamerweb`, NestJS) through a
-generated OpenAPI client; RevenueCat, PostHog and Sentry are its SDKs. Every service also has a
+generated OpenAPI client; RevenueCat, PostHog, Sentry and GoogleSignIn are its SDKs. Every service also has a
 local mock, so the whole app runs without the network. Design handoff: `../Dreamer-iOS-Handoff`;
 tasks and progress: `../../Dreamer-iOS-Tasks`.
 
@@ -246,15 +246,16 @@ AppState, which keeps it until the account step verifies it (so a cold start wor
 expired link offers "Send a new link" to the address requested on this device.
 
 Sign in with Google sits under the Apple button (`Services/GoogleSignIn.swift`,
-`Features/Auth/GoogleSignInButton.swift`). There is no Google SDK: the OAuth flow for native apps
-runs in the system sheet (SwiftUI `webAuthenticationSession`) with PKCE, a state and a nonce; the
-code is redeemed on the device, and only Google's id token and the nonce go to the backend. The
-button follows Google's branding (the four-color "G", white by day, near-black at night, "Sign
-up/in with Google"); its colors are `DS.Brand`. `GOOGLE_IOS_CLIENT_ID` (Shared.xcconfig, one iOS
-client per bundle id) turns it on in live builds; mock mode always shows it and signs in without a
-browser. The backend has no Google endpoint yet, so `APIAuthService.signInWithGoogle` fails with
-`notConfigured` and nothing is tracked for it (the plan allows only `apple | email`): blocker
-IOS-02.6. Set the client id only once the endpoint exists.
+`Features/Auth/GoogleSignInButton.swift`), through Google's SDK (GoogleSignIn-iOS). The SDK reads
+`GIDClientID` from Info.plist and comes back through the `REVERSED_CLIENT_ID` URL scheme, which
+`RootView.onOpenURL` hands to it; both come from `GOOGLE_IOS_CLIENT_ID` and
+`GOOGLE_REVERSED_CLIENT_ID` in Shared.xcconfig (the client of com.braincode.dreamer.io, taken from
+Google's client plist). The app sends a random nonce with the request, and the id token and the
+nonce go to `POST /v1/auth/google`, which answers like the Apple and email sign-ins. The SDK is
+signed out right after, so no Google tokens stay on the device. The button follows Google's
+branding (the four-color "G", white by day, near-black at night, "Sign up/in with Google"); its
+colors are `DS.Brand`. Without a valid client id the button is hidden (the SDK would crash); mock
+mode always shows it and signs in without Google.
 
 Settings has "Sign out" and "Delete account and all dreams" (`AccountController`). Sign-out calls
 `POST /v1/auth/logout` (best effort, works offline), forgets the tokens, clears the dreams cached
