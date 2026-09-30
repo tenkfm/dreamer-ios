@@ -15,7 +15,7 @@ enum SecureStoreError: Error, Equatable {
 /// Keychain generic passwords, readable after the first unlock and never synced or migrated to
 /// another device (a restored backup has to sign in again).
 struct KeychainStore: SecureStore {
-    var service = "com.braincode.dreamer.session"
+    var service = "com.braincode.dreamer.io.session"
 
     func data(for key: String) throws -> Data? {
         var query = baseQuery(key)

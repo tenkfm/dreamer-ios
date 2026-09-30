@@ -6,7 +6,7 @@ API_HOST = api-staging-0ea4.up.railway.app
 // Staging is archived for TestFlight, which uses the production APNs and App Attest environments.
 APS_ENVIRONMENT = production
 APP_ATTEST_ENVIRONMENT = production
-PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.staging
+PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.staging
 DREAMER_DISPLAY_NAME = Dreamer β
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon-Staging
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = STAGING $(inherited)

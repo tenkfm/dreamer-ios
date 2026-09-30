@@ -2,7 +2,7 @@
 import Foundation
 
 /// Debug-only deep start for visual QA: `-debugScreen <name>` opens a screen directly
-/// with in-memory preferences, e.g. `xcrun simctl launch booted com.braincode.dreamer -debugScreen journal`.
+/// with in-memory preferences, e.g. `xcrun simctl launch booted com.braincode.dreamer.io.staging -debugScreen journal`.
 /// Add `-night` or `-day` to force the appearance regardless of the clock,
 /// `-debugAdvance` to let the onboarding tap "Continue" once.
 @MainActor

@@ -19,9 +19,9 @@ PROJECT = "Dreamer.xcodeproj"
 SCHEME = "Dreamer"
 # Debug and Staging share the staging bundle id; Release is the App Store id.
 BUNDLE_IDS = {
-  "Debug" => "com.braincode.dreamer.staging",
-  "Staging" => "com.braincode.dreamer.staging",
-  "Release" => "com.braincode.dreamer"
+  "Debug" => "com.braincode.dreamer.io.staging",
+  "Staging" => "com.braincode.dreamer.io.staging",
+  "Release" => "com.braincode.dreamer.io"
 }.freeze
 DEFAULT_DEVICE = ENV.fetch("SIMULATOR_DEVICE", "iPhone 17")
 DERIVED_DATA = File.expand_path("../build/DerivedData", __dir__)

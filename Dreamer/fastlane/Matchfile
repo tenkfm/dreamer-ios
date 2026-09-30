@@ -5,4 +5,4 @@
 git_url(ENV.fetch("MATCH_GIT_URL", ""))
 storage_mode("git")
 team_id(ENV["APPLE_TEAM_ID"])
-app_identifier(["com.braincode.dreamer", "com.braincode.dreamer.staging"])
+app_identifier(["com.braincode.dreamer.io", "com.braincode.dreamer.io.staging"])

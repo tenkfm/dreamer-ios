@@ -178,7 +178,7 @@ struct AnalyticsContext: Equatable, Sendable {
 }
 
 struct NoopAnalytics: Analytics {
-    private static let log = Logger(subsystem: "com.braincode.dreamer", category: "analytics")
+    private static let log = Logger(subsystem: "com.braincode.dreamer.io", category: "analytics")
 
     func track(_ event: AnalyticsEvent) {
         #if DEBUG

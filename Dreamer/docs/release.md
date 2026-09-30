@@ -32,7 +32,7 @@ bundle exec fastlane certificates readonly:false   # create or renew them (admin
 ```
 
 match keeps one Apple Distribution certificate and an App Store profile for each bundle id
-(`com.braincode.dreamer`, `com.braincode.dreamer.staging`) in the match repo. Everyone uses the
+(`com.braincode.dreamer.io`, `com.braincode.dreamer.io.staging`) in the match repo. Everyone uses the
 same ones, so nobody creates certificates in the Developer portal by hand.
 
 - **After adding a capability** (for example App Attest or Push): enable it on the App ID in the

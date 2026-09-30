@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D7A0000000000000000000BF /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000091 /* PostHog */; };
-		D7A0000000000000000000BF /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000093 /* Sentry-Dynamic */; };
-		D7A0000000000000000000BF /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000097 /* OpenAPIRuntime */; };
-		D7A0000000000000000000BF /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000099 /* OpenAPIURLSession */; };
-		D7A0000000000000000000BF /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009B /* HTTPTypes */; };
+		3AF97CE8306DAABD009E2B34 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000091 /* PostHog */; };
+		3AF97CE9306DAABD009E2B34 /* Sentry-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000093 /* Sentry-Dynamic */; };
+		3AF97CEA306DAABD009E2B34 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000097 /* OpenAPIRuntime */; };
+		3AF97CEB306DAABD009E2B34 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = D7A000000000000000000099 /* OpenAPIURLSession */; };
+		3AF97CEC306DAABD009E2B34 /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009B /* HTTPTypes */; };
 		D7A0000000000000000000BF /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009D /* RevenueCat */; };
 /* End PBXBuildFile section */
 
@@ -35,19 +35,18 @@
 /* Begin PBXFileReference section */
 		D7A000000000000000000002 /* Dreamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dreamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7A000000000000000000003 /* DreamerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DreamerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D7A000000000000000000080 /* DreamerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DreamerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7A000000000000000000060 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
 		D7A000000000000000000061 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		D7A000000000000000000062 /* Staging.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
 		D7A000000000000000000063 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		D7A000000000000000000064 /* Secrets.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
+		D7A000000000000000000080 /* DreamerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DreamerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		D7A000000000000000000012 /* Exceptions for "Dreamer" folder in "Dreamer" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Dreamer.entitlements,
 				Info.plist,
 			);
 			target = D7A000000000000000000020 /* Dreamer */;
@@ -80,11 +79,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D7A0000000000000000000BF /* PostHog in Frameworks */,
-				D7A0000000000000000000BF /* Sentry-Dynamic in Frameworks */,
-				D7A0000000000000000000BF /* OpenAPIRuntime in Frameworks */,
-				D7A0000000000000000000BF /* OpenAPIURLSession in Frameworks */,
-				D7A0000000000000000000BF /* HTTPTypes in Frameworks */,
+				3AF97CEC306DAABD009E2B34 /* HTTPTypes in Frameworks */,
+				3AF97CEB306DAABD009E2B34 /* OpenAPIURLSession in Frameworks */,
+				3AF97CEA306DAABD009E2B34 /* OpenAPIRuntime in Frameworks */,
+				3AF97CE9306DAABD009E2B34 /* Sentry-Dynamic in Frameworks */,
+				3AF97CE8306DAABD009E2B34 /* PostHog in Frameworks */,
 				D7A0000000000000000000BF /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -117,6 +116,16 @@
 			);
 			sourceTree = "<group>";
 		};
+		D7A000000000000000000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D7A000000000000000000002 /* Dreamer.app */,
+				D7A000000000000000000003 /* DreamerTests.xctest */,
+				D7A000000000000000000080 /* DreamerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		D7A000000000000000000070 /* Config */ = {
 			isa = PBXGroup;
 			children = (
@@ -127,16 +136,6 @@
 				D7A000000000000000000064 /* Secrets.example.xcconfig */,
 			);
 			path = Config;
-			sourceTree = "<group>";
-		};
-		D7A000000000000000000007 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				D7A000000000000000000002 /* Dreamer.app */,
-				D7A000000000000000000003 /* DreamerTests.xctest */,
-				D7A000000000000000000080 /* DreamerUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -319,10 +318,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D7A0000000000000000000DE /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = D7A000000000000000000095 /* plugin:OpenAPIGenerator */;
-		};
 		D7A000000000000000000013 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D7A000000000000000000020 /* Dreamer */;
@@ -332,6 +327,10 @@
 			isa = PBXTargetDependency;
 			target = D7A000000000000000000020 /* Dreamer */;
 			targetProxy = D7A000000000000000000086 /* PBXContainerItemProxy */;
+		};
+		D7A0000000000000000000DE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = D7A000000000000000000095 /* OpenAPIGenerator */;
 		};
 /* End PBXTargetDependency section */
 
@@ -369,32 +368,6 @@
 			};
 			name = Debug;
 		};
-		D7A000000000000000000057 /* Staging */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GCC_NO_COMMON_BLOCKS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_VERSION = 6.0;
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Staging;
-		};
 		D7A000000000000000000052 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -428,6 +401,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
 				CODE_SIGN_ENTITLEMENTS = Dreamer/Dreamer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7ZG77S8NDR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Dreamer/Info.plist;
@@ -453,38 +427,6 @@
 			};
 			name = Debug;
 		};
-		D7A000000000000000000058 /* Staging */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = D7A000000000000000000062 /* Staging.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
-				CODE_SIGN_ENTITLEMENTS = Dreamer/Dreamer.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Dreamer/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "$(DREAMER_DISPLAY_NAME)";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Dreamer listens while you tell your dream, so it can write it down for you.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Dreamer saves your dream images to your photo library.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Dreamer turns what you say into text on your iPhone, so your dream is written down while you talk.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Staging;
-		};
 		D7A000000000000000000054 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D7A000000000000000000063 /* Release.xcconfig */;
@@ -492,6 +434,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
 				CODE_SIGN_ENTITLEMENTS = Dreamer/Dreamer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7ZG77S8NDR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Dreamer/Info.plist;
@@ -525,7 +468,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -533,23 +476,6 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dreamer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Dreamer";
 			};
 			name = Debug;
-		};
-		D7A000000000000000000059 /* Staging */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dreamer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Dreamer";
-			};
-			name = Staging;
 		};
 		D7A000000000000000000056 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -559,7 +485,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -568,6 +494,82 @@
 			};
 			name = Release;
 		};
+		D7A000000000000000000057 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Staging;
+		};
+		D7A000000000000000000058 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D7A000000000000000000062 /* Staging.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = Accent;
+				CODE_SIGN_ENTITLEMENTS = Dreamer/Dreamer.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 7ZG77S8NDR;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Dreamer/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(DREAMER_DISPLAY_NAME)";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Dreamer listens while you tell your dream, so it can write it down for you.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Dreamer saves your dream images to your photo library.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Dreamer turns what you say into text on your iPhone, so your dream is written down while you talk.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Staging;
+		};
+		D7A000000000000000000059 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dreamer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Dreamer";
+			};
+			name = Staging;
+		};
 		D7A00000000000000000008A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -575,7 +577,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -584,22 +586,6 @@
 			};
 			name = Debug;
 		};
-		D7A00000000000000000008C /* Staging */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				TARGETED_DEVICE_FAMILY = 1;
-				TEST_TARGET_NAME = Dreamer;
-			};
-			name = Staging;
-		};
 		D7A00000000000000000008B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -607,7 +593,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamerUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -615,6 +601,22 @@
 				TEST_TARGET_NAME = Dreamer;
 			};
 			name = Release;
+		};
+		D7A00000000000000000008C /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Dreamer;
+			};
+			name = Staging;
 		};
 /* End XCBuildConfiguration section */
 
@@ -723,41 +725,40 @@
 /* Begin XCSwiftPackageProductDependency section */
 		D7A000000000000000000091 /* PostHog */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7A000000000000000000090;
-			productName = "PostHog";
+			package = D7A000000000000000000090 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
 		};
 		D7A000000000000000000093 /* Sentry-Dynamic */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7A000000000000000000092;
+			package = D7A000000000000000000092 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = "Sentry-Dynamic";
 		};
-		D7A000000000000000000095 /* plugin:OpenAPIGenerator */ = {
+		D7A000000000000000000095 /* OpenAPIGenerator */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7A000000000000000000094;
+			package = D7A000000000000000000094 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
 			productName = "plugin:OpenAPIGenerator";
 		};
 		D7A000000000000000000097 /* OpenAPIRuntime */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7A000000000000000000096;
-			productName = "OpenAPIRuntime";
+			package = D7A000000000000000000096 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
 		};
 		D7A000000000000000000099 /* OpenAPIURLSession */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7A000000000000000000098;
-			productName = "OpenAPIURLSession";
+			package = D7A000000000000000000098 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			productName = OpenAPIURLSession;
 		};
 		D7A00000000000000000009B /* HTTPTypes */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7A00000000000000000009A;
-			productName = "HTTPTypes";
+			package = D7A00000000000000000009A /* XCRemoteSwiftPackageReference "swift-http-types" */;
+			productName = HTTPTypes;
 		};
 		D7A00000000000000000009D /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7A00000000000000000009C;
-			productName = "RevenueCat";
+			package = D7A00000000000000000009C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
 		};
 /* End XCSwiftPackageProductDependency section */
-
 	};
 	rootObject = D7A000000000000000000001 /* Project object */;
 }

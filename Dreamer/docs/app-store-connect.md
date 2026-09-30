@@ -10,7 +10,7 @@ give; they are also listed under Blockers in PROGRESS.md.
 | Field | Value |
 | --- | --- |
 | Name, subtitle, keywords, description | `fastlane/metadata/en-US` (IOS-12.2), uploaded by `fastlane upload_store` |
-| Bundle ID | `com.braincode.dreamer` (Release) |
+| Bundle ID | `com.braincode.dreamer.io` (Release) |
 | SKU | **Tony** |
 | Primary language | English (U.S.) |
 | Category | **Tony**: Health & Fitness or Lifestyle |

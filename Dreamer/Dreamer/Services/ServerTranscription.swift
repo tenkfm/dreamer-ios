@@ -62,7 +62,7 @@ final class AudioRecordingFile: @unchecked Sendable {
         var framesWritten: AVAudioFramePosition = 0
     }
 
-    private static let log = Logger(subsystem: "com.braincode.dreamer", category: "speech")
+    private static let log = Logger(subsystem: "com.braincode.dreamer.io", category: "speech")
     private static let outputFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
 
     init(url: URL) throws {

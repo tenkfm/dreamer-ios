@@ -40,9 +40,9 @@ Three configurations, each driven by an xcconfig in `Config/` and read at runtim
 
 | Configuration | Scheme | Bundle id | API | Icon |
 |---|---|---|---|---|
-| Debug | Dreamer (Run) | `com.braincode.dreamer.staging` | staging | STAGING band |
-| Staging | Dreamer Staging | `com.braincode.dreamer.staging` | staging | STAGING band |
-| Release | Dreamer (Archive) | `com.braincode.dreamer` | production (domain pending) | App Store |
+| Debug | Dreamer (Run) | `com.braincode.dreamer.io.staging` | staging | STAGING band |
+| Staging | Dreamer Staging | `com.braincode.dreamer.io.staging` | staging | STAGING band |
+| Release | Dreamer (Archive) | `com.braincode.dreamer.io` | production (domain pending) | App Store |
 
 Staging and Release install side by side. SDK keys (RevenueCat, PostHog, Sentry) never live in the
 repository: copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (git-ignored) or let
@@ -663,7 +663,7 @@ change); none of them is compiled into App Store builds.
 
 ```
 ./run.sh screen:interpretation
-xcrun simctl launch booted com.braincode.dreamer.staging -debugScreen journal -night
+xcrun simctl launch booted com.braincode.dreamer.io.staging -debugScreen journal -night
 ```
 
 | Argument | Effect |

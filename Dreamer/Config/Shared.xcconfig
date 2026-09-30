@@ -16,7 +16,7 @@ SENTRY_DSN =
 // Empty: the Stories button is hidden and sharing goes through the share sheet only.
 FACEBOOK_APP_ID =
 // Google Sign-In: the iOS OAuth client id ("<number>-<id>.apps.googleusercontent.com"). Not a secret,
-// but Google ties an iOS client to one bundle id, so Staging (com.braincode.dreamer.staging) and
+// but Google ties an iOS client to one bundle id, so Staging (com.braincode.dreamer.io.staging) and
 // Release need their own, e.g. GOOGLE_IOS_CLIENT_ID[config=Release] = ... (values from Tony, blocker
 // IOS-02.6). Empty: the Google button is hidden in live builds; mock mode always shows it.
 GOOGLE_IOS_CLIENT_ID =

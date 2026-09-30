@@ -108,7 +108,7 @@ struct TokenManagerTests {
     }
 
     @Test func keychainRoundTrip() throws {
-        let keychain = KeychainStore(service: "com.braincode.dreamer.tests.\(UUID().uuidString)")
+        let keychain = KeychainStore(service: "com.braincode.dreamer.io.tests.\(UUID().uuidString)")
         #expect(try keychain.data(for: "k") == nil)
         try keychain.set(Data("one".utf8), for: "k")
         try keychain.set(Data("two".utf8), for: "k")

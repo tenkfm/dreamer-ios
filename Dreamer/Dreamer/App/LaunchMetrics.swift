@@ -6,7 +6,7 @@ import os
 /// Debug and Staging builds: time from process start to the first frame of the root view, in the unified log
 /// (`log show --predicate 'category == "launch"'`), to compare cold starts before and after a change.
 enum LaunchMetrics {
-    private static let log = Logger(subsystem: "com.braincode.dreamer", category: "launch")
+    private static let log = Logger(subsystem: "com.braincode.dreamer.io", category: "launch")
     private static let reported = OSAllocatedUnfairLock(initialState: false)
 
     static func firstFrameShown() {

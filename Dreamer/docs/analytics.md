@@ -76,7 +76,7 @@ build with `-liveServices` (or no debug screen), and watch PostHog -> Activity -
 Without a key, every event goes to the unified log instead:
 
 ```
-xcrun simctl spawn booted log stream --predicate 'subsystem == "com.braincode.dreamer" AND category == "analytics"'
+xcrun simctl spawn booted log stream --predicate 'subsystem == "com.braincode.dreamer.io" AND category == "analytics"'
 ```
 
 It prints each event with its properties.

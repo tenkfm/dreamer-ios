@@ -16,7 +16,7 @@ final class NetworkMonitor {
             let online = path.status == .satisfied
             Task { @MainActor in self?.isOnline = online }
         }
-        monitor.start(queue: DispatchQueue(label: "com.braincode.dreamer.network-monitor", qos: .utility))
+        monitor.start(queue: DispatchQueue(label: "com.braincode.dreamer.io.network-monitor", qos: .utility))
     }
 
     /// Fixed state for previews and tests.

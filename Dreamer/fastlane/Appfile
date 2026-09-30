@@ -1,2 +1,2 @@
-app_identifier("com.braincode.dreamer")
+app_identifier("com.braincode.dreamer.io")
 team_id(ENV["APPLE_TEAM_ID"])
