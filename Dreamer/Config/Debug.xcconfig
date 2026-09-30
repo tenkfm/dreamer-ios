@@ -2,7 +2,7 @@
 #include "Shared.xcconfig"
 
 APP_ENVIRONMENT = debug
-API_HOST = api-staging-0ea4.up.railway.app
+API_HOST = staging-api.dreamerapp.io
 APS_ENVIRONMENT = development
 APP_ATTEST_ENVIRONMENT = development
 PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io.staging

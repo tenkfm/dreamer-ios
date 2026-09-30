@@ -2,7 +2,7 @@
 #include "Shared.xcconfig"
 
 APP_ENVIRONMENT = staging
-API_HOST = api-staging-0ea4.up.railway.app
+API_HOST = staging-api.dreamerapp.io
 // Staging is archived for TestFlight, which uses the production APNs and App Attest environments.
 APS_ENVIRONMENT = production
 APP_ATTEST_ENVIRONMENT = production

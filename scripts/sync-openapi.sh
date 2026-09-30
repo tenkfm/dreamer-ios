@@ -11,7 +11,7 @@ TARGET="$ROOT/Dreamer/Dreamer/API/openapi.yaml"
 
 if [[ ! -f "$SOURCE" ]]; then
   echo "No contract at $SOURCE. Pass the path, or download it:" >&2
-  echo "  curl -o openapi.yaml https://api-staging-0ea4.up.railway.app/docs/openapi.yaml" >&2
+  echo "  curl -o openapi.yaml https://staging-api.dreamerapp.io/docs/openapi.yaml" >&2
   exit 1
 fi
 
