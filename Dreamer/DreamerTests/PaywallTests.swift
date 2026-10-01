@@ -21,6 +21,15 @@ struct PaywallCopyTests {
         #expect(viewModel.termsText.contains("Renews automatically until you cancel"))
     }
 
+    @Test func everyPlansTermsAreKnownSoTheFooterKeepsItsHeight() async {
+        let viewModel = await loaded(MockPurchaseService(delay: .zero))
+        #expect(viewModel.allTermsTexts.count == viewModel.products.count)
+        for plan in [Plan.yearly, .weekly] {
+            viewModel.selectedPlan = plan
+            #expect(viewModel.allTermsTexts.contains(viewModel.termsText))
+        }
+    }
+
     @Test func noTrialWhenTheUserIsNotEligible() async throws {
         let viewModel = await loaded(MockPurchaseService(delay: .zero, trialEligible: false))
         let yearly = try #require(viewModel.selectedProduct)

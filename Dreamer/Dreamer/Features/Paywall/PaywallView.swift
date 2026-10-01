@@ -114,12 +114,18 @@ struct PaywallView: View {
 
     private var footer: some View {
         VStack(spacing: 10) {
-            Text(viewModel.termsText)
-                .textStyle(.label, color: DS.Palette.textTertiary)
-                .multilineTextAlignment(.center)
-                .contentTransition(.opacity)
-                .animation(.soft(0.3), value: viewModel.selectedPlan)
-                .fixedSize(horizontal: false, vertical: true)
+            // The plans' terms differ in length (a trial adds a sentence). The hidden copies hold the
+            // height of the longest one, so picking a plan swaps the text without moving the screen.
+            ZStack(alignment: .top) {
+                ForEach(viewModel.allTermsTexts, id: \.self) { terms in
+                    termsLabel(terms).hidden()
+                }
+                termsLabel(viewModel.termsText)
+                    .contentTransition(.opacity)
+                    .animation(.soft(0.3), value: viewModel.selectedPlan)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(viewModel.termsText)
             HStack(spacing: 18) {
                 footerLink(viewModel.isRestoring ? "Restoring…" : "Restore") {
                     Task { await viewModel.restore() }
@@ -130,6 +136,13 @@ struct PaywallView: View {
         }
         .padding(.top, 14)
         .padding(.bottom, 12)
+    }
+
+    private func termsLabel(_ text: String) -> some View {
+        Text(text)
+            .textStyle(.label, color: DS.Palette.textTertiary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private func footerLink(_ title: String, action: @escaping () -> Void) -> some View {

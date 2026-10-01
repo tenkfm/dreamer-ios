@@ -108,7 +108,13 @@ final class PaywallViewModel {
     }
 
     var termsText: String {
-        guard let product = selectedProduct else { return "" }
+        selectedProduct.map(termsText(for:)) ?? ""
+    }
+
+    /// The terms of every plan, so the view can keep room for the longest one.
+    var allTermsTexts: [String] { products.map(termsText(for:)) }
+
+    func termsText(for product: PaywallProduct) -> String {
         let renewal = String(localized: "Renews automatically until you cancel, at least 24 hours before the period ends. Cancel anytime in Settings.")
         if let trial = product.trial {
             return String(localized: "Free for \(trial.period.trialPhrase), then \(product.displayPrice) a \(product.period.phrase). We remind you 2 days before it ends. \(renewal)")
