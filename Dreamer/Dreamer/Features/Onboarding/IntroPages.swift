@@ -87,7 +87,8 @@ struct WelcomeContent: View {
         ) {
             VStack(spacing: 6) {
                 Logo(large: true)
-                Text("YOUR DREAM JOURNAL")
+                Text("Listen to your dreams")
+                    .textCase(.uppercase)
                     .font(DreamerFont.fixed(12))
                     .tracking(2.4)
                     .foregroundStyle(DS.Palette.white)

@@ -3,12 +3,12 @@
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Launch Screen-->
+        <!--Launch Screen: steel-blue vertical gradient, "Listen to your dreams" in the middle.
+            The slogan is an image: a launch screen cannot rely on the app's custom font.-->
         <scene sceneID="LSc-SC-001">
             <objects>
                 <viewController id="LSc-VC-001" sceneMemberID="viewController">
@@ -16,17 +16,22 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchSky" translatesAutoresizingMaskIntoConstraints="NO" id="LSc-IV-001">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchGradient" translatesAutoresizingMaskIntoConstraints="NO" id="LSc-IV-001">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchSlogan" translatesAutoresizingMaskIntoConstraints="NO" id="LSc-IV-002">
+                                <rect key="frame" x="99" y="408" width="195" height="36"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="LSc-SA-001"/>
-                        <color key="backgroundColor" name="Background"/>
+                        <color key="backgroundColor" red="0.31" green="0.408" blue="0.627" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="LSc-IV-001" firstAttribute="top" secondItem="LSc-VW-001" secondAttribute="top" id="LSc-CT-001"/>
                             <constraint firstItem="LSc-IV-001" firstAttribute="bottom" secondItem="LSc-VW-001" secondAttribute="bottom" id="LSc-CT-002"/>
                             <constraint firstItem="LSc-IV-001" firstAttribute="leading" secondItem="LSc-VW-001" secondAttribute="leading" id="LSc-CT-003"/>
                             <constraint firstItem="LSc-IV-001" firstAttribute="trailing" secondItem="LSc-VW-001" secondAttribute="trailing" id="LSc-CT-004"/>
+                            <constraint firstItem="LSc-IV-002" firstAttribute="centerX" secondItem="LSc-VW-001" secondAttribute="centerX" id="LSc-CT-005"/>
+                            <constraint firstItem="LSc-IV-002" firstAttribute="centerY" secondItem="LSc-VW-001" secondAttribute="centerY" id="LSc-CT-006"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -36,9 +41,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LaunchSky" width="1290" height="2294"/>
-        <namedColor name="Background">
-            <color red="0.933" green="0.957" blue="0.984" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
+        <image name="LaunchGradient" width="4" height="1200"/>
+        <image name="LaunchSlogan" width="194.5" height="36.5"/>
     </resources>
 </document>
