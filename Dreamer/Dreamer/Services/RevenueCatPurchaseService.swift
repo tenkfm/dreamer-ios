@@ -22,7 +22,7 @@ struct RevenueCatPurchaseService: PurchaseService {
         var result: [PaywallProduct] = []
         for package in packages {
             let product = package.storeProduct
-            guard let plan = Plan(productID: product.productIdentifier), let rcPeriod = product.subscriptionPeriod else { continue }
+            guard let plan = Self.plan(for: package), let rcPeriod = product.subscriptionPeriod else { continue }
             let period = PaywallProduct.Period(rcPeriod)
             var trial: PaywallProduct.Trial?
             if let intro = product.introductoryDiscount, intro.paymentMode == .freeTrial {
@@ -43,7 +43,7 @@ struct RevenueCatPurchaseService: PurchaseService {
     }
 
     func purchase(_ plan: Plan) async throws -> PurchaseOutcome {
-        guard let package = try await currentPackages().first(where: { $0.storeProduct.productIdentifier == plan.productID }) else {
+        guard let package = try await currentPackages().first(where: { Self.plan(for: $0) == plan }) else {
             throw PurchaseError.productNotFound
         }
         do {
@@ -94,9 +94,30 @@ struct RevenueCatPurchaseService: PurchaseService {
         _ = try? await Purchases.shared.logOut()
     }
 
+    /// The backend's offering is "dreamer" ($rc_annual, $rc_weekly); `current` covers a dashboard
+    /// where it is not named that.
+    static let offeringID = "dreamer"
+
     private func currentPackages() async throws -> [Package] {
-        guard let offering = try await Purchases.shared.offerings().current else { throw PurchaseError.storeUnavailable }
+        let offerings = try await Purchases.shared.offerings()
+        guard let offering = offerings.offering(identifier: Self.offeringID) ?? offerings.current else {
+            throw PurchaseError.storeUnavailable
+        }
         return offering.availablePackages
+    }
+
+    /// By the package type first, so the App Store product ids may be anything; the product id is the
+    /// fallback for custom packages.
+    static func plan(for package: Package) -> Plan? {
+        plan(packageType: package.packageType) ?? Plan(productID: package.storeProduct.productIdentifier)
+    }
+
+    static func plan(packageType: PackageType) -> Plan? {
+        switch packageType {
+        case .annual: .yearly
+        case .weekly: .weekly
+        default: nil
+        }
     }
 
     static func entitlement(from info: CustomerInfo) -> EntitlementState {

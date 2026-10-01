@@ -200,7 +200,16 @@ final class SignInViewModel {
         do {
             try await work()
         } catch {
-            self.error = ErrorState(error)
+            self.error = Self.errorState(error, method: method)
         }
+    }
+
+    /// A refused Apple or Google token is a failed sign-in, not "your session has ended".
+    static func errorState(_ error: APIError, method: SignInMethod) -> ErrorState {
+        guard error.code == .authInvalidToken, method != .email else { return ErrorState(error) }
+        let title = method == .google ? String(localized: "Sign in with Google didn’t work")
+                                      : String(localized: "Sign in with Apple didn’t work")
+        return ErrorState(kind: .serverError, title: title,
+                          message: String(localized: "Please try again, or use another way to sign in."), action: .dismiss)
     }
 }

@@ -1,10 +1,10 @@
-# Normalized copy of the Dreamer API contract 1.1.0 (dreamer-platform openapi.yaml).
+# Normalized copy of the Dreamer API contract 1.1.1 (dreamer-platform openapi.yaml).
 # Written by scripts/sync-openapi.sh - do not edit. Only change: nullable `anyOf [X, null]`
 # values became optional `X` (see scripts/normalize_openapi.py).
 openapi: 3.1.0
 info:
   title: Dreamer API
-  version: 1.1.0
+  version: 1.1.1
   description: 'API of the Dreamer iOS app (phase 1, app2app). Generated from the zod schemas in packages/shared - do not
     edit by hand; run `pnpm contract`.
 
@@ -37,7 +37,8 @@ tags:
 - name: System
   description: Liveness for probes and the deploy script
 - name: Auth
-  description: Sign in with Apple, Google or an email link; JWT access (15 min) + rotating refresh (60 days)
+  description: Sign in with Apple, Google or an email link; JWT access (15 min) + rotating refresh (365 days from the last
+    use)
 - name: Profile
   description: Quiz answers, lens, reminders; account deletion and data export
 - name: Dreams
@@ -380,7 +381,9 @@ paths:
       tags:
       - Auth
       summary: Rotate the tokens
-      description: 'The refresh token is single-use: the response carries a new pair. Reusing an old one revokes the session.'
+      description: 'The refresh token is single-use: the response carries a new pair; store it at once. It lives 365 days
+        from its last use. An old one sent again within 60 seconds (a lost answer, two refreshes at once) gets a fresh pair;
+        later, it revokes the session. Only a 401 means signing in again - keep the tokens on network errors and 5xx.'
       security: []
       requestBody:
         required: true

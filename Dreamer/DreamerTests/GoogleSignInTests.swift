@@ -102,7 +102,7 @@ struct GoogleSignInViewModelTests {
         let viewModel = SignInViewModel(mode: .signUp, auth: APIAuthService(client: client, tokens: tokens),
                                         google: MockGoogleSignIn(delay: .zero)) { _ in Issue.record("signed in") }
         await viewModel.signInWithGoogle()
-        #expect(viewModel.error != nil)
+        #expect(viewModel.error?.title == "Sign in with Google didn’t work")
         #expect(await !tokens.isSignedIn)
     }
 }
