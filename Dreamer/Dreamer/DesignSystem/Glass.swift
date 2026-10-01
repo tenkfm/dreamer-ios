@@ -5,7 +5,7 @@ import SwiftUI
 
 enum GlassStyle {
     case card          // white 36%, border white 70%, shadow 12% blur 28 y 10
-    case tabBar        // white 42%, border white 75%, shadow 16% blur 30 y 12
+    case tabBar        // white 72%, full blur, border white 75%, shadow 16% blur 30 y 12
     case selected      // white 82%, border 1.5 white, shadow 18% blur 28 y 12
     case option        // white 36%, border white 70%, shadow 8% blur 22 y 8
 
@@ -13,7 +13,8 @@ enum GlassStyle {
     func fill(night: Bool) -> Double {
         switch self {
         case .card, .option: night ? 0.07 : 0.36
-        case .tabBar: night ? 0.10 : 0.42
+        // Denser than the cards (Tony: it was hard to see over the pictures it floats on).
+        case .tabBar: night ? 0.06 : 0.72
         case .selected: night ? 0.16 : 0.82
         }
     }
@@ -30,6 +31,13 @@ enum GlassStyle {
         let day: Double = switch self { case .card: 0.12; case .tabBar: 0.16; case .selected: 0.18; case .option: 0.08 }
         return night ? day * 2.5 : day
     }
+
+    /// How strong the blur of what is behind is. Cards keep it light so they do not turn grey; the
+    /// tab bar floats over pictures and scrolling content, so it blurs them fully.
+    var blur: Double { self == .tabBar ? 1 : 0.3 }
+
+    /// The navy veil at night (keeps light glyphs readable over bright images).
+    var nightVeil: Double { self == .tabBar ? 0.85 : 0.4 }
 
     var borderWidth: CGFloat { self == .selected ? 1.5 : 1 }
     var shadowRadius: CGFloat { switch self { case .card, .selected: 14; case .tabBar: 15; case .option: 11 } }
@@ -58,11 +66,11 @@ struct GlassBackground<S: InsettableShape>: ViewModifier {
                     if lightweightGlass {
                         shape.fill(Color.white.opacity(night ? 0.02 : 0.1))
                     } else {
-                        shape.fill(.ultraThinMaterial).opacity(0.3)
+                        shape.fill(.ultraThinMaterial).opacity(style.blur)
                     }
                     // At night a navy veil keeps light glyphs readable over bright dream images;
                     // on the night background itself it is invisible.
-                    if night { shape.fill(DS.Palette.background.opacity(0.4)) }
+                    if night { shape.fill(DS.Palette.background.opacity(style.nightVeil)) }
                     shape.fill(Color.white.opacity(style.fill(night: night)))
                 }
                 .shadow(color: DS.Palette.shadow.opacity(style.shadowOpacity(night: night)),
