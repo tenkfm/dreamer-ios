@@ -3,6 +3,7 @@
 #   ./run.sh                          # iPhone 17, normal start
 #   ./run.sh screen:journal           # open a screen directly (debug builds)
 #   ./run.sh device:"iPhone 17 Pro" reset:true
+#   ./run.sh link:"https://<api host>/auth/verify?token=..."   # open a sign-in link in the app
 #   ./run.sh test                     # unit tests
 set -e
 cd "${0:A:h}"

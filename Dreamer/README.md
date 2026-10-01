@@ -681,6 +681,7 @@ xcrun simctl launch booted com.braincode.dreamer.io.staging -debugScreen journal
 | `-micPermission notDetermined\|denied\|restricted` | Microphone permission states |
 | `-featureFlag name=true\|false` | Overrides a remote flag |
 | `-debugAdvance` | The onboarding taps "Continue" by itself every 2.5 s, up to the account step |
+| `-openLink <url>` | Opens a link at launch as if the system had routed it (`./run.sh link:"<url>"`), for sign-in links Safari keeps |
 | `-uiTesting`, `-uiTestOpenEmailLink` | UI tests: fresh preferences; the mock "opens" the sign-in link |
 | `-crashTestNonFatal`, `-crashTestCrash` | Sentry checks (Debug and Staging) |
 

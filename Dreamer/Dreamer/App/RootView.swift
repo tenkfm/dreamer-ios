@@ -105,13 +105,10 @@ struct RootView: View {
             }
         }
         #endif
-        .onOpenURL { url in
-            // Google Sign-In returning through its reversed-client-id scheme.
-            if GoogleSDKSignIn.handle(url) { return }
-            if let link = DeepLink(url: url, apiHost: AppConfig.current.apiBaseURL?.host()) {
-                appState.handle(link)
-            }
-        }
+        .onOpenURL(perform: open)
+        #if DEBUG
+        .task { if let url = DebugLaunch.openLink { open(url) } }
+        #endif
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { appState.refreshClock() }
         }
@@ -172,6 +169,14 @@ struct RootView: View {
 
     private var subscriptionSync: SubscriptionSync {
         SubscriptionSync(appState: appState, purchases: dependencies.purchases, backend: dependencies.subscriptionStatus)
+    }
+
+    private func open(_ url: URL) {
+        // Google Sign-In returning through its reversed-client-id scheme.
+        if GoogleSDKSignIn.handle(url) { return }
+        if let link = DeepLink(url: url, apiHost: AppConfig.current.apiBaseURL?.host()) {
+            appState.handle(link)
+        }
     }
 
     private var initialOnboardingStep: OnboardingViewModel.Step {

@@ -24,6 +24,14 @@ enum DebugLaunch {
     /// `-debugAdvance`: the onboarding taps "Continue" by itself every 2.5 s, up to the account step.
     static let autoAdvances = ProcessInfo.processInfo.arguments.contains("-debugAdvance")
 
+    /// `-openLink <url>`: a link handed to the app at launch as if it had been opened, for a sign-in
+    /// link the system will not route to this build (the server's AASA lists another app id).
+    static let openLink: URL? = {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-openLink"), index + 1 < arguments.count else { return nil }
+        return URL(string: arguments[index + 1])
+    }()
+
     /// `-night` / `-day`; nil follows the 9 PM schedule.
     static let forcedNightMode: Bool? = {
         let arguments = ProcessInfo.processInfo.arguments

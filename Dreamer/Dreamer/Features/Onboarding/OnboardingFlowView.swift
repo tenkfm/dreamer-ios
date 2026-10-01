@@ -57,6 +57,11 @@ struct OnboardingFlowView: View {
         }
         .sensoryFeedback(.selection, trigger: viewModel.step)
         .trackScreen(.onboarding)
+        // A sign-in link can arrive on any step, while the account screen does not exist yet: go
+        // there, and it takes the token when it appears.
+        .onChange(of: appState.pendingDeepLink, initial: true) { _, link in
+            if case .emailSignIn = link { viewModel.openEmailLink() }
+        }
         .onChange(of: viewModel.step, initial: true) { old, step in
             // Placement A of the tracking question: right before the paywall.
             if step == .paywall { dependencies.trackingConsent.moment(.onboardingPaywall) }

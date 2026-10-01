@@ -44,7 +44,8 @@ platform :ios do
       destination: "platform=iOS Simulator,id=#{udid}",
       derived_data_path: DERIVED_DATA,
       skip_archive: true,
-      skip_codesigning: true,
+      # Signed (to run locally, no profile needed in the simulator): an unsigned app carries no
+      # entitlements, so Associated Domains is missing and sign-in links open Safari instead.
       skip_package_ipa: true,
       xcargs: PLUGIN_XCARGS
     )
@@ -55,6 +56,8 @@ platform :ios do
     sh("xcrun simctl install #{udid} #{app_path.shellescape}")
 
     launch_arguments = options[:screen] ? "-debugScreen #{options[:screen]}" : ""
+    # link: a sign-in link handed to the app at launch (Debug), when the system opens it in Safari.
+    launch_arguments += " -openLink #{options[:link].shellescape}" if options[:link]
     sh("xcrun simctl launch --terminate-running-process #{udid} #{bundle_id} #{launch_arguments}")
   end
 
