@@ -40,11 +40,12 @@ Three configurations, each driven by an xcconfig in `Config/` and read at runtim
 
 | Configuration | Scheme | Bundle id | API | Icon |
 |---|---|---|---|---|
-| Debug | Dreamer (Run) | `com.braincode.dreamer.io.staging` | staging | STAGING band |
-| Staging | Dreamer Staging | `com.braincode.dreamer.io.staging` | staging | STAGING band |
+| Debug | Dreamer (Run) | `com.braincode.dreamer.io` | staging | STAGING band |
+| Staging | Dreamer Staging | `com.braincode.dreamer.io` | staging | STAGING band |
 | Release | Dreamer (Archive) | `com.braincode.dreamer.io` | production (domain pending) | App Store |
 
-Staging and Release install side by side. SDK keys (RevenueCat, PostHog, Sentry) never live in the
+All three share one bundle id (one App ID, one Google client, one AASA entry), so a Staging and a
+Release build replace each other on a device; the STAGING band on the icon tells them apart. SDK keys (RevenueCat, PostHog, Sentry) never live in the
 repository: copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (git-ignored) or let
 CI write it from its secrets. An empty key keeps that SDK off.
 
@@ -664,7 +665,7 @@ change); none of them is compiled into App Store builds.
 
 ```
 ./run.sh screen:interpretation
-xcrun simctl launch booted com.braincode.dreamer.io.staging -debugScreen journal -night
+xcrun simctl launch booted com.braincode.dreamer.io -debugScreen journal -night
 ```
 
 | Argument | Effect |
