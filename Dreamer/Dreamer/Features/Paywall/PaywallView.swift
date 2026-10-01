@@ -5,7 +5,9 @@ struct PaywallView: View {
     @State private var viewModel: PaywallViewModel
     @Environment(\.openURL) private var openURL
 
-    /// On the sheet's dark gradient the footer turns light; on the sky it stays dark.
+    /// The full-screen modal (Settings, the limit, Analysis): a picture on top, a title, perks with
+    /// a line each, a white CTA and a light footer on the dark gradient. Otherwise (onboarding, the
+    /// root paywall) the layout on the sky.
     private let onDark: Bool
 
     init(viewModel: PaywallViewModel, onDark: Bool = false) {
@@ -14,24 +16,11 @@ struct PaywallView: View {
     }
 
     var body: some View {
-        FillingScrollView {
-            VStack(spacing: 0) {
-                header
-                Spacer(minLength: 20)
-                perksCard.enterUp(0.4)
-                plans.padding(.top, 30)
-                Spacer(minLength: 24)
-                PrimaryButton(title: viewModel.ctaTitle, isLoading: viewModel.isPurchasing) {
-                    Task { await viewModel.purchase() }
-                }
-                .disabled(viewModel.selectedProduct == nil)
-                .opacity(viewModel.selectedProduct == nil ? 0.6 : 1)
-                .padding(.horizontal, DS.Space.cta - DS.Space.screen)
-                .enterUp(0.9)
-                footer.enterUp(1)
-            }
-            .padding(.horizontal, DS.Space.screen)
+        ZStack {
+            if onDark { modalLayout } else { skyLayout }
         }
+        // On the ZStack, which keeps to the safe area: the button clears the status bar even though
+        // the modal's picture runs under it.
         .overlay(alignment: .topTrailing) {
             if viewModel.showsCloseButton {
                 GlassIconButton(systemImage: "xmark", accessibilityLabel: "Close") { viewModel.close() }
@@ -48,6 +37,90 @@ struct PaywallView: View {
         } message: {
             Text(viewModel.alertMessage ?? "")
         }
+    }
+
+    private var skyLayout: some View {
+        FillingScrollView {
+            VStack(spacing: 0) {
+                header
+                Spacer(minLength: 20)
+                perksCard.enterUp(0.4)
+                plans.padding(.top, 30)
+                Spacer(minLength: 24)
+                cta.padding(.horizontal, DS.Space.cta - DS.Space.screen)
+                footer.enterUp(1)
+            }
+            .padding(.horizontal, DS.Space.screen)
+        }
+    }
+
+    /// Fits one iPhone screen without scrolling (it scrolls only where it cannot fit, an SE).
+    private var modalLayout: some View {
+        FillingScrollView {
+            VStack(spacing: 0) {
+                hero
+                VStack(spacing: 0) {
+                    Text("Understand every dream")
+                        .textStyle(.display, color: DS.Palette.white)
+                        .skyTextShadow()
+                        .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
+                        .enterUp(0.2)
+                    perkList.padding(.top, 22).enterUp(0.35)
+                    plans.padding(.top, 24)
+                    Spacer(minLength: 20)
+                    cta.padding(.horizontal, DS.Space.cta - DS.Space.screen)
+                    footer.enterUp(1)
+                }
+                .padding(.horizontal, DS.Space.screen)
+                .padding(.top, -40)
+            }
+        }
+        .ignoresSafeArea(edges: .top)
+    }
+
+    /// The modal's picture: Home's sky (day or night), fading into the gradient below it.
+    private var hero: some View {
+        // The screen sets the width: a filled image on its own would widen the whole column.
+        Color.clear
+            .frame(maxWidth: .infinity)
+            .frame(height: 240)
+            .overlay { Image(.skyTop).resizable().scaledToFill() }
+            .clipped()
+            // Fades out rather than into a colour, so no seam shows on the gradient behind it.
+            .mask {
+                LinearGradient(stops: [.init(color: .black, location: 0.5), .init(color: .clear, location: 1)],
+                               startPoint: .top, endPoint: .bottom)
+            }
+            .accessibilityHidden(true)
+    }
+
+    /// Each perk: an icon and its name, larger than the old one-liners.
+    private var perkList: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ForEach(viewModel.perks, id: \.self) { perk in
+                HStack(spacing: 14) {
+                    Image(systemName: perk.systemImage)
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundStyle(DS.Palette.icon)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(DS.Palette.surface))
+                        .accessibilityHidden(true)
+                    Text(perk.title).textStyle(.heading, color: DS.Palette.white)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 6)
+    }
+
+    private var cta: some View {
+        PrimaryButton(title: viewModel.ctaTitle, isLoading: viewModel.isPurchasing, light: onDark) {
+            Task { await viewModel.purchase() }
+        }
+        .disabled(viewModel.selectedProduct == nil)
+        .opacity(viewModel.selectedProduct == nil ? 0.6 : 1)
+        .enterUp(0.9)
     }
 
     private var header: some View {
@@ -72,7 +145,7 @@ struct PaywallView: View {
                         .foregroundStyle(DS.Palette.icon)
                         .frame(width: 26, height: 26)
                         .background(Circle().fill(DS.Palette.surface))
-                    Text(perk).textStyle(.link)
+                    Text(perk.title).textStyle(.link)
                 }
                 .accessibilityElement(children: .combine)
             }
@@ -167,8 +240,8 @@ struct PaywallView: View {
     }
 }
 
-/// The paywall as a sheet inside the app (Settings, the limit, Analysis): on its own gradient,
-/// darker than the screen behind it.
+/// The paywall as a full-screen modal inside the app (Settings, the limit, Analysis): on its own
+/// gradient, darker than the screens behind it.
 struct PaywallSheet: View {
     let viewModel: PaywallViewModel
 

@@ -32,11 +32,16 @@ final class PaywallViewModel {
     private(set) var isRestoring = false
     var alertMessage: String?
 
+    struct Perk: Hashable {
+        var systemImage: String
+        var title: String
+    }
+
     let perks = [
-        String(localized: "Personal interpretation in 3 lenses"),
-        String(localized: "An image of every dream"),
-        String(localized: "Private journal and recurring symbols"),
-        String(localized: "Gentle morning reminders")
+        Perk(systemImage: "sparkles", title: String(localized: "Your personal interpretation")),
+        Perk(systemImage: "photo", title: String(localized: "See your dream come alive")),
+        Perk(systemImage: "book.closed", title: String(localized: "Your private dream journal")),
+        Perk(systemImage: "bell", title: String(localized: "Never lose a dream again"))
     ]
 
     private let purchases: any PurchaseService

@@ -36,7 +36,7 @@ struct MainTabView: View {
                 .ignoresSafeArea(.container, edges: .bottom)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
-        .sheet(isPresented: $appState.isPaywallSheetPresented) {
+        .fullScreenCover(isPresented: $appState.isPaywallSheetPresented) {
             PaywallSheet(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
                                                      placement: .record, analytics: dependencies.analytics) {
                 appState.isPaywallSheetPresented = false

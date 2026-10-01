@@ -65,7 +65,7 @@ extension RadioOptionCard where Leading == IconCircle, Trailing == EmptyView {
     }
 }
 
-/// Paywall plan: radio card with a peach badge and a price on the right.
+/// Paywall plan: radio card with a yellow badge and a price on the right.
 struct PlanCard: View {
     var title: String
     var subtitle: String
@@ -87,7 +87,7 @@ struct PlanCard: View {
                                 .foregroundStyle(DS.Palette.ink)
                                 .padding(.horizontal, 8)
                                 .frame(height: 20)
-                                .background(Capsule().fill(DS.Palette.peach))
+                                .background(Capsule().fill(DS.Palette.trialBadge))
                         }
                     }
                     Text(subtitle).textStyle(.secondary, color: DS.Palette.textTertiary)

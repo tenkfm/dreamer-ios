@@ -17,11 +17,13 @@ struct PrimaryButtonLabel: View {
     var title: String
     var systemImage: String? = nil
     var isLoading = false
+    /// White with dark text, for a dark background (the paywall modal).
+    var light = false
 
     var body: some View {
         HStack(spacing: 10) {
             if isLoading {
-                ProgressView().tint(.white)
+                ProgressView().tint(light ? DS.Palette.ink : .white)
             } else {
                 if let systemImage {
                     Image(systemName: systemImage).font(.system(size: 17, weight: .regular))
@@ -29,10 +31,10 @@ struct PrimaryButtonLabel: View {
                 Text(title).font(TextStyle.button.font).lineLimit(1).minimumScaleFactor(0.8)
             }
         }
-        .foregroundStyle(DS.Palette.white)
+        .foregroundStyle(light ? DS.Palette.ink : DS.Palette.white)
         .frame(maxWidth: .infinity)
         .frame(height: DS.Size.primaryButton)
-        .background(Capsule().fill(DS.Palette.cta))
+        .background(Capsule().fill(light ? DS.Palette.white : DS.Palette.cta))
         .shadow(color: DS.Palette.ctaShadow.opacity(0.3), radius: 15, x: 0, y: 14)
         .contentShape(Capsule())
     }
@@ -42,6 +44,7 @@ struct PrimaryButton: View {
     var title: String
     var systemImage: String? = nil
     var isLoading = false
+    var light = false
     var action: () -> Void
 
     @State private var taps = 0
@@ -51,7 +54,7 @@ struct PrimaryButton: View {
             taps += 1
             action()
         } label: {
-            PrimaryButtonLabel(title: title, systemImage: systemImage, isLoading: isLoading)
+            PrimaryButtonLabel(title: title, systemImage: systemImage, isLoading: isLoading, light: light)
         }
         .buttonStyle(PressableButtonStyle())
         .disabled(isLoading)

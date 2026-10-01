@@ -74,6 +74,9 @@ enum DS {
         static let fadeTop         = Color(day: 0xF1F4F8, night: 0x152044)
         static let fadeFull        = Color(day: 0xF1F5FA, night: 0x152044)
 
+        /// The trial badge on the paywall's plans ("7 days free"): a warm yellow that catches the eye.
+        static let trialBadge      = Color(hex: 0xF8D25C)
+
         /// The tag and the week-strip ring of a dream told but not read yet.
         static let pendingTag      = Color(hex: 0xF7CDBD)
 

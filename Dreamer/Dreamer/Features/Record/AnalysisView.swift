@@ -113,7 +113,7 @@ struct AnalysisView: View {
         .animation(.soft(0.6), value: viewModel.isFinished)
         .animation(.soft(0.6), value: showsWrittenText)
         .task { await viewModel.run() }
-        .sheet(isPresented: $isPaywallPresented) {
+        .fullScreenCover(isPresented: $isPaywallPresented) {
             PaywallSheet(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
                                                      placement: .analysis, analytics: dependencies.analytics) {
                 isPaywallPresented = false

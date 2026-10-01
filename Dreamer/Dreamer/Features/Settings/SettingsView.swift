@@ -52,16 +52,19 @@ struct SettingsView: View {
         } message: {
             Text(appLock.alertMessage ?? "")
         }
-        .sheet(item: $viewModel.activeSheet) { sheet in
+        .sheet(item: smallSheet) { sheet in
             Group {
                 switch sheet {
                 case .reminderTime: ReminderTimeSheet(time: $viewModel.reminderTime)
                 case .lens: LensPickerSheet(selection: $viewModel.preferredLens)
-                case .subscription:
-                    PaywallSheet(viewModel: viewModel.makePaywallViewModel())
+                case .subscription: EmptyView()
                 }
             }
             .scrollEdgeEffectsHidden()
+        }
+        // The paywall takes the whole screen; the pickers stay sheets.
+        .fullScreenCover(isPresented: paywallPresented) {
+            PaywallSheet(viewModel: viewModel.makePaywallViewModel())
         }
         .manageSubscriptionsSheet(isPresented: $viewModel.isManagingSubscription)
         .sheet(isPresented: $viewModel.isDeleteConfirmationPresented, onDismiss: viewModel.cancelDelete) {
@@ -135,6 +138,16 @@ struct SettingsView: View {
     private var lockBinding: Binding<Bool> {
         Binding(get: { viewModel.lockWithFaceID },
                 set: { isOn in Task { await appLock.setEnabled(isOn) } })
+    }
+
+    private var smallSheet: Binding<SettingsViewModel.Sheet?> {
+        Binding(get: { viewModel.activeSheet == .subscription ? nil : viewModel.activeSheet },
+                set: { viewModel.activeSheet = $0 })
+    }
+
+    private var paywallPresented: Binding<Bool> {
+        Binding(get: { viewModel.activeSheet == .subscription },
+                set: { if !$0, viewModel.activeSheet == .subscription { viewModel.activeSheet = nil } })
     }
 
     private var lockAlert: Binding<Bool> {
