@@ -15,7 +15,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 CONFIG = json.loads((ROOT / "fastlane/screenshots.json").read_text())
 RAW = ROOT / "fastlane/screenshots/raw"
 OUT = ROOT / "fastlane/screenshots/en-US"
-FONT = ROOT / "Dreamer/Resources/Fonts/Quicksand-Medium.ttf"
+FONT = ROOT / "Dreamer/Resources/Fonts/CormorantGaramond-SemiBold.ttf"
 
 # design-tokens.json
 SKY_TOP = (143, 180, 232)       # the top of the day sky

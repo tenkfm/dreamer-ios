@@ -145,21 +145,24 @@ enum DS {
 
 // MARK: - Fonts
 
-/// One place to swap the UI family. Default = Quicksand ("Light" weight set from the design).
+/// One place to swap the UI family: Cormorant Garamond, like the logo.
 enum DreamerFont {
     enum Weight { case light, regular, medium, semibold, bold }
 
-    /// Every UI text size is the design's size times this. Quicksand reads small on a phone at the
-    /// design's sizes, so the whole type scale is raised in one place (the logo keeps its size).
-    static let scale: CGFloat = 1.1
+    /// Every UI text size is the design's size times this. Cormorant's small x-height reads small at
+    /// the design's sizes (drawn for a rounder sans), so the whole type scale is raised in one place (the
+    /// logo keeps its size).
+    static let scale: CGFloat = 1.25
 
+    /// Cormorant Garamond, the logo's family, for every text (Tony picked one family for the logo
+    /// and the UI). Each weight sits a step above its name: Cormorant's hairlines read too pale on a
+    /// phone at their nominal weight.
     static func postScriptName(_ weight: Weight) -> String {
         switch weight {
-        case .light:    "Quicksand-Light"
-        case .regular:  "Quicksand-Regular"
-        case .medium:   "Quicksand-Medium"
-        case .semibold: "Quicksand-SemiBold"
-        case .bold:     "Quicksand-Bold"
+        case .light:    "CormorantGaramond-Regular"
+        case .regular:  "CormorantGaramond-Medium"
+        case .medium:   "CormorantGaramond-SemiBold"
+        case .semibold, .bold: "CormorantGaramond-Bold"
         }
     }
 

@@ -8,7 +8,8 @@
     </dependencies>
     <scenes>
         <!--Launch Screen: steel-blue vertical gradient, "Listen to your dreams" in the middle.
-            The slogan is an image: a launch screen cannot rely on the app's custom font.-->
+            The slogan is an image (Cormorant Garamond, the app's font): a launch screen cannot rely on a
+            custom font.-->
         <scene sceneID="LSc-SC-001">
             <objects>
                 <viewController id="LSc-VC-001" sceneMemberID="viewController">
@@ -42,6 +43,6 @@
     </scenes>
     <resources>
         <image name="LaunchGradient" width="4" height="1200"/>
-        <image name="LaunchSlogan" width="194.5" height="36.5"/>
+        <image name="LaunchSlogan" width="196" height="40"/>
     </resources>
 </document>

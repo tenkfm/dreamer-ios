@@ -501,7 +501,7 @@ the alert should arrive within 15 minutes.
 simulator, sets the status bar to 9:41 with full battery, and opens each screen of
 `fastlane/screenshots.json` with `-debugScreen` on mock data (`-day -debugTime 07:30`). It then
 takes the screenshots and captions them with `scripts/frame_screenshots.py` (the design's sky, the
-Quicksand font and the text colour). The result is 6.9" (1320 x 2868) and 6.5" (1284 x 2778)
+Cormorant Garamond, the app's font, and the text colour). The result is 6.9" (1320 x 2868) and 6.5" (1284 x 2778)
 images in `fastlane/screenshots/en-US`, which is git-ignored and regenerated at every design
 change. `bundle exec fastlane upload_store` sends the metadata and the screenshots to App Store
 Connect with `deliver`, without a binary. It needs the App Store Connect API key (see Blockers).
