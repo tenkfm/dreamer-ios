@@ -34,6 +34,8 @@ final class JournalViewModel {
         var emotion: Emotion?
         /// Search: the matching fragment, matched words in `**`.
         var snippet: String?
+        /// A told dream that was never read: shown with its own tag, opens Analysis on tap.
+        var pendingDraft: DreamDraft?
     }
 
     /// One week of the journal (`weekOf` = its Monday).
@@ -60,6 +62,8 @@ final class JournalViewModel {
     private let images: (any DreamImageLoading)?
     /// The backend's month; nil in mock mode, where it is computed from the stored dreams.
     private let insights: InsightStore?
+    /// Dreams told but never read (nil in previews).
+    private let drafts: DraftQueue?
     private let analytics: any Analytics
     private let now: () -> Date
     private let calendar: Calendar
@@ -68,13 +72,14 @@ final class JournalViewModel {
     @ObservationIgnored private var searchTask: Task<Void, Never>?
 
     init(appState: AppState, store: any DreamStore, images: (any DreamImageLoading)? = nil, insights: InsightStore? = nil,
-         analytics: any Analytics = NoopAnalytics(),
+         drafts: DraftQueue? = nil, analytics: any Analytics = NoopAnalytics(),
          now: @escaping () -> Date = Date.init, calendar: Calendar = .mondayFirst,
          searchDebounce: Duration = .milliseconds(350)) {
         self.appState = appState
         self.store = store
         self.images = images
         self.insights = insights
+        self.drafts = drafts
         self.analytics = analytics
         self.now = now
         self.calendar = calendar
@@ -182,7 +187,8 @@ final class JournalViewModel {
         emotionFilter = emotionFilter == emotion ? nil : emotion
     }
 
-    /// Weeks newest first, in the order the backend groups them.
+    /// Weeks newest first, in the order the backend groups them. Dreams that were never read sit
+    /// at the top of their week (not while searching: the server has no text of them).
     var sections: [Section] {
         var sections: [Section] = []
         for dream in filteredDreams {
@@ -193,10 +199,21 @@ final class JournalViewModel {
                 sections.append(Section(id: week, title: weekTitle(week), rows: [row(dream)]))
             }
         }
+        guard !hasSearchTerms, let drafts else { return sections }
+        for pending in drafts.pending.reversed() {
+            guard let week = calendar.dateInterval(of: .weekOfYear, for: pending.createdAt)?.start else { continue }
+            let id = calendar.startOfDay(for: week)
+            if let index = sections.firstIndex(where: { $0.id == id }) {
+                sections[index].rows.insert(row(pending), at: 0)
+            } else {
+                sections.append(Section(id: id, title: weekTitle(id), rows: [row(pending)]))
+                sections.sort { $0.id > $1.id }
+            }
+        }
         return sections
     }
 
-    var isEmpty: Bool { filteredDreams.isEmpty }
+    var isEmpty: Bool { filteredDreams.isEmpty && (hasSearchTerms || (drafts?.pending.isEmpty ?? true)) }
 
     var canLoadMore: Bool { store.canLoadMore && !isSearching }
 
@@ -219,6 +236,21 @@ final class JournalViewModel {
             thumbnailURL: dream.thumbnailURL,
             emotion: dream.emotions.first,
             snippet: hasSearchTerms ? dream.snippet : nil)
+    }
+
+    private func row(_ pending: DraftQueue.Pending) -> Row {
+        let text = pending.draft.transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        // The opening words stand in for the title the backend never gave, cut at a word.
+        var title = text
+        if text.count > 48 {
+            let head = String(text.prefix(48))
+            title = (head.lastIndex(of: " ").map { String(head[..<$0]) } ?? head)
+                .trimmingCharacters(in: .punctuationCharacters.union(.whitespaces)) + "…"
+        }
+        return Row(id: UUID(uuidString: pending.draft.clientId) ?? UUID(),
+                   title: title.isEmpty ? String(localized: "A dream you told") : title,
+                   dateText: dateFormatter.day(pending.createdAt, now: now()),
+                   pendingDraft: pending.draft)
     }
 
     /// The Journal tab was opened.
@@ -272,7 +304,11 @@ final class JournalViewModel {
     }
 
     func open(_ row: Row) {
-        appState.push(.interpretation(row.id), on: .journal)
+        if let draft = row.pendingDraft {
+            appState.readDraft(draft)
+        } else {
+            appState.push(.interpretation(row.id), on: .journal)
+        }
     }
 
     func askToDelete(_ row: Row) {
@@ -283,6 +319,11 @@ final class JournalViewModel {
     func confirmDelete() async {
         guard let row = deleteCandidate else { return }
         deleteCandidate = nil
+        if let draft = row.pendingDraft {
+            // Never reached the backend: forgetting the draft is the whole deletion.
+            drafts?.discard(clientId: draft.clientId)
+            return
+        }
         do {
             try await store.delete(id: row.id)
         } catch {

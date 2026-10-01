@@ -9,15 +9,18 @@ final class HomeViewModel {
     private let catalog: any SymbolCatalog
     /// The backend's insights; nil in mock mode, where they are computed from the stored dreams.
     private let insights: InsightStore?
+    /// Dreams told but never read (nil in previews).
+    private let drafts: DraftQueue?
     private let now: () -> Date
     private let calendar: Calendar
 
     init(appState: AppState, store: any DreamStore, catalog: any SymbolCatalog, insights: InsightStore? = nil,
-         now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
+         drafts: DraftQueue? = nil, now: @escaping () -> Date = Date.init, calendar: Calendar = .current) {
         self.appState = appState
         self.store = store
         self.catalog = catalog
         self.insights = insights
+        self.drafts = drafts
         self.now = now
         var calendar = calendar
         calendar.firstWeekday = 2 // Week strip runs Monday..Sunday.
@@ -52,25 +55,41 @@ final class HomeViewModel {
     }
 
     var weekDays: [WeekDayState] {
-        if let week = insights?.week {
-            let formatter = DateFormatter()
-            formatter.calendar = calendar
-            formatter.dateFormat = "EEEE"
-            return week.days.enumerated().map { index, day in
-                WeekDayState(id: index, letter: day.letter, isDone: day.caught, accessibilityName: formatter.string(from: day.date))
-            }
-        }
-        let letters = ["M", "T", "W", "T", "F", "S", "S"]
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.dateFormat = "EEEE"
+        if let week = insights?.week {
+            return week.days.enumerated().map { index, day in
+                WeekDayState(id: index, letter: day.letter, isDone: day.caught, accessibilityName: formatter.string(from: day.date),
+                             isPending: pendingDraft(on: day.date) != nil)
+            }
+        }
+        let letters = ["M", "T", "W", "T", "F", "S", "S"]
         let dreams = dreamsThisWeek
         return weekDates.enumerated().map { index, day in
             WeekDayState(id: index,
                          letter: letters[index],
                          isDone: dreams.contains { calendar.isDate($0.createdAt, inSameDayAs: day) },
-                         accessibilityName: formatter.string(from: day))
+                         accessibilityName: formatter.string(from: day),
+                         isPending: pendingDraft(on: day) != nil)
         }
+    }
+
+    /// The newest dream told that day and not read yet.
+    private func pendingDraft(on day: Date) -> DreamDraft? {
+        drafts?.pending.first { calendar.isDate($0.createdAt, inSameDayAs: day) }?.draft
+    }
+
+    /// A pending day of the week strip was tapped: read its dream.
+    func readPending(_ day: WeekDayState) {
+        let date: Date?
+        if let days = insights?.week?.days {
+            date = days.indices.contains(day.id) ? days[day.id].date : nil
+        } else {
+            date = weekDates.indices.contains(day.id) ? weekDates[day.id] : nil
+        }
+        guard let date, let draft = pendingDraft(on: date) else { return }
+        appState.readDraft(draft)
     }
 
     var weekCaption: String {

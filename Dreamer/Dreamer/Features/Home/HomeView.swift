@@ -75,7 +75,7 @@ struct HomeView: View {
 
     private var weekCard: some View {
         VStack(spacing: 6) {
-            WeekStrip(days: viewModel.weekDays)
+            WeekStrip(days: viewModel.weekDays, onPendingTap: viewModel.readPending)
             Text(viewModel.weekCaption).textStyle(.secondary, color: DS.Palette.textSecondary)
         }
         .padding(.horizontal, 14)

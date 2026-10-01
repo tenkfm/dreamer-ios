@@ -57,10 +57,11 @@ struct MainTabView: View {
         switch tab {
         case .today:
             HomeView(viewModel: HomeViewModel(appState: appState, store: dependencies.dreamStore, catalog: dependencies.catalog,
-                                              insights: dependencies.insights, now: homeClock))
+                                              insights: dependencies.insights, drafts: dependencies.drafts, now: homeClock))
         case .journal:
             JournalView(viewModel: JournalViewModel(appState: appState, store: dependencies.dreamStore, images: dependencies.imageLoader,
-                                                    insights: dependencies.insights, analytics: dependencies.analytics))
+                                                    insights: dependencies.insights, drafts: dependencies.drafts,
+                                                    analytics: dependencies.analytics))
         case .library:
             LibraryView(viewModel: LibraryViewModel(appState: appState, catalog: dependencies.catalog))
         }
@@ -73,6 +74,10 @@ struct MainTabView: View {
             dependencies.trackingConsent.moment(.firstInterpretation)
         } onCancel: {
             appState.isRecordFlowPresented = false
+        }
+        if let draft = appState.draftToRead {
+            appState.draftToRead = nil
+            flow.read(draft)
         }
         #if DEBUG
         DebugLaunch.prepare(flow)

@@ -74,6 +74,9 @@ enum DS {
         static let fadeTop         = Color(day: 0xF1F4F8, night: 0x152044)
         static let fadeFull        = Color(day: 0xF1F5FA, night: 0x152044)
 
+        /// The tag and the week-strip ring of a dream told but not read yet.
+        static let pendingTag      = Color(hex: 0xF7CDBD)
+
         /// The paywall sheet's vertical gradient: darker than the other screens, so the offer stands
         /// apart from the screen it opened over.
         static let paywallTop      = Color(day: 0x8FA6DA, night: 0x26346A)

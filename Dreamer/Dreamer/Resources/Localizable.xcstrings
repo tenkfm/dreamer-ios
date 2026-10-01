@@ -26,6 +26,7 @@
       },
       "shouldTranslate": false
     },
+    "%@, a dream not read yet": {},
     "%lld": {
       "shouldTranslate": false
     },
@@ -38,6 +39,7 @@
     },
     "A dream is waiting": {},
     "A dream keeps coming back": {},
+    "A dream you told": {},
     "A few details": {},
     "A personal interpretation, the symbols behind it and an image of your dream.": {},
     "AI dream image": {},
@@ -114,6 +116,7 @@
     "No dreams caught yet this week": {},
     "No dreams match your search.": {},
     "Not active": {},
+    "Not read yet": {},
     "Nothing found. Try another word.": {},
     "OK": {},
     "Off": {},
@@ -139,6 +142,7 @@
     "Question %lld of 2": {},
     "Reading your dream": {},
     "Reading your dream…": {},
+    "Reads it now": {},
     "Recording": {},
     "Remember my dreams better": {},
     "Reminder time": {},

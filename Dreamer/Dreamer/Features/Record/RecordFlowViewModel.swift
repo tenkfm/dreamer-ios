@@ -80,6 +80,12 @@ final class RecordFlowViewModel {
         step = .analysis
     }
 
+    /// A dream told before and never read: straight to Analysis with it.
+    func read(_ draft: DreamDraft) {
+        analysis = AnalysisViewModel(draft: draft, service: analysisService, store: store, drafts: drafts)
+        step = .analysis
+    }
+
     /// "See my interpretation".
     func showInterpretation() {
         guard let dream = analysis?.result else { return }

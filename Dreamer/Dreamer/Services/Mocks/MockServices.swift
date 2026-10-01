@@ -224,7 +224,11 @@ final class InMemoryDreamStore: DreamStore {
 
 /// Accepts every draft as the sample dream.
 struct MockDreamSubmitter: DreamSubmitter {
+    /// The same refusal as the mock analysis (`-premiumRequired`), so a waiting draft stays waiting.
+    var failure: APIError?
+
     func submit(_ submission: DreamSubmission) async throws(APIError) -> Dream {
+        if let failure { throw failure }
         var draft = DreamDraft(clientId: submission.clientId, transcript: submission.text)
         draft.emotions = submission.details?.emotions ?? []
         return MockData.analyzedDream(from: draft, at: submission.recordedAt ?? .now)

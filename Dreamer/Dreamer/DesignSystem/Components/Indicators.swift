@@ -100,6 +100,8 @@ struct WeekDayState: Identifiable, Hashable {
     let letter: String
     let isDone: Bool
     var accessibilityName: String
+    /// A dream told that day but not read yet: its own ring, and a tap reads it.
+    var isPending = false
 }
 
 /// 7 circles: empty ring or white filled with a check that pops in one after another.
@@ -107,19 +109,33 @@ struct WeekStrip: View {
     var days: [WeekDayState]
     /// Delay before the first check pops (docs: 1.14 s on Home).
     var popDelay: Double = 1.14
+    /// A day with a dream not read yet was tapped.
+    var onPendingTap: (WeekDayState) -> Void = { _ in }
 
     var body: some View {
         HStack(spacing: 0) {
             ForEach(Array(days.enumerated()), id: \.element.id) { offset, day in
-                VStack(spacing: 8) {
-                    WeekDayCircle(isDone: day.isDone, delay: popDelay + Double(doneIndex(before: offset)) * 0.12)
-                    Text(day.letter).textStyle(.small, color: DS.Palette.textTertiary)
+                if day.isPending {
+                    Button { onPendingTap(day) } label: { column(day, offset: offset) }
+                        .buttonStyle(PressableButtonStyle())
+                        .accessibilityLabel("\(day.accessibilityName), a dream not read yet")
+                        .accessibilityHint("Reads it now")
+                } else {
+                    column(day, offset: offset)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("\(day.accessibilityName), \(day.isDone ? "dream caught" : "no dream")")
                 }
-                .frame(maxWidth: .infinity)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(day.accessibilityName), \(day.isDone ? "dream caught" : "no dream")")
             }
         }
+    }
+
+    private func column(_ day: WeekDayState, offset: Int) -> some View {
+        VStack(spacing: 8) {
+            WeekDayCircle(isDone: day.isDone, isPending: day.isPending,
+                          delay: popDelay + Double(doneIndex(before: offset)) * 0.12)
+            Text(day.letter).textStyle(.small, color: DS.Palette.textTertiary)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func doneIndex(before offset: Int) -> Int {
@@ -129,6 +145,7 @@ struct WeekStrip: View {
 
 private struct WeekDayCircle: View {
     var isDone: Bool
+    var isPending = false
     var delay: Double
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -137,8 +154,16 @@ private struct WeekDayCircle: View {
     var body: some View {
         ZStack {
             Circle().strokeBorder(DS.Palette.weekRing.opacity(0.45), lineWidth: 1.5)
-                .opacity(isDone ? 0 : 1)
-            if isDone {
+                .opacity(isDone || isPending ? 0 : 1)
+            if isPending {
+                // Told, not read yet: a warm ring with a sparkle, distinct from the white check.
+                Image(systemName: "sparkle")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(DS.Palette.peach)
+                    .frame(width: 38, height: 38)
+                    .background(Circle().fill(DS.Palette.pendingTag.opacity(0.35)))
+                    .overlay(Circle().strokeBorder(DS.Palette.peach, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3])))
+            } else if isDone {
                 Image(systemName: "checkmark")
                     .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(DS.Palette.icon)

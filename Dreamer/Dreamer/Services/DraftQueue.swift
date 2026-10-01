@@ -91,6 +91,25 @@ final class DraftQueue {
         persist()
     }
 
+    /// A told dream that has not been read yet (offline, no plan, a failure), for Journal and Home.
+    struct Pending: Identifiable, Hashable {
+        var draft: DreamDraft
+        var createdAt: Date
+        var id: String { draft.clientId }
+    }
+
+    /// Newest first. Reads `pendingCount`, so views showing it update as drafts come and go.
+    var pending: [Pending] {
+        _ = pendingCount
+        return records().map { Pending(draft: $0.draft, createdAt: $0.draft.recordedAt ?? $0.createdAt) }
+            .sorted { $0.createdAt > $1.createdAt }
+    }
+
+    /// The user deleted a dream that was never read.
+    func discard(clientId: String) {
+        markSent(clientId: clientId)
+    }
+
     /// The backend accepted the draft (by the foreground analysis or by `flush`).
     func markSent(clientId: String) {
         guard let record = record(clientId: clientId) else { return }

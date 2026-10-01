@@ -31,6 +31,8 @@ final class AppState {
     var selectedTab: AppTab = .today
     var paths: [AppTab: [Route]] = [:]
     var isRecordFlowPresented = false
+    /// A told dream that was never read, to open straight in Analysis (from Journal or Home).
+    var draftToRead: DreamDraft?
     /// A link the app was opened with, waiting for the screen that handles it (cold start included).
     var pendingDeepLink: DeepLink?
     /// Profile sync to run for the current account (set on sign-in and at launch).
@@ -335,6 +337,14 @@ final class AppState {
     /// user who used the free one), so a told dream is never stuck behind a 402.
     func presentRecordFlow() {
         if canInterpret { isRecordFlowPresented = true } else { isPaywallSheetPresented = true }
+    }
+
+    /// Reads a waiting dream: Analysis on it, or the paywall when there is no plan (after buying,
+    /// the draft queue sends it anyway).
+    func readDraft(_ draft: DreamDraft) {
+        guard canInterpret else { isPaywallSheetPresented = true; return }
+        draftToRead = draft
+        isRecordFlowPresented = true
     }
 
     /// A tapped notification: the morning reminder opens Record, a push about a dream opens it,

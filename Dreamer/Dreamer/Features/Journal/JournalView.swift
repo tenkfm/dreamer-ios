@@ -142,7 +142,10 @@ private struct JournalRow: View {
         DreamRow(title: row.title,
                  date: row.dateText,
                  image: thumbnail.map(Image.init(uiImage:)) ?? DreamImage.image(named: row.assetName),
-                 emotion: row.emotion.map { ($0.title, $0.color) },
+                 // A dream never read wears its own tag instead of an emotion.
+                 emotion: row.pendingDraft != nil
+                    ? (String(localized: "Not read yet"), DS.Palette.pendingTag)
+                    : row.emotion.map { ($0.title, $0.color) },
                  snippet: row.snippet)
             .task(id: row.thumbnailURL) { thumbnail = await viewModel.thumbnail(for: row) }
     }
