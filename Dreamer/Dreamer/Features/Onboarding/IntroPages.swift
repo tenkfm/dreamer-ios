@@ -48,15 +48,30 @@ extension EnvironmentValues {
     @Entry fileprivate var introCompact = false
 }
 
-/// The intro orb, a size smaller where the content area is short.
+/// The intro orb, a size smaller where the content area is short. With an action it is a button
+/// that moves the onboarding on, like "Continue" below it.
 private struct IntroOrb: View {
     var glyph: OrbGlyph
     var topPadding: CGFloat = 0
+    var action: (() -> Void)?
     @Environment(\.introCompact) private var compact
 
     var body: some View {
+        Group {
+            if let action {
+                Button(action: action) { orb.contentShape(Circle()) }
+                    .buttonStyle(PressableButtonStyle())
+                    // VoiceOver already has "Continue" for the same step.
+                    .accessibilityHidden(true)
+            } else {
+                orb
+            }
+        }
+        .padding(.top, compact ? topPadding * 0.4 : topPadding)
+    }
+
+    private var orb: some View {
         OrbView(glyph: glyph, size: compact ? .home : .onboarding)
-            .padding(.top, compact ? topPadding * 0.4 : topPadding)
     }
 }
 
@@ -80,6 +95,9 @@ extension IntroContentLayout where Top == EmptyView {
 // MARK: - 01 Welcome
 
 struct WelcomeContent: View {
+    /// The orb moves on, like "Get started".
+    var onContinue: () -> Void = {}
+
     var body: some View {
         IntroContentLayout(
             title: "Your dreams are\ntalking to you",
@@ -96,9 +114,8 @@ struct WelcomeContent: View {
             }
             .enterUp(0.15)
         } hero: {
-            IntroOrb(glyph: .moon, topPadding: 40)
+            IntroOrb(glyph: .moon, topPadding: 40, action: onContinue)
                 .enterUp(0.2)
-                .accessibilityHidden(true)
         }
     }
 }
@@ -106,15 +123,17 @@ struct WelcomeContent: View {
 // MARK: - 02 Record
 
 struct RecordIntroContent: View {
+    /// The orb moves on, like "Continue".
+    var onContinue: () -> Void = {}
+
     var body: some View {
         IntroContentLayout(
             title: "Catch it before it fades",
             message: "Say your dream out loud in 10 seconds. We write it down while you are still half asleep."
         ) {
             IntroHeroStack(spacing: 30) {
-                IntroOrb(glyph: .mic)
+                IntroOrb(glyph: .mic, action: onContinue)
                     .enterUp(0.1)
-                    .accessibilityHidden(true)
                 TypewriterText(text: MockData.onboardingQuote, startDelay: 0.7)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)

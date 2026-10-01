@@ -202,8 +202,8 @@ private struct OnboardingPagesView: View {
 
     @ViewBuilder private var content: some View {
         switch step {
-        case .welcome: WelcomeContent()
-        case .record: RecordIntroContent()
+        case .welcome: WelcomeContent { viewModel.next() }
+        case .record: RecordIntroContent { viewModel.next() }
         case .understand: UnderstandContent()
         case .quizGoal: QuizGoalContent(viewModel: viewModel)
         case .quizLens: QuizLensContent(viewModel: viewModel)
