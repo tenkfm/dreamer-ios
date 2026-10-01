@@ -2,7 +2,7 @@ import AuthenticationServices
 import SwiftUI
 
 /// Account step of onboarding, built from the design system (the design has no account screen):
-/// full sky, logo, title, Sign in with Apple, Sign in with Google (when the build has a Google
+/// full sky, title, Sign in with Apple, Sign in with Google (when the build has a Google
 /// client), a glass email field and the legal line.
 /// After an email is sent: "Check your inbox" with the envelope orb and "Resend".
 /// Draws no background: it sits on the onboarding sky.
@@ -42,7 +42,7 @@ struct SignInView: View {
                 if viewModel.phase == .form { onBack() } else { viewModel.useAnotherEmail() }
             }
         }, center: {
-            Logo()
+            EmptyView()
         })
         // HeaderBar keeps its own screen margin; this only cancels the content's CTA margin, so the
         // header buttons stand where they do on every other screen.
