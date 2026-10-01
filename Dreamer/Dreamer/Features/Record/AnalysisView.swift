@@ -81,14 +81,31 @@ struct AnalysisView: View {
                         .padding(.bottom, 8)
                         .transition(.opacity.combined(with: .offset(y: 18)))
                 } else if viewModel.errorState?.action == .openPaywall {
-                    // PREMIUM_REQUIRED: the dream stays; after buying, it is read at once.
-                    PrimaryButton(title: "See plans", systemImage: "sparkle") { isPaywallPresented = true }
-                        .padding(.horizontal, DS.Space.cta - DS.Space.screen)
-                        .padding(.bottom, 8)
-                } else if viewModel.errorMessage != nil, viewModel.canRetry {
-                    PrimaryButton(title: "Try again") { Task { await viewModel.run() } }
-                        .padding(.horizontal, DS.Space.cta - DS.Space.screen)
-                        .padding(.bottom, 8)
+                    // PREMIUM_REQUIRED: the dream waits in the draft queue and is read as soon as
+                    // there is a plan, so leaving loses nothing.
+                    Text("Your dream is saved. We’ll read it as soon as you start your plan.")
+                        .textStyle(.secondary, color: DS.Palette.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.bottom, 14)
+                    VStack(spacing: 4) {
+                        PrimaryButton(title: "See plans", systemImage: "sparkle") { isPaywallPresented = true }
+                        TextLinkButton(title: "Back to Home", action: onClose)
+                    }
+                    .padding(.horizontal, DS.Space.cta - DS.Space.screen)
+                    .padding(.bottom, 8)
+                } else if viewModel.errorMessage != nil {
+                    // Every failure has a way out: without one the screen was a dead end.
+                    VStack(spacing: 4) {
+                        if viewModel.canRetry {
+                            PrimaryButton(title: "Try again") { Task { await viewModel.run() } }
+                            TextLinkButton(title: "Back to Home", action: onClose)
+                        } else {
+                            PrimaryButton(title: "Back to Home", action: onClose)
+                        }
+                    }
+                    .padding(.horizontal, DS.Space.cta - DS.Space.screen)
+                    .padding(.bottom, 8)
                 }
             }
             .padding(.horizontal, DS.Space.screen)
@@ -97,14 +114,10 @@ struct AnalysisView: View {
         .animation(.soft(0.6), value: showsWrittenText)
         .task { await viewModel.run() }
         .sheet(isPresented: $isPaywallPresented) {
-            ZStack {
-                PanoramaSkyBackground.onboarding(at: .paywall)
-                PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
-                                                        placement: .analysis, analytics: dependencies.analytics) {
-                    isPaywallPresented = false
-                })
-            }
-            .scrollEdgeEffectsHidden()
+            PaywallSheet(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
+                                                     placement: .analysis, analytics: dependencies.analytics) {
+                isPaywallPresented = false
+            })
         }
         .onChange(of: appState.subscription) { _, subscription in
             if subscription != .none, viewModel.errorState?.action == .openPaywall {

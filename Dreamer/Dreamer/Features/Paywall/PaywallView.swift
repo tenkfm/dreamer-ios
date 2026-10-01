@@ -5,8 +5,12 @@ struct PaywallView: View {
     @State private var viewModel: PaywallViewModel
     @Environment(\.openURL) private var openURL
 
-    init(viewModel: PaywallViewModel) {
+    /// On the sheet's dark gradient the footer turns light; on the sky it stays dark.
+    private let onDark: Bool
+
+    init(viewModel: PaywallViewModel, onDark: Bool = false) {
         _viewModel = State(initialValue: viewModel)
+        self.onDark = onDark
     }
 
     var body: some View {
@@ -140,7 +144,7 @@ struct PaywallView: View {
 
     private func termsLabel(_ text: String) -> some View {
         Text(text)
-            .textStyle(.label, color: DS.Palette.textTertiary)
+            .textStyle(.label, color: onDark ? DS.Palette.white.opacity(0.8) : DS.Palette.textTertiary)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -148,7 +152,7 @@ struct PaywallView: View {
     private func footerLink(_ title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .textStyle(.label, color: DS.Palette.textPrimary)
+                .textStyle(.label, color: onDark ? DS.Palette.white : DS.Palette.textPrimary)
                 .underline()
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())
@@ -160,6 +164,22 @@ struct PaywallView: View {
     private var alertBinding: Binding<Bool> {
         Binding(get: { viewModel.alertMessage != nil },
                 set: { if !$0 { viewModel.alertMessage = nil } })
+    }
+}
+
+/// The paywall as a sheet inside the app (Settings, the limit, Analysis): on its own gradient,
+/// darker than the screen behind it.
+struct PaywallSheet: View {
+    let viewModel: PaywallViewModel
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [DS.Palette.paywallTop, DS.Palette.paywallBottom], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+                .accessibilityHidden(true)
+            PaywallView(viewModel: viewModel, onDark: true)
+        }
+        .scrollEdgeEffectsHidden()
     }
 }
 

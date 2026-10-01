@@ -147,7 +147,7 @@ final class AppDependencies {
             return AppDependencies(
                 mode: .mock,
                 dreamStore: dreamStore,
-                analysis: MockDreamAnalysisService(),
+                analysis: MockDreamAnalysisService(failure: mockAnalysisFailure()),
                 purchases: MockPurchaseService(),
                 catalog: MockSymbolCatalog(),
                 imageSaver: PhotoLibraryImageSaver(),
@@ -269,6 +269,17 @@ final class AppDependencies {
     private static func mockTranscriber() -> (any RecordingTranscriber)? {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-noLiveText") { return MockRecordingTranscriber() }
+        #endif
+        return nil
+    }
+
+    /// Debug `-premiumRequired`: the mock backend refuses the dream with PREMIUM_REQUIRED, to see
+    /// the analysis screen's paywall state and its way back to Home.
+    private static func mockAnalysisFailure() -> APIError? {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-premiumRequired") {
+            return .server(.init(code: .premiumRequired, message: "Premium required", status: 402))
+        }
         #endif
         return nil
     }

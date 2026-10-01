@@ -37,14 +37,10 @@ struct MainTabView: View {
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .sheet(isPresented: $appState.isPaywallSheetPresented) {
-            ZStack {
-                PanoramaSkyBackground.onboarding(at: .paywall)
-                PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
-                                                        placement: .record, analytics: dependencies.analytics) {
-                    appState.isPaywallSheetPresented = false
-                })
-            }
-            .scrollEdgeEffectsHidden()
+            PaywallSheet(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
+                                                     placement: .record, analytics: dependencies.analytics) {
+                appState.isPaywallSheetPresented = false
+            })
         }
         .fullScreenCover(isPresented: $appState.isRecordFlowPresented) {
             ViewModelHost {

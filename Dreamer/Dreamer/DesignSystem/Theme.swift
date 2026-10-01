@@ -74,6 +74,11 @@ enum DS {
         static let fadeTop         = Color(day: 0xF1F4F8, night: 0x152044)
         static let fadeFull        = Color(day: 0xF1F5FA, night: 0x152044)
 
+        /// The paywall sheet's vertical gradient: darker than the other screens, so the offer stands
+        /// apart from the screen it opened over.
+        static let paywallTop      = Color(day: 0x8FA6DA, night: 0x26346A)
+        static let paywallBottom   = Color(day: 0x4F68A0, night: 0x0F1833)
+
         /// White orb by day, a soft moon at night.
         static let orbGradient = RadialGradient(
             stops: [

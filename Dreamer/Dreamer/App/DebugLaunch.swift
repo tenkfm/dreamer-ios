@@ -10,6 +10,8 @@ enum DebugLaunch {
     enum Screen: String {
         case welcome, recordIntro, understand, quizGoal, quizLens, account, paywall
         case home, journal, library, settings, deleteAccount, interpretation, symbol
+        /// Home with the paywall sheet up (its gradient and light footer).
+        case paywallSheet
         /// Interpretation of a crisis-flagged dream (the support screen).
         case support
         case record, details, analysis
@@ -92,6 +94,7 @@ enum DebugLaunch {
                 state.push(.interpretation(dream.id), on: .today)
             }
         case .symbol: state.open(.library, route: .symbol(MockData.librarySymbols[0].id))
+        case .paywallSheet: state.isPaywallSheetPresented = true
         case .record, .details, .analysis: state.presentRecordFlow()
         default: break
         }

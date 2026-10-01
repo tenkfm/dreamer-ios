@@ -87,11 +87,17 @@ struct MockRecordingTranscriber: RecordingTranscriber {
 /// Four steps of 1.3 s, then the sample interpretation.
 struct MockDreamAnalysisService: DreamAnalysisService {
     var stepDuration: Duration = .milliseconds(1300)
+    /// The backend refusing the dream (e.g. PREMIUM_REQUIRED), to see that state.
+    var failure: APIError?
 
     func analyze(_ draft: DreamDraft) -> AsyncThrowingStream<AnalysisProgress, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
+                    if let failure {
+                        try await Task.sleep(for: stepDuration)
+                        throw failure
+                    }
                     continuation.yield(.accepted(UUID()))
                     let dream = MockData.analyzedDream(from: draft, at: .now)
                     for step in AnalysisStep.allCases {

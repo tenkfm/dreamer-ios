@@ -672,7 +672,7 @@ xcrun simctl launch booted com.braincode.dreamer.io -debugScreen journal -night
 
 | Argument | Effect |
 |---|---|
-| `-debugScreen <name>` | Opens `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings deleteAccount interpretation support symbol record details analysis` on mock data |
+| `-debugScreen <name>` | Opens `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings deleteAccount interpretation support symbol record details analysis paywallSheet` on mock data |
 | `-mockServices` / `-liveServices` | All mocks for a normal launch / the backend for a debug screen |
 | `-night`, `-day` | Force the appearance |
 | `-debugTime HH:mm` | Today at that time for the Home greeting |
@@ -684,6 +684,7 @@ xcrun simctl launch booted com.braincode.dreamer.io -debugScreen journal -night
 | `-micPermission notDetermined\|denied\|restricted` | Microphone permission states |
 | `-featureFlag name=true\|false` | Overrides a remote flag |
 | `-debugAdvance` | The onboarding taps "Continue" by itself every 2.5 s, up to the account step |
+| `-premiumRequired` | The mock backend refuses a dream with PREMIUM_REQUIRED (the analysis screen's paywall state) |
 | `-openLink <url>` | Opens a link at launch as if the system had routed it (`./run.sh link:"<url>"`), for sign-in links Safari keeps |
 | `-uiTesting`, `-uiTestOpenEmailLink` | UI tests: fresh preferences; the mock "opens" the sign-in link |
 | `-crashTestNonFatal`, `-crashTestCrash` | Sentry checks (Debug and Staging) |

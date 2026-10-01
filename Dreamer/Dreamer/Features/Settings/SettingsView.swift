@@ -58,10 +58,7 @@ struct SettingsView: View {
                 case .reminderTime: ReminderTimeSheet(time: $viewModel.reminderTime)
                 case .lens: LensPickerSheet(selection: $viewModel.preferredLens)
                 case .subscription:
-                    ZStack {
-                        PanoramaSkyBackground.onboarding(at: .paywall)
-                        PaywallView(viewModel: viewModel.makePaywallViewModel())
-                    }
+                    PaywallSheet(viewModel: viewModel.makePaywallViewModel())
                 }
             }
             .scrollEdgeEffectsHidden()
