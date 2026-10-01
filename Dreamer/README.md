@@ -327,7 +327,7 @@ swipe up; lock button; Control Center (keeps recording); airplane mode on the Re
 Drafts (`Services/DraftQueue.swift`, SwiftData in Application Support/Dreamer with complete file
 protection): every told dream is saved as a draft before it is sent, with the `clientId` the record
 flow generated for it, and removed once the backend has it. Offline, Analysis says "Saved on your
-iPhone" and Home shows how many dreams wait; `flush` sends them when the connection comes back,
+iPhone" (Home shows no count, at Tony's request: it crowded the screen); `flush` sends them when the connection comes back,
 at launch and after sign-in. Resending the same `clientId` returns the same dream, so nothing is
 duplicated. Rate limits wait until `resetAt`, other failures back off per draft; the paywall and
 offline stop the flush. Sign-out and account deletion clear the drafts. File protection shows only
