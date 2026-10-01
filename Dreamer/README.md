@@ -350,7 +350,9 @@ mock server.
 ## Reminders and notifications
 
 `Services/Reminders.swift`: the first Home after onboarding offers the morning reminder once,
-with `ReminderPrePrompt` ("Remind me" or "Not now") before the system alert. Settings turns it on
+with `ReminderPrePrompt` ("Remind me" or "Not now"), a translucent modal over Home, before the
+system alert. Pushes need that permission too: once it is given and the user is signed in, the app
+registers with APNs and sends the token to `POST /v1/devices` at every launch. Settings turns it on
 or off and asks for the permission when it was never asked. `ReminderPlanner` works out the next 7
 mornings at the chosen local time. Each has its own words from a gentle rotation, the first one
 mentions a streak of 2 or more mornings, and today is skipped once a dream is told. It also
@@ -431,14 +433,14 @@ SKAdNetwork ids go into Info.plist together with the SDKs.
 ## Tracking consent (ATT)
 
 `Services/TrackingConsent.swift`: the App Tracking Transparency question is asked once, at a moment
-set by the `attAfterFirstDream` flag. With the flag off (the default) it comes when onboarding
-reaches the paywall; with it on, after the first interpretation. Our explanation comes first
-(`TrackingPrePrompt`, a card over a blurred screen with a single "Continue"), then the system
-alert. The answer is sent as `att_response {status}` and passed to every measurement SDK through
+set by the `attAfterFirstDream` flag. With the flag off (the default) it comes on the first Home
+after onboarding, before the reminder offer; with it on, after the first interpretation. Our
+explanation comes first (`TrackingPrePrompt`, a card in a translucent modal over Home with a
+single "Continue"), then the system alert. The answer is sent as `att_response {status}` and passed to every measurement SDK through
 `MeasurementStack`. With an earlier answer, or on a restricted device, measurement starts at
 launch. Otherwise nothing starts until the user has answered, so no SDK can use the IDFA before
 the user could refuse. A refusal changes nothing else in the app. `NSUserTrackingUsageDescription`
-is in Info.plist. Debug: `-askTracking` with `-debugScreen paywall` (mock mode otherwise counts as
+is in Info.plist. Debug: `-askTracking` with `-debugScreen home` (mock mode otherwise counts as
 answered "no").
 
 ## App Attest

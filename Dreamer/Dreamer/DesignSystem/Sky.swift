@@ -72,6 +72,18 @@ struct SkyBackground: View {
     }
 }
 
+// MARK: - Plain
+
+/// The background of screens without a picture (Journal, Library, Settings, the lock). Pictures
+/// stay on the onboarding, the top of Home, the record flow and the paywall.
+struct ScreenBackground: View {
+    var body: some View {
+        DS.Palette.background
+            .ignoresSafeArea()
+            .accessibilityHidden(true)
+    }
+}
+
 // MARK: - Panorama
 
 /// One wide sky shared by a pager. It moves with parallax as the pages scroll, and the

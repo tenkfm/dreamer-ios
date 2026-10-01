@@ -151,12 +151,14 @@ struct SkyTextButton: View {
 
 struct Logo: View {
     var large = false
+    /// White with a soft shadow over a picture; the text color on the plain background.
+    var onSky = true
 
     var body: some View {
         Text("Dreamer")
             .font(large ? TextStyle.logoLarge.font : TextStyle.logo.font)
-            .foregroundStyle(DS.Palette.white)
-            .shadow(color: DS.Palette.skyTextShadow.opacity(0.35), radius: 7, x: 0, y: 2)
+            .foregroundStyle(onSky ? DS.Palette.white : DS.Palette.textPrimary)
+            .shadow(color: DS.Palette.skyTextShadow.opacity(onSky ? 0.35 : 0), radius: 7, x: 0, y: 2)
             .accessibilityAddTraits(.isHeader)
     }
 }

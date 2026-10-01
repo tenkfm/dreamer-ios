@@ -8,9 +8,8 @@ struct ReminderPrePrompt: View {
 
     var body: some View {
         ZStack {
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .overlay(DS.Palette.skyDim.opacity(0.35))
+            // A modal over Home: dimmed, not blurred, so the screen stays visible behind the card.
+            DS.Palette.skyDim.opacity(0.45)
                 .ignoresSafeArea()
                 .accessibilityHidden(true)
             PermissionCard(systemImage: "bell",

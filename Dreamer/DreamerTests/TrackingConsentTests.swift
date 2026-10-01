@@ -24,18 +24,18 @@ struct TrackingConsentTests {
     @Test func anEarlierAnswerStartsMeasurementAtLaunch() async {
         let (consent, permission, attribution, _) = make(status: .denied)
         await consent.launched()
-        consent.moment(.onboardingPaywall)
+        consent.moment(.firstHome)
         #expect(attribution.starts == [false])
         #expect(!consent.isPrePromptPresented)
         #expect(permission.requests == 0)
     }
 
-    @Test func thePaywallMomentAsksAndTheAnswerReachesEverySDK() async {
+    @Test func theFirstHomeAsksAndTheAnswerReachesEverySDK() async {
         let (consent, permission, attribution, analytics) = make(answer: .authorized)
         consent.moment(.firstInterpretation)
         #expect(!consent.isPrePromptPresented)
 
-        consent.moment(.onboardingPaywall)
+        consent.moment(.firstHome)
         #expect(consent.isPrePromptPresented)
         await consent.continueToSystemPrompt()
 
@@ -47,7 +47,7 @@ struct TrackingConsentTests {
 
     @Test func theFlagMovesTheQuestionAfterTheFirstDream() async {
         let (consent, _, attribution, analytics) = make(answer: .denied, afterFirstDream: true)
-        consent.moment(.onboardingPaywall)
+        consent.moment(.firstHome)
         #expect(!consent.isPrePromptPresented)
         consent.moment(.firstInterpretation)
         #expect(consent.isPrePromptPresented)
@@ -60,7 +60,7 @@ struct TrackingConsentTests {
     @Test func aRestrictedDeviceIsNeverAsked() async {
         let (consent, permission, attribution, _) = make(status: .restricted)
         await consent.launched()
-        consent.moment(.onboardingPaywall)
+        consent.moment(.firstHome)
         #expect(permission.requests == 0)
         #expect(attribution.starts == [false])
     }

@@ -55,14 +55,15 @@ final class MockTrackingPermission: TrackingPermission {
 }
 
 /// When to ask about tracking: our explanation first, then the system alert, at a moment chosen by
-/// the `attAfterFirstDream` flag (A/B): before the onboarding paywall, or after the first
-/// interpretation. Install measurement starts with the answer; without consent the app works the
+/// the `attAfterFirstDream` flag (A/B): on the first Home, or after the first interpretation. Install measurement starts with the answer; without consent the app works the
 /// same and attribution relies on SKAN and AEM.
 @MainActor
 @Observable
 final class TrackingConsent {
     enum Moment: Equatable {
-        case onboardingPaywall
+        /// Home after onboarding, before the reminder offer (Tony: a modal over Home, not a step of
+        /// the onboarding).
+        case firstHome
         case firstInterpretation
     }
 
@@ -80,7 +81,7 @@ final class TrackingConsent {
         self.permission = permission
         self.analytics = analytics
         self.measurement = measurement
-        moment = askAfterFirstDream ? .firstInterpretation : .onboardingPaywall
+        moment = askAfterFirstDream ? .firstInterpretation : .firstHome
         status = permission.status
     }
 

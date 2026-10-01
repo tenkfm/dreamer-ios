@@ -45,7 +45,11 @@ struct HomeView: View {
         .task(id: viewModel.dreamCount) { await viewModel.refreshInsights() }
         .trackScreen(.home)
         // The first Home after onboarding offers the morning reminder (once).
-        .task { await reminders.homeAppeared() }
+        .task {
+            // The tracking question first (placement A), then the reminder offer after it.
+            dependencies.trackingConsent.moment(.firstHome)
+            await reminders.homeAppeared()
+        }
     }
 
     private var header: some View {

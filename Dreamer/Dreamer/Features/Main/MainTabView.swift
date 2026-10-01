@@ -38,7 +38,7 @@ struct MainTabView: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .sheet(isPresented: $appState.isPaywallSheetPresented) {
             ZStack {
-                SkyBackground(kind: .full)
+                PanoramaSkyBackground.onboarding(at: .paywall)
                 PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
                                                         placement: .record, analytics: dependencies.analytics) {
                     appState.isPaywallSheetPresented = false

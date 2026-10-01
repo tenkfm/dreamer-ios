@@ -98,7 +98,7 @@ struct AnalysisView: View {
         .task { await viewModel.run() }
         .sheet(isPresented: $isPaywallPresented) {
             ZStack {
-                SkyBackground(kind: .full)
+                PanoramaSkyBackground.onboarding(at: .paywall)
                 PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
                                                         placement: .analysis, analytics: dependencies.analytics) {
                     isPaywallPresented = false

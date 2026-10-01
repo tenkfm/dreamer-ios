@@ -11,7 +11,7 @@ struct JournalView: View {
 
     var body: some View {
         ZStack {
-            SkyBackground(kind: .top)
+            ScreenBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     header.enterUp(0.1)
@@ -58,7 +58,7 @@ struct JournalView: View {
 
     private var header: some View {
         HeaderBar {
-            SkyTitle(text: "Journal")
+            ScreenTitle(text: "Journal")
         } trailing: {
             GlassIconButton(systemImage: viewModel.isSearching ? "xmark" : "magnifyingglass",
                             accessibilityLabel: viewModel.isSearching ? "Close search" : "Search") {

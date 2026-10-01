@@ -15,13 +15,13 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            SkyBackground(kind: .top)
+            ScreenBackground()
             ScrollView {
                 VStack(spacing: 16) {
                     HeaderBar(leading: {
                         GlassIconButton(systemImage: "chevron.left", accessibilityLabel: "Back") { dismiss() }
                     }, center: {
-                        SkyTitle(text: "Settings")
+                        ScreenTitle(text: "Settings")
                     })
                     .padding(.horizontal, -DS.Space.screen)
                     .enterUp(0.1)
@@ -59,7 +59,7 @@ struct SettingsView: View {
                 case .lens: LensPickerSheet(selection: $viewModel.preferredLens)
                 case .subscription:
                     ZStack {
-                        SkyBackground(kind: .full)
+                        PanoramaSkyBackground.onboarding(at: .paywall)
                         PaywallView(viewModel: viewModel.makePaywallViewModel())
                     }
                 }

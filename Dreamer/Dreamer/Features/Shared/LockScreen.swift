@@ -1,17 +1,17 @@
 import SwiftUI
 
 /// Covers the app while the journal lock is on and the owner has not authenticated, and in the
-/// app switcher: the sky, the logo and one way in.
+/// app switcher: the logo and one way in.
 struct LockScreen: View {
     /// Nil in the app switcher (only the cover shows).
     var onUnlock: (() -> Void)?
 
     var body: some View {
         ZStack {
-            SkyBackground(kind: .full)
+            ScreenBackground()
             VStack(spacing: 18) {
                 Spacer()
-                Logo()
+                Logo(onSky: false)
                 Text("Your journal is locked")
                     .textStyle(.heading)
                     .accessibilityAddTraits(.isHeader)

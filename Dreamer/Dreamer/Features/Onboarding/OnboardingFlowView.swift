@@ -58,8 +58,6 @@ struct OnboardingFlowView: View {
             if case .emailSignIn = link { viewModel.openEmailLink() }
         }
         .onChange(of: viewModel.step, initial: true) { old, step in
-            // Placement A of the tracking question: right before the paywall.
-            if step == .paywall { dependencies.trackingConsent.moment(.onboardingPaywall) }
             guard step != shownStep else { return }
             forward = step > old
             hasMoved = true

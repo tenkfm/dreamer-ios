@@ -27,7 +27,10 @@ struct PermissionCard<Actions: View>: View {
             .padding(.horizontal, DS.Space.cardPaddingLarge)
             .padding(.top, 22)
             .padding(.bottom, 12)
-            .glassCard(radius: DS.Radius.cardLarge, style: .selected)
+            // Solid, like the app's sheets: the card sits in a translucent modal over Home, and glass
+            // let Home's text read through it.
+            .background(RoundedRectangle(cornerRadius: DS.Radius.cardLarge, style: .continuous).fill(DS.Palette.sheetFill))
+            .shadow(color: DS.Palette.sheetShadow.opacity(0.18), radius: 24, x: 0, y: 10)
             .padding(.horizontal, DS.Space.screen)
             .padding(.bottom, 12)
         }

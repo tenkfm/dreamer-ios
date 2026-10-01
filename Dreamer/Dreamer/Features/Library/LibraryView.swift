@@ -12,10 +12,10 @@ struct LibraryView: View {
 
     var body: some View {
         ZStack {
-            SkyBackground(kind: .top)
+            ScreenBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    HeaderBar(center: { SkyTitle(text: "Library") }, trailing: { EmptyView() })
+                    HeaderBar(center: { ScreenTitle(text: "Library") }, trailing: { EmptyView() })
                         .enterUp(0.1)
                     GlassSearchField(placeholder: "Search a symbol, e.g. teeth", text: $viewModel.query)
                         .padding(.horizontal, DS.Space.screen)

@@ -65,7 +65,7 @@ default.
 | `attestationEnforced` | off | App Attest fails closed (the backend is in soft mode now) |
 | `serverSttFallback` | on | The audio is kept and written down on the server when the device gives no text |
 | `imageGenerationEnabled` | on | Kill switch for new dream images (regeneration) |
-| `attAfterFirstDream` | off | A/B of the tracking question: after the first interpretation, not before the paywall |
+| `attAfterFirstDream` | off | A/B of the tracking question: after the first interpretation, not on the first Home |
 
 In Debug builds, override any flag at launch: `-featureFlag ttsEnabled=false`.
 

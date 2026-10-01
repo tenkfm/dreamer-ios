@@ -90,13 +90,12 @@ extension HeaderBar where Trailing == EmptyView {
     }
 }
 
-/// White `title` over the sky (Journal, Library, Settings).
-struct SkyTitle: View {
+/// The `title` of a screen on the plain background (Journal, Library, Settings).
+struct ScreenTitle: View {
     var text: String
     var body: some View {
         Text(text)
-            .textStyle(.title, color: DS.Palette.white)
-            .skyTextShadow()
+            .textStyle(.title)
             .accessibilityAddTraits(.isHeader)
     }
 }
