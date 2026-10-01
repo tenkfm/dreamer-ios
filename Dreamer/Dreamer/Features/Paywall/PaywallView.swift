@@ -60,7 +60,7 @@ struct PaywallView: View {
             VStack(spacing: 0) {
                 hero
                 VStack(spacing: 0) {
-                    Text("Understand every dream")
+                    Text("What your dreams reveal")
                         .textStyle(.display, color: DS.Palette.white)
                         .skyTextShadow()
                         .multilineTextAlignment(.center)
@@ -73,7 +73,7 @@ struct PaywallView: View {
                     footer.enterUp(1)
                 }
                 .padding(.horizontal, DS.Space.screen)
-                .padding(.top, -40)
+                .padding(.top, -30)
             }
         }
         .ignoresSafeArea(edges: .top)
@@ -84,7 +84,7 @@ struct PaywallView: View {
         // The screen sets the width: a filled image on its own would widen the whole column.
         Color.clear
             .frame(maxWidth: .infinity)
-            .frame(height: 240)
+            .frame(height: 200)
             .overlay { Image(.skyTop).resizable().scaledToFill() }
             .clipped()
             // Fades out rather than into a colour, so no seam shows on the gradient behind it.
@@ -95,19 +95,26 @@ struct PaywallView: View {
             .accessibilityHidden(true)
     }
 
-    /// Each perk: an icon and its name, larger than the old one-liners.
+    /// Each benefit: an icon, its name (larger than the old one-liners) and one line of how.
     private var perkList: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             ForEach(viewModel.perks, id: \.self) { perk in
                 HStack(spacing: 14) {
                     Image(systemName: perk.systemImage)
                         .font(.system(size: 16, weight: .regular))
                         .foregroundStyle(DS.Palette.icon)
-                        .frame(width: 36, height: 36)
+                        .frame(width: 38, height: 38)
                         .background(Circle().fill(DS.Palette.surface))
                         .accessibilityHidden(true)
-                    Text(perk.title).textStyle(.heading, color: DS.Palette.white)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(perk.title).textStyle(.heading, color: DS.Palette.white)
+                        Text(perk.subtitle)
+                            .textStyle(.secondary, color: DS.Palette.white.opacity(0.82))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                    }
                 }
+                .accessibilityElement(children: .combine)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

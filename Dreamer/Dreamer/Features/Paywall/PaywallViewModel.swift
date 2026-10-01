@@ -32,16 +32,22 @@ final class PaywallViewModel {
     private(set) var isRestoring = false
     var alertMessage: String?
 
+    /// A benefit to the person (not a feature list): what they get, and how, in one line each.
     struct Perk: Hashable {
         var systemImage: String
         var title: String
+        var subtitle: String
     }
 
     let perks = [
-        Perk(systemImage: "sparkles", title: String(localized: "Your personal interpretation")),
-        Perk(systemImage: "photo", title: String(localized: "See your dream come alive")),
-        Perk(systemImage: "book.closed", title: String(localized: "Your private dream journal")),
-        Perk(systemImage: "bell", title: String(localized: "Never lose a dream again"))
+        Perk(systemImage: "person.crop.circle.badge.questionmark", title: String(localized: "Understand yourself better"),
+             subtitle: String(localized: "A psychological portrait from your dreams")),
+        Perk(systemImage: "brain.head.profile", title: String(localized: "Expert dream analysis"),
+             subtitle: String(localized: "Methods of leading psychologists")),
+        Perk(systemImage: "point.3.connected.trianglepath.dotted", title: String(localized: "See the patterns in your life"),
+             subtitle: String(localized: "Recurring symbols reveal what matters")),
+        Perk(systemImage: "sun.horizon", title: String(localized: "Wake up calmer and clearer"),
+             subtitle: String(localized: "Turn unsettling dreams into insight"))
     ]
 
     private let purchases: any PurchaseService
