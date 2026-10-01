@@ -31,11 +31,19 @@ final class SystemSpeechPermissions: SpeechPermissions {
             _ = await AVAudioApplication.requestRecordPermission()
         }
         if SFSpeechRecognizer.authorizationStatus() == .notDetermined {
-            _ = await withCheckedContinuation { (continuation: CheckedContinuation<SFSpeechRecognizerAuthorizationStatus, Never>) in
-                SFSpeechRecognizer.requestAuthorization { continuation.resume(returning: $0) }
-            }
+            _ = await Self.requestSpeechAuthorization()
         }
         return current
+    }
+
+    /// Speech calls back on a background queue. A closure written inside this @MainActor class is
+    /// main-actor isolated, and Swift 6 traps when it runs elsewhere: the app crashed right after
+    /// the user allowed the microphone and speech. Nonisolated, with a @Sendable callback, it may
+    /// run on any queue.
+    nonisolated private static func requestSpeechAuthorization() async -> SFSpeechRecognizerAuthorizationStatus {
+        await withCheckedContinuation { continuation in
+            SFSpeechRecognizer.requestAuthorization { @Sendable status in continuation.resume(returning: status) }
+        }
     }
 
     private static var microphone: AVAudioApplication.recordPermission {
