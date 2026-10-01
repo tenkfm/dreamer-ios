@@ -128,9 +128,11 @@ struct ErrorMiddleware: ClientMiddleware {
 struct AuthMiddleware: ClientMiddleware {
     let tokens: any AccessTokenProvider
 
-    /// Operations that work without a session.
+    /// Operations that work without a session: those with `security: []` in the contract that the
+    /// app calls. ContractTests checks this list against openapi.yaml - a missing entry once made
+    /// Google sign-in fail with "your session has ended" before the request left the phone.
     static let publicOperations: Set<String> = [
-        "health", "signInWithApple", "requestEmailLink", "verifyEmailLink", "refreshTokens"
+        "health", "signInWithApple", "signInWithGoogle", "requestEmailLink", "verifyEmailLink", "refreshTokens"
     ]
 
     func intercept(_ request: HTTPRequest,

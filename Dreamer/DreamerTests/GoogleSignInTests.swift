@@ -94,6 +94,24 @@ struct GoogleSignInViewModelTests {
         #expect(body == ["idToken": String(repeating: "t", count: 30), "nonce": "n-1"])
     }
 
+    /// The live client carries the token manager: without a session the Google call must still go
+    /// out (it used to stop at the auth middleware with "your session has ended").
+    @Test func googleSignInNeedsNoSessionWithTheLiveClient() async throws {
+        let tokens = TokenManager(store: InMemorySecureStore()) { _ throws(APIError) in throw .signedOut }
+        let (client, host) = StubURLProtocol.makeClient(tokens: tokens) { request in
+            #expect(request.value(forHTTPHeaderField: "Authorization") == nil)
+            return .json(200, """
+            {"accessToken":"acc","accessExpiresAt":"2026-10-01T07:27:00.000Z","refreshToken":"ref",
+             "refreshExpiresAt":"2027-10-01T07:12:00.000Z","user":{"id":"6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b","isNew":false}}
+            """)
+        }
+        let session = try await APIAuthService(client: client, tokens: tokens)
+            .signInWithGoogle(GoogleCredential(idToken: String(repeating: "t", count: 30), rawNonce: "n"))
+        #expect(session.userID == "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b")
+        #expect(StubURLProtocol.requests(for: host).count == 1)
+        #expect(await tokens.isSignedIn)
+    }
+
     @Test func anInvalidTokenIsASignInError() async {
         let (client, _) = StubURLProtocol.makeClient { _ in
             .json(401, #"{"error":{"code":"AUTH_INVALID_TOKEN","message":"Invalid Google ID token"}}"#)

@@ -125,3 +125,44 @@ struct ContractErrorTests {
         #expect(server.retryAfter != nil || server.resetAt != nil)
     }
 }
+
+/// The operations the auth middleware lets through without a token must be exactly the contract's
+/// public ones (`security: []`) that the app calls. A missing one fails before the request leaves
+/// the phone, with "your session has ended" (it happened to Google sign-in).
+struct ContractPublicOperationsTests {
+    private static let apiFolder = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .appending(path: "Dreamer/API")
+
+    /// operationIds whose block in openapi.yaml has `security: []`.
+    private static func publicInContract() throws -> Set<String> {
+        let yaml = try String(contentsOf: apiFolder.appending(path: "openapi.yaml"), encoding: .utf8)
+        var result: Set<String> = []
+        var current: String?
+        for line in yaml.split(separator: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("operationId:") {
+                current = trimmed.dropFirst("operationId:".count).trimmingCharacters(in: .whitespaces)
+            } else if trimmed == "security: []", let operation = current {
+                result.insert(operation)
+            }
+        }
+        return result
+    }
+
+    /// The operations the generator builds, that is, the ones the app calls.
+    private static func generated() throws -> Set<String> {
+        let config = try String(contentsOf: apiFolder.appending(path: "openapi-generator-config.yaml"), encoding: .utf8)
+        return Set(config.split(separator: "\n").compactMap { line -> String? in
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.hasPrefix("- ") else { return nil }
+            return String(trimmed.dropFirst(2))
+        })
+    }
+
+    @Test func middlewareMatchesTheContract() throws {
+        let expected = try Self.publicInContract().intersection(Self.generated())
+        #expect(expected.contains("signInWithGoogle"))
+        #expect(AuthMiddleware.publicOperations == expected)
+    }
+}
