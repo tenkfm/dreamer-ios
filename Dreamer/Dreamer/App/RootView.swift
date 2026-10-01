@@ -18,7 +18,9 @@ struct RootView: View {
                     .transition(.opacity)
             case .paywall:
                 ZStack {
-                    SkyBackground(kind: .full)
+                    // The sky of the sign-in screen, which a returning account without a plan
+                    // has just left.
+                    PanoramaSkyBackground.onboarding(at: .paywall)
                     PaywallView(viewModel: PaywallViewModel(purchases: dependencies.purchases, appState: appState,
                                                             placement: .gate, analytics: dependencies.analytics))
                         .offlineBannerInset()

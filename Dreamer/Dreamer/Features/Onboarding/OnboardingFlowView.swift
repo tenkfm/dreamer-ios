@@ -27,12 +27,7 @@ struct OnboardingFlowView: View {
 
     var body: some View {
         ZStack {
-            PanoramaSkyBackground(
-                image: .onboardingSky,
-                progress: CGFloat(shownStep.rawValue) / CGFloat(Step.allCases.count - 1),
-                pageCount: Step.allCases.count,
-                topSkyAmount: shownStep.usesFullSky ? 0 : 1
-            )
+            PanoramaSkyBackground.onboarding(at: shownStep)
 
             // One `if` per screen, each pushed in and out on its own. The zIndex keeps a leaving
             // screen above the sky: without it the ZStack draws it under the opaque background, and
@@ -263,6 +258,21 @@ private struct OnboardingPagesView: View {
         case .welcome, .understand: String(localized: "Get started")
         default: String(localized: "Continue")
         }
+    }
+}
+
+extension PanoramaSkyBackground {
+    /// The onboarding sky as it stands at `step`. The paywall after sign-in keeps the account
+    /// step's sky (here and as the root paywall), so signing in changes the screen, not the sky.
+    static func onboarding(at step: OnboardingViewModel.Step) -> PanoramaSkyBackground {
+        typealias Step = OnboardingViewModel.Step
+        let skyStep = step == .paywall ? Step.account : step
+        return PanoramaSkyBackground(
+            image: .onboardingSky,
+            progress: CGFloat(skyStep.rawValue) / CGFloat(Step.allCases.count - 1),
+            pageCount: Step.allCases.count,
+            topSkyAmount: skyStep.usesFullSky ? 0 : 1
+        )
     }
 }
 
