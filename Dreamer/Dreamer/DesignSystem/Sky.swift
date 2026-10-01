@@ -40,7 +40,7 @@ struct SkyFade: View {
 
 // MARK: - Single-screen sky
 
-/// Sky photo with a slow drift: top variant (300 pt, fades early) or full screen.
+/// Sky photo with a slow drift: top variant (fades into the background) or the full screen.
 struct SkyBackground: View {
     enum Kind { case top, full }
     var kind: Kind
@@ -52,19 +52,24 @@ struct SkyBackground: View {
 
                 let height = kind == .top ? DS.Size.topSkyHeight : geo.size.height
                 LoopingView { time in
-                    // Scaled 1.12, x drifts -10 -> +10 -> -10 over 40 s (top) / 46 s (full).
+                    // x drifts -10 -> +10 -> -10 over 40 s (top) / 46 s (full). The top sky is
+                    // scaled 1.12 so the drift never shows an edge; the full sky is a 9:16 photo,
+                    // wider than the screen once it fills the height, so it needs no zoom and shows
+                    // whole, top to bottom.
                     let drift = Loop.wave(time, period: kind == .top ? 40 : 46) * 20 - 10
                     Image(kind == .top ? .skyTop : .skyTall)
                         .resizable()
                         .scaledToFill()
                         .frame(width: geo.size.width, height: height)
-                        .scaleEffect(1.12)
+                        .scaleEffect(kind == .top ? 1.12 : 1)
                         .offset(x: drift)
                 }
                 .frame(width: geo.size.width, height: height, alignment: .top)
                 .clipped()
 
-                SkyFade(kind: kind == .top ? .top : .full)
+                // The full sky (the record flow) keeps its picture to the bottom edge: its buttons
+                // are solid, and the photo's clouds sit there.
+                if kind == .top { SkyFade(kind: .top) }
             }
         }
         .ignoresSafeArea()
