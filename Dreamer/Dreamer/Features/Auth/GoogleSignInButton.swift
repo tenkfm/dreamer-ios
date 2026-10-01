@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Google's sign-in button as its branding guidelines draw it: the four-color "G" on a white pill
-/// with a gray outline by day, on a near-black one at night, and only the approved wording.
+/// Google's sign-in button: the four-color "G" on a white pill by day, a near-black one at night,
+/// and only Google's approved wording. No outline (Tony's call; the guidelines show a gray one).
 /// Sized like the Sign in with Apple button above it.
 struct GoogleSignInButton: View {
     var mode: SignInViewModel.Mode
@@ -28,7 +28,6 @@ struct GoogleSignInButton: View {
             .frame(maxWidth: .infinity)
             .frame(height: DS.Size.primaryButton)
             .background(Capsule().fill(DS.Brand.googleFill))
-            .overlay(Capsule().strokeBorder(DS.Brand.googleStroke, lineWidth: 1))
             .overlay {
                 if isLoading {
                     Capsule().fill(.black.opacity(0.35))

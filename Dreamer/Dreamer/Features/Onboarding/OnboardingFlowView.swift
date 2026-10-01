@@ -172,7 +172,8 @@ private struct OnboardingPagesView: View {
                 }
             }
         }, trailing: {
-            if step == .record || step == .understand {
+            // Only on the second page: the third already leads straight to the quiz.
+            if step == .record {
                 SkyTextButton(title: "Skip") { viewModel.skipIntro() }
                     .transition(.opacity)
             }

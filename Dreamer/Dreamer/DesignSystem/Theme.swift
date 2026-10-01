@@ -97,7 +97,6 @@ enum DS {
     /// the light and dark themes (developers.google.com/identity/branding-guidelines).
     enum Brand {
         static let googleFill   = Color(day: 0xFFFFFF, night: 0x131314)
-        static let googleStroke = Color(day: 0x747775, night: 0x8E918F)
         static let googleText   = Color(day: 0x1F1F1F, night: 0xE3E3E3)
         /// The system face at the size of the Sign in with Apple title above it, so the two
         /// buttons read as a pair (Roboto would be one more font bundled for one label).

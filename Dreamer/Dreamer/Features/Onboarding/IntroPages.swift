@@ -89,8 +89,8 @@ struct WelcomeContent: View {
                 Logo(large: true)
                 Text("Listen to your dreams")
                     .textCase(.uppercase)
-                    .font(DreamerFont.fixed(12))
-                    .tracking(2.4)
+                    .font(DreamerFont.fixed(10))
+                    .tracking(2)
                     .foregroundStyle(DS.Palette.white)
                     .skyTextShadow()
             }
