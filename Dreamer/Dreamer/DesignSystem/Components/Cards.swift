@@ -117,8 +117,9 @@ struct SymbolCard: View {
     var meaning: String
     var glyph: Glyph
 
-    /// 150 pt in the design; grows with Dynamic Type so a word never breaks in the middle.
-    @ScaledMetric(relativeTo: .body) private var width: CGFloat = 150
+    /// 150 pt in the design, times the type scale; grows with Dynamic Type so a word never breaks
+    /// in the middle ("Grandmother's" did once the type grew).
+    @ScaledMetric(relativeTo: .body) private var width: CGFloat = 150 * DreamerFont.scale
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {

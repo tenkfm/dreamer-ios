@@ -11,13 +11,16 @@ private struct IntroContentLayout<Top: View, Hero: View>: View {
     @ViewBuilder var top: () -> Top
     @ViewBuilder var hero: () -> Hero
 
+    /// The content area of an iPhone SE is about 430 pt, of a 6.1" phone about 560.
+    @State private var compact = false
+
     var body: some View {
         FillingScrollView {
             VStack(spacing: 0) {
                 top()
-                Spacer(minLength: 16)
+                Spacer(minLength: compact ? 8 : 16)
                 hero()
-                Spacer(minLength: 24)
+                Spacer(minLength: compact ? 14 : 24)
                 VStack(spacing: 12) {
                     Text(title)
                         .textStyle(.display)
@@ -34,6 +37,37 @@ private struct IntroContentLayout<Top: View, Hero: View>: View {
             }
             .padding(.horizontal, DS.Space.cta)
         }
+        .onGeometryChange(for: Bool.self) { $0.size.height < 480 } action: { compact = $0 }
+        .environment(\.introCompact, compact)
+    }
+}
+
+extension EnvironmentValues {
+    /// The intro content area is short (iPhone SE): heroes shrink so the title and the text below
+    /// them stay on screen above the page dots.
+    @Entry fileprivate var introCompact = false
+}
+
+/// The intro orb, a size smaller where the content area is short.
+private struct IntroOrb: View {
+    var glyph: OrbGlyph
+    var topPadding: CGFloat = 0
+    @Environment(\.introCompact) private var compact
+
+    var body: some View {
+        OrbView(glyph: glyph, size: compact ? .home : .onboarding)
+            .padding(.top, compact ? topPadding * 0.4 : topPadding)
+    }
+}
+
+/// A hero column whose gaps tighten where the content area is short.
+private struct IntroHeroStack<Content: View>: View {
+    var spacing: CGFloat
+    @ViewBuilder var content: () -> Content
+    @Environment(\.introCompact) private var compact
+
+    var body: some View {
+        VStack(spacing: compact ? spacing * 0.6 : spacing, content: content)
     }
 }
 
@@ -61,8 +95,7 @@ struct WelcomeContent: View {
             }
             .enterUp(0.15)
         } hero: {
-            OrbView(glyph: .moon, size: .onboarding)
-                .padding(.top, 40)
+            IntroOrb(glyph: .moon, topPadding: 40)
                 .enterUp(0.2)
                 .accessibilityHidden(true)
         }
@@ -77,8 +110,8 @@ struct RecordIntroContent: View {
             title: "Catch it before it fades",
             message: "Say your dream out loud in 10 seconds. We write it down while you are still half asleep."
         ) {
-            VStack(spacing: 30) {
-                OrbView(glyph: .mic, size: .onboarding)
+            IntroHeroStack(spacing: 30) {
+                IntroOrb(glyph: .mic)
                     .enterUp(0.1)
                     .accessibilityHidden(true)
                 TypewriterText(text: MockData.onboardingQuote, startDelay: 0.7)
@@ -102,7 +135,7 @@ struct UnderstandContent: View {
             title: "Understand it. Then see it.",
             message: "A personal interpretation, the symbols behind it and an image of your dream."
         ) {
-            VStack(spacing: 18) {
+            IntroHeroStack(spacing: 18) {
                 FannedImages()
                     .enterUp(0.1)
                 HStack(spacing: 8) {

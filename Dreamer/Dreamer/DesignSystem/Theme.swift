@@ -150,6 +150,10 @@ enum DS {
 enum DreamerFont {
     enum Weight { case light, regular, medium, semibold, bold }
 
+    /// Every UI text size is the design's size times this. Quicksand reads small on a phone at the
+    /// design's sizes, so the whole type scale is raised in one place (the logo keeps its size).
+    static let scale: CGFloat = 1.1
+
     static func postScriptName(_ weight: Weight) -> String {
         switch weight {
         case .light:    "Quicksand-Light"
@@ -162,12 +166,12 @@ enum DreamerFont {
 
     /// Scales with Dynamic Type relative to `textStyle`.
     static func ui(_ size: CGFloat, _ weight: Weight = .regular, relativeTo textStyle: Font.TextStyle = .body) -> Font {
-        .custom(postScriptName(weight), size: size, relativeTo: textStyle)
+        .custom(postScriptName(weight), size: size * scale, relativeTo: textStyle)
     }
 
     /// Does not scale. For chrome that must keep its geometry (tab bar, pills).
     static func fixed(_ size: CGFloat, _ weight: Weight = .regular) -> Font {
-        .custom(postScriptName(weight), fixedSize: size)
+        .custom(postScriptName(weight), fixedSize: size * scale)
     }
 
     static func logo(_ size: CGFloat) -> Font {
@@ -246,7 +250,7 @@ enum TextStyle {
 extension View {
     /// Applies font, tracking and approximate line height of a design-system text style.
     func textStyle(_ style: TextStyle, color: Color = DS.Palette.textPrimary) -> some View {
-        let extra = max(0, (style.lineHeight ?? style.size * 1.2) - style.size * 1.2)
+        let extra = max(0, (style.lineHeight ?? style.size * 1.2) - style.size * 1.2) * DreamerFont.scale
         return self
             .font(style.font)
             .tracking(style.tracking)
