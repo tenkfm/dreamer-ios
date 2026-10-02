@@ -80,3 +80,30 @@ struct PendingDreamTests {
         #expect(state.isRecordFlowPresented)
     }
 }
+
+/// Home's "Dreamed about today" thumbs take their pictures from the catalog, like the Library.
+@MainActor
+struct HomeSymbolImageTests {
+    final class PictureCatalog: SymbolCatalog {
+        let symbols = MockData.librarySymbols
+        private(set) var asked: [LibrarySymbol.ID] = []
+        func symbols(in category: SymbolCategory) -> [LibrarySymbol] { symbols }
+        func symbol(id: LibrarySymbol.ID) -> LibrarySymbol? { symbols.first { $0.id == id } }
+        func refresh(category: SymbolCategory) async throws(APIError) {}
+        func search(_ query: String) async throws(APIError) -> [LibrarySymbol] { [] }
+        func loadSymbol(id: LibrarySymbol.ID) async throws(APIError) -> LibrarySymbol { symbols[0] }
+        func imageData(for symbol: LibrarySymbol) async -> Data? {
+            asked.append(symbol.id)
+            return Data([1, 2, 3])
+        }
+    }
+
+    @Test func thumbsAskTheCatalogForTheBackendPicture() async throws {
+        let catalog = PictureCatalog()
+        let home = HomeViewModel(appState: AppState(store: InMemoryPreferencesStore()), store: InMemoryDreamStore(seed: []),
+                                 catalog: catalog)
+        let symbol = try #require(home.featuredSymbols.first)
+        #expect(await home.imageData(for: symbol) == Data([1, 2, 3]))
+        #expect(catalog.asked == [symbol.id])
+    }
+}

@@ -108,7 +108,7 @@ struct HomeView: View {
             HStack(alignment: .top, spacing: 8) {
                 ForEach(Array(viewModel.featuredSymbols.enumerated()), id: \.element.id) { index, symbol in
                     Button { viewModel.open(symbol) } label: {
-                        DreamThumb(title: symbol.title, image: DreamImage.image(named: symbol.imageName), index: index)
+                        SymbolThumb(symbol: symbol, index: index, viewModel: viewModel)
                     }
                     .buttonStyle(PressableButtonStyle())
                 }
@@ -117,6 +117,25 @@ struct HomeView: View {
             .padding(.vertical, 10)
         }
         .scrollIndicators(.hidden)
+    }
+}
+
+/// A Library symbol on Home: its picture from the backend, like the Library's tiles, with the
+/// bundled one until it arrives (and in mock mode).
+private struct SymbolThumb: View {
+    var symbol: LibrarySymbol
+    var index: Int
+    var viewModel: HomeViewModel
+    @State private var image: UIImage?
+
+    var body: some View {
+        DreamThumb(title: symbol.title,
+                   image: image.map(Image.init(uiImage:)) ?? DreamImage.image(named: symbol.imageName),
+                   index: index)
+            .task(id: symbol.imageURL) {
+                // Thumbs are 84 x 94 pt.
+                image = await viewModel.imageData(for: symbol).flatMap { ImageDownsampler.image(from: $0, pointSize: 100) }
+            }
     }
 }
 

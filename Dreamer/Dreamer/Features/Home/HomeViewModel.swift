@@ -136,6 +136,12 @@ final class HomeViewModel {
 
     // MARK: Library preview
 
+    /// A symbol's picture from the backend (cached by the catalog); nil in mock mode, where the
+    /// asset is shown.
+    func imageData(for symbol: LibrarySymbol) async -> Data? {
+        await catalog.imageData(for: symbol)
+    }
+
     var featuredSymbols: [LibrarySymbol] {
         Array(catalog.symbols(in: .popular).prefix(6))
     }
