@@ -52,9 +52,16 @@ final class LibraryViewModel {
     /// More pages of the category, not while searching (search is one page).
     var canLoadMore: Bool { trimmedQuery.isEmpty && catalog.canLoadMore(category: category) }
 
-    /// The last tile came into view: the next page.
+    /// What the list shows (category or search); the grid animates when this changes, not when a
+    /// page is appended.
+    var listIdentity: String { "\(category.rawValue)|\(trimmedQuery)" }
+
+    /// A tile came into view: four from the end, the next page starts, so it is there before the
+    /// scroll reaches the bottom.
     func symbolAppeared(_ symbol: LibrarySymbol) async {
-        guard symbol.id == symbols.last?.id, canLoadMore, !isLoadingMore else { return }
+        let list = symbols
+        guard let index = list.firstIndex(where: { $0.id == symbol.id }), index >= list.count - 4,
+              canLoadMore, !isLoadingMore else { return }
         isLoadingMore = true
         defer { isLoadingMore = false }
         try? await catalog.loadMore(category: category)

@@ -39,7 +39,9 @@ struct LibraryView: View {
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
         }
-        .animation(.soft(0.4), value: viewModel.symbols)
+        // On a new category or search only: animating every appended page made the grid jump
+        // while it scrolled.
+        .animation(.soft(0.4), value: viewModel.listIdentity)
         .task(id: viewModel.category) { await viewModel.refresh() }
         .trackScreen(.library)
     }
@@ -79,10 +81,13 @@ struct LibraryView: View {
                     .task { await viewModel.symbolAppeared(symbol) }
                 }
             }
-            if viewModel.isLoadingMore {
+            // There for as long as pages remain, so the content does not grow and shrink by its
+            // height each time one loads.
+            if viewModel.canLoadMore {
                 ProgressView()
                     .frame(maxWidth: .infinity)
-                    .padding(.top, 16)
+                    .frame(height: 44)
+                    .padding(.top, 8)
             }
         }
     }
@@ -117,7 +122,8 @@ private struct SymbolTile: View {
         .accessibilityAddTraits(.isButton)
         .task(id: symbol.imageURL) {
             // Tiles are about 180 pt wide.
-            image = await viewModel.imageData(for: symbol).flatMap { ImageDownsampler.image(from: $0, pointSize: 200) }
+            guard let data = await viewModel.imageData(for: symbol) else { return }
+            image = await ImageDownsampler.decoded(from: data, pointSize: 200)
         }
     }
 }

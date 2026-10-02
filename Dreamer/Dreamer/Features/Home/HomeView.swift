@@ -134,7 +134,8 @@ private struct SymbolThumb: View {
                    index: index)
             .task(id: symbol.imageURL) {
                 // Thumbs are 84 x 94 pt.
-                image = await viewModel.imageData(for: symbol).flatMap { ImageDownsampler.image(from: $0, pointSize: 100) }
+                guard let data = await viewModel.imageData(for: symbol) else { return }
+                image = await ImageDownsampler.decoded(from: data, pointSize: 100)
             }
     }
 }

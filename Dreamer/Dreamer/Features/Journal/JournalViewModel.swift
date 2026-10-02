@@ -290,7 +290,7 @@ final class JournalViewModel {
         guard let images, let url = row.thumbnailURL,
               let data = try? await images.thumbnailData(dreamID: row.id, url: url) else { return nil }
         // The row shows it at 56 pt.
-        return ImageDownsampler.image(from: data, pointSize: 56)
+        return await ImageDownsampler.decoded(from: data, pointSize: 56)
     }
 
     // MARK: Actions

@@ -17,4 +17,12 @@ enum ImageDownsampler {
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnail) else { return nil }
         return UIImage(cgImage: image, scale: scale, orientation: .up)
     }
+
+    /// The same, decoded off the main thread: tiles and rows ask for it as they scroll in, and
+    /// decoding a JPEG there stalls the scroll for a frame each time.
+    static func decoded(from data: Data, pointSize: CGFloat, scale: CGFloat = 3) async -> UIImage? {
+        await Task.detached(priority: .userInitiated) {
+            image(from: data, pointSize: pointSize, scale: scale)
+        }.value
+    }
 }
