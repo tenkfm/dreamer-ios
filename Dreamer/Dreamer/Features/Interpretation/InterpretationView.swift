@@ -207,6 +207,7 @@ struct InterpretationView: View {
             PillButton(title: "Copy text", systemImage: "doc.on.doc") { viewModel.copyInterpretation() }
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.bottom, -8)
+                .sensoryFeedback(.success, trigger: viewModel.copyCount)
         }
         .padding(DS.Space.cardPaddingLarge)
         .glassCard(radius: DS.Radius.cardLarge)

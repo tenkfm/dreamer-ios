@@ -71,6 +71,7 @@ struct LensPromotionTests {
 
         #expect(UIPasteboard.general.string == viewModel.text(for: .spiritual))
         #expect(viewModel.toastMessage == "Copied")
+        #expect(viewModel.copyCount == 1)
     }
 
     @Test func aLensChangedInSettingsShowsOnAnOpenDream() {

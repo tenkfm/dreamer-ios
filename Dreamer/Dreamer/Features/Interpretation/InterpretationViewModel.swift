@@ -252,8 +252,13 @@ final class InterpretationViewModel {
         let text = text(for: mainLens)
         guard !text.isEmpty else { return }
         UIPasteboard.general.string = text
+        copyCount += 1
         toastMessage = String(localized: "Copied")
     }
+
+    /// Grows with every copy that happened: the view's haptic follows it, not the tap, so an empty
+    /// reading gives no feedback for a copy that did not happen.
+    private(set) var copyCount = 0
 
     /// True once when the dream was opened for its notes (`AppState.openNotes`).
     func takeNotesFocus() -> Bool {
