@@ -167,7 +167,7 @@ private struct MicrophonePrePrompt: View {
     var body: some View {
         PermissionCard(systemImage: "mic",
                        title: "Tell your dream out loud",
-                       message: "Dreamer listens while you talk and writes your dream down for you, so you can tell it with your eyes half closed.") {
+                       message: "Mooncatch listens while you talk and writes your dream down for you, so you can tell it with your eyes half closed.") {
             PrimaryButton(title: "Allow microphone", systemImage: "mic", action: onAllow)
             TextLinkButton(title: "Type it instead", action: onType)
         }
@@ -186,7 +186,7 @@ private struct MicrophoneBlocked: View {
                        title: "The microphone is off",
                        message: permission == .restricted
                            ? "Microphone access is restricted on this iPhone. You can still type your dream."
-                           : "Turn on Microphone and Speech Recognition for Dreamer in Settings, or type your dream.") {
+                           : "Turn on Microphone and Speech Recognition for Mooncatch in Settings, or type your dream.") {
             PrimaryButton(title: "Type it instead", systemImage: "keyboard", action: onType)
             if permission == .denied {
                 TextLinkButton(title: "Open Settings") {

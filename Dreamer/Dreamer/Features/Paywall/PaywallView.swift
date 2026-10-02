@@ -32,7 +32,7 @@ struct PaywallView: View {
         .task { await viewModel.loadProducts() }
         .onAppear { viewModel.viewed() }
         .trackScreen(.paywall)
-        .alert("Dreamer", isPresented: alertBinding) {
+        .alert("Mooncatch", isPresented: alertBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.alertMessage ?? "")

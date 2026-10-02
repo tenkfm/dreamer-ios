@@ -167,7 +167,7 @@ final class PaywallViewModel {
                 break
             case .pending:
                 haptic = HapticEvent(.warning)
-                alertMessage = String(localized: "Your purchase is waiting for approval. Dreamer unlocks as soon as it’s approved.")
+                alertMessage = String(localized: "Your purchase is waiting for approval. Mooncatch unlocks as soon as it’s approved.")
             }
         } catch {
             haptic = HapticEvent(.error)

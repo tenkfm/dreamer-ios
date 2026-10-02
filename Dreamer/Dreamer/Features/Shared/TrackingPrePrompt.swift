@@ -12,8 +12,8 @@ struct TrackingPrePrompt: View {
                 .ignoresSafeArea()
                 .accessibilityHidden(true)
             PermissionCard(systemImage: "sparkles",
-                           title: "Help Dreamer find dreamers",
-                           message: "Next, iOS asks whether Dreamer may see which ad brought you here. It helps us spend less on ads and more on Dreamer. Your dreams are never shared, whatever you choose.") {
+                           title: "Help Mooncatch find dreamers",
+                           message: "Next, iOS asks whether Mooncatch may see which ad brought you here. It helps us spend less on ads and more on Mooncatch. Your dreams are never shared, whatever you choose.") {
                 PrimaryButton(title: "Continue", action: onContinue)
             }
         }

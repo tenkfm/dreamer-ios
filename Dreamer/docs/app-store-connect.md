@@ -1,6 +1,6 @@
 # App Store Connect: what to fill in
 
-Everything the Dreamer record in App Store Connect needs for version 1.0, prepared from the code.
+Everything the Mooncatch record in App Store Connect needs for version 1.0, prepared from the code.
 Nothing here has been entered in App Store Connect: that happens after Tony's "yes"
 (Dreamer-iOS-Tasks/CLAUDE.md). Values marked **Tony** are decisions or data that only Tony can
 give; they are also listed under Blockers in PROGRESS.md.
@@ -9,7 +9,7 @@ give; they are also listed under Blockers in PROGRESS.md.
 
 | Field | Value |
 | --- | --- |
-| Name, subtitle, keywords, description | `fastlane/metadata/en-US` (IOS-12.2), uploaded by `fastlane upload_store` |
+| Name, subtitle, keywords, description | `fastlane/metadata/en-US` (IOS-12.2), uploaded by `fastlane upload_store`. The App Store name is "Mooncatch: Dream Meaning", the name under the icon "Mooncatch" (the project, targets and bundle id keep "Dreamer") |
 | Bundle ID | `com.braincode.dreamer.io` (Release) |
 | SKU | **Tony** |
 | Primary language | English (U.S.) |
@@ -28,13 +28,13 @@ One subscription group, both products submitted with version 1.0. The product id
 
 | | Group | Yearly | Weekly |
 | --- | --- | --- | --- |
-| Reference name | Dreamer Premium | Yearly | Weekly |
+| Reference name | Mooncatch Premium | Yearly | Weekly |
 | Product ID | - | `dreamer.yearly` | `dreamer.weekly` |
 | Duration | - | 1 year | 1 week |
 | Introductory offer | - | Free trial, 1 week, new subscribers | none |
 | Price | - | **Tony** ($39.99 in the StoreKit file) | **Tony** ($6.99 in the StoreKit file) |
 | Level (upgrade order) | - | 1 | 2 |
-| Display name (en-US) | Dreamer Premium | Yearly | Weekly |
+| Display name (en-US) | Mooncatch Premium | Yearly | Weekly |
 | Description (en-US, max 45) | - | Every reading, image and voice, yearly | Every reading, image and voice, weekly |
 | Review screenshot | - | `fastlane/review/paywall.png` | `fastlane/review/paywall.png` |
 

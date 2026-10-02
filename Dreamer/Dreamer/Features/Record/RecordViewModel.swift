@@ -195,7 +195,7 @@ final class RecordViewModel {
     var pauseMessage: String? {
         switch pauseReason {
         case .interruption: String(localized: "Paused for a call. Your words are saved.")
-        case .background: String(localized: "Paused while Dreamer was away. Your words are saved.")
+        case .background: String(localized: "Paused while Mooncatch was away. Your words are saved.")
         case .timeLimit: String(localized: "That’s five minutes - your dream is saved. Tap “I’m done”.")
         case .user, nil:
             if case .failed(let failure) = serverTranscription { failure.message } else { nil }

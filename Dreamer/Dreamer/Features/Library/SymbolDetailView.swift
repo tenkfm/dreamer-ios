@@ -53,7 +53,7 @@ struct SymbolDetailView: View {
                     if !viewModel.related.isEmpty {
                         related
                     }
-                    Text("Dreamer offers reflection, not medical advice.")
+                    Text("Mooncatch offers reflection, not medical advice.")
                         .textStyle(.label, color: DS.Palette.textTertiary)
                         .frame(maxWidth: .infinity)
                 }

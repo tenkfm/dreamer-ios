@@ -1,7 +1,9 @@
 # Dreamer (iOS, SwiftUI)
 
-Dreamer, the AI dream journal for iPhone: tell a dream, read what it may mean through three lenses,
-keep the journal. The app talks to the Dreamer backend (`../dreamerweb`, NestJS) through a
+Mooncatch (App Store: "Mooncatch: Dream Meaning"), the AI dream journal for iPhone: tell a dream, read what it may mean through three lenses,
+keep the journal. The code, targets and bundle id keep the working name Dreamer; everything the
+user sees says Mooncatch (the display name is `DREAMER_DISPLAY_NAME` in the xcconfigs). The app
+talks to the Dreamer backend (`../dreamerweb`, NestJS) through a
 generated OpenAPI client; RevenueCat, PostHog, Sentry and GoogleSignIn are its SDKs. Every service also has a
 local mock, so the whole app runs without the network. Design handoff: `../Dreamer-iOS-Handoff`;
 tasks and progress: `../../Dreamer-iOS-Tasks`.
@@ -625,7 +627,7 @@ Tinted; also look at Spotlight and Settings.
 
 ## App Store metadata (ASO)
 
-`fastlane/metadata/en-US` holds the listing: name `Dreamer: AI Dream Journal`, subtitle
+`fastlane/metadata/en-US` holds the listing: name `Mooncatch: Dream Meaning`, subtitle
 `Dream meaning & psychology`, keywords, promotional text, description and release notes.
 `upload_store` sends them. The positioning is a dream journal with psychology, not fortune
 telling (App Review 4.3): the words "fortune", "horoscope", "predict" and "psychic" are

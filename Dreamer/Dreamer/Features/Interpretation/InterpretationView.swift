@@ -152,7 +152,7 @@ struct InterpretationView: View {
     }
 
     private var disclaimer: some View {
-        Text("Dreamer offers reflection, not medical advice.")
+        Text("Mooncatch offers reflection, not medical advice.")
             .textStyle(.label, color: DS.Palette.textTertiary)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)

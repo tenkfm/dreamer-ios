@@ -3,7 +3,7 @@
   "arguments": ["-mockServices", "-day", "-debugTime", "07:30"],
   "shots": [
     { "name": "01_home",           "screen": "home",           "wait": 3, "caption": "Catch your dream\nbefore it fades" },
-    { "name": "02_record",         "screen": "record",         "wait": 6, "caption": "Just tell it.\nDreamer writes it down" },
+    { "name": "02_record",         "screen": "record",         "wait": 6, "caption": "Just tell it.\nMooncatch writes it down" },
     { "name": "03_interpretation", "screen": "interpretation", "wait": 4, "caption": "See what your dream\nis telling you" },
     { "name": "04_details",        "screen": "details",        "wait": 3, "caption": "Add how it felt\nfor a deeper reading" },
     { "name": "05_journal",        "screen": "journal",        "wait": 3, "caption": "Watch your patterns\ntake shape" },

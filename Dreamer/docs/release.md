@@ -67,7 +67,7 @@ means the production domain, the legal URLs, the keys, and the App Store Connect
 ## 2. Internal TestFlight
 
 ```
-bundle exec fastlane beta                          # Staging build: the "Dreamer β" app, staging backend
+bundle exec fastlane beta                          # Staging build: the "Mooncatch β" app, staging backend
 bundle exec fastlane beta configuration:Release    # the App Store app against production
 ```
 

@@ -48,7 +48,7 @@ struct ErrorState: Equatable, Sendable, Identifiable {
                       message: String(localized: "Your session has ended. Sign in to see your journal."), action: .signIn)
         case .notConfigured, .invalidResponse:
             self.init(kind: .outdatedApp, title: String(localized: "Something went wrong"),
-                      message: String(localized: "Please update Dreamer from the App Store and try again."), action: .dismiss)
+                      message: String(localized: "Please update Mooncatch from the App Store and try again."), action: .dismiss)
         case .server(let server):
             self.init(server, now: now, calendar: calendar)
         }
@@ -89,14 +89,14 @@ struct ErrorState: Equatable, Sendable, Identifiable {
             self.init(kind: .voiceUnavailable, title: String(localized: "Voice is resting"),
                       message: String(localized: "We’ll read it aloud with the iPhone voice instead."), action: .dismiss)
         case .providerUnavailable:
-            self.init(kind: .providerUnavailable, title: String(localized: "Dreamer is catching its breath"),
+            self.init(kind: .providerUnavailable, title: String(localized: "Mooncatch is catching its breath"),
                       message: String(localized: "Please try again in a minute."), action: .retry)
         case .attestationRequired:
             self.init(kind: .verificationFailed, title: String(localized: "We couldn’t verify this app"),
-                      message: String(localized: "Please try again. If it keeps happening, reinstall Dreamer from the App Store."), action: .retry)
+                      message: String(localized: "Please try again. If it keeps happening, reinstall Mooncatch from the App Store."), action: .retry)
         case .validationFailed:
             self.init(kind: .outdatedApp, title: String(localized: "Something went wrong"),
-                      message: String(localized: "Please update Dreamer from the App Store and try again."), action: .dismiss)
+                      message: String(localized: "Please update Mooncatch from the App Store and try again."), action: .dismiss)
         case .internalError:
             self.init(kind: .serverError, title: String(localized: "Something went wrong"),
                       message: String(localized: "It’s on our side. Please try again later."), action: .retry)

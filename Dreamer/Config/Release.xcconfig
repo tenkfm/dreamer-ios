@@ -8,7 +8,7 @@ API_HOST =
 APS_ENVIRONMENT = production
 APP_ATTEST_ENVIRONMENT = production
 PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io
-DREAMER_DISPLAY_NAME = Dreamer
+DREAMER_DISPLAY_NAME = Mooncatch
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
 
 #include? "Secrets.xcconfig"

@@ -166,7 +166,10 @@ final class AppDependencies {
                 instagramAppID: config.facebookAppID,
                 makeSpeechService: { MockSpeechService(liveText: mockTranscriber() == nil) },
                 makeReadAloudService: { SpeechSynthesizerReadAloudService() },
-                notificationScheduler: SystemNotificationScheduler(),
+                // UI tests start from a fresh state: the simulator's real notification permission,
+                // asked once by any earlier run, hid the reminder offer from every later one.
+                notificationScheduler: arguments.contains("-uiTesting")
+                    ? MockNotificationScheduler(permission: .notDetermined) : SystemNotificationScheduler(),
                 authenticator: SystemAuthenticator()
             )
         }

@@ -7,7 +7,7 @@ API_HOST = staging-api.dreamerapp.io
 APS_ENVIRONMENT = production
 APP_ATTEST_ENVIRONMENT = production
 PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io
-DREAMER_DISPLAY_NAME = Dreamer β
+DREAMER_DISPLAY_NAME = Mooncatch β
 ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon-Staging
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = STAGING $(inherited)
 

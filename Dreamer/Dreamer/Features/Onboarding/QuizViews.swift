@@ -37,7 +37,7 @@ struct QuizGoalContent: View {
     @Bindable var viewModel: OnboardingViewModel
 
     var body: some View {
-        QuizContentLayout(title: "What brings you to Dreamer?") {
+        QuizContentLayout(title: "What brings you to Mooncatch?") {
             ForEach(Array(Goal.allCases.enumerated()), id: \.element) { index, goal in
                 RadioOptionCard(title: goal.title, glyph: goal.glyph, isSelected: viewModel.goal == goal) {
                     viewModel.goal = goal

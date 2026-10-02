@@ -165,7 +165,7 @@ struct Logo: View {
     var onSky = true
 
     var body: some View {
-        Text("Dreamer")
+        Text("Mooncatch")
             .font(large ? TextStyle.logoLarge.font : TextStyle.logo.font)
             .foregroundStyle(onSky ? DS.Palette.white : DS.Palette.textPrimary)
             .shadow(color: DS.Palette.skyTextShadow.opacity(onSky ? 0.35 : 0), radius: 7, x: 0, y: 2)

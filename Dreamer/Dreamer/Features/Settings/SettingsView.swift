@@ -45,7 +45,7 @@ struct SettingsView: View {
             .scrollIndicators(.hidden)
         }
         .trackScreen(.settings)
-        .alert("Dreamer", isPresented: lockAlert) {
+        .alert("Mooncatch", isPresented: lockAlert) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(appLock.alertMessage ?? "")
@@ -68,7 +68,7 @@ struct SettingsView: View {
         .sheet(isPresented: $viewModel.isDeleteConfirmationPresented, onDismiss: viewModel.cancelDelete) {
             DeleteAccountSheet(viewModel: viewModel)
         }
-        .confirmationDialog("Sign out of Dreamer?", isPresented: $viewModel.isSignOutConfirmationPresented,
+        .confirmationDialog("Sign out of Mooncatch?", isPresented: $viewModel.isSignOutConfirmationPresented,
                             titleVisibility: .visible) {
             Button("Sign out", role: .destructive) { Task { await viewModel.signOut() } }
             Button("Cancel", role: .cancel) {}
@@ -79,7 +79,7 @@ struct SettingsView: View {
         .onAppear { if DebugLaunch.screen == .deleteAccount { viewModel.isDeleteConfirmationPresented = true } }
         #endif
         .haptic(viewModel.haptic)
-        .alert("Dreamer", isPresented: alertBinding) {
+        .alert("Mooncatch", isPresented: alertBinding) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.alertMessage ?? "")

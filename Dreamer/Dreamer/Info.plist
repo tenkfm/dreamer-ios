@@ -34,9 +34,9 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Dreamer uses Face ID to keep your dream journal private.</string>
+	<string>Mooncatch uses Face ID to keep your dream journal private.</string>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>Dreamer uses this to see which ads bring people to the app. Your dreams are never shared.</string>
+	<string>Mooncatch uses this to see which ads bring people to the app. Your dreams are never shared.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>instagram-stories</string>
