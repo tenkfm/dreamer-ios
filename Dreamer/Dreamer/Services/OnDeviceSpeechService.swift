@@ -128,6 +128,9 @@ private final class SpeechSession: @unchecked Sendable {
     func begin() throws {
         let audio = AVAudioSession.sharedInstance()
         try audio.setCategory(.record, mode: .measurement, options: [.duckOthers])
+        // A recording session mutes haptics by default: the mic's knock on Home (still playing when
+        // recording starts), the start and stop ticks and the time-limit warning were all silent.
+        try? audio.setAllowHapticsAndSystemSoundsDuringRecording(true)
         try audio.setActive(true, options: .notifyOthersOnDeactivation)
 
         startRequest()

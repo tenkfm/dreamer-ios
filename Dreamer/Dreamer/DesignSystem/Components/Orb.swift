@@ -82,19 +82,18 @@ struct OrbButton: View {
     var accessibilityLabel: String
     var action: () -> Void
 
-    @State private var taps = 0
-
     var body: some View {
         Button {
-            taps += 1
+            // The app's main button: a firm knock, stronger than the light tap of the other
+            // buttons. Played in the tap itself, before the action opens recording, so it never
+            // races the recording session (which mutes haptics unless told otherwise).
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred(intensity: 1)
             action()
         } label: {
             OrbView(glyph: glyph, size: size)
                 .contentShape(Circle())
         }
         .buttonStyle(PressableButtonStyle())
-        // The app's main button: a firm knock, stronger than the light tap of the other buttons.
-        .sensoryFeedback(.impact(weight: .heavy, intensity: 1), trigger: taps)
         .accessibilityLabel(accessibilityLabel)
     }
 }
