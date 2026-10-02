@@ -22,10 +22,10 @@ final class ScriptedLibrary: LibraryRemote, @unchecked Sendable {
         }
         if let category { items = items.filter { $0.categories.contains(category) } }
         if let query { items = items.filter { $0.title.localizedCaseInsensitiveContains(query) } }
-        // Two pages for the popular category, to follow the cursor.
-        if category == .popular, cursor == nil { return LibraryPage(items: Array(items.prefix(2)), nextCursor: "p2") }
-        if category == .popular { return LibraryPage(items: Array(items.dropFirst(2)), nextCursor: nil) }
-        return LibraryPage(items: items, nextCursor: nil)
+        // Pages of `limit`; the cursor is the offset of the next one.
+        let start = cursor.flatMap(Int.init) ?? 0
+        let end = min(items.count, start + limit)
+        return LibraryPage(items: Array(items[start..<end]), nextCursor: end < items.count ? String(end) : nil)
     }
 
     func librarySymbol(slug: String) async throws(APIError) -> LibrarySymbol {
@@ -47,21 +47,47 @@ private func tempFile() -> URL {
 
 @MainActor
 struct APISymbolCatalogTests {
-    @Test func aCategoryFollowsItsPagesAndWorksOfflineAfterwards() async throws {
+    /// "Popular" is the whole library, a page at a time; later pages come as the grid scrolls.
+    @Test func popularPagesThroughTheWholeLibraryAndWorksOfflineAfterwards() async throws {
         let file = tempFile()
         let remote = ScriptedLibrary()
-        let catalog = APISymbolCatalog(remote: remote, fileURL: file)
-        try await catalog.refresh(category: .popular)
+        let catalog = APISymbolCatalog(remote: remote, fileURL: file, pageSize: 5)
+        let all = remote.symbols.map(\.id)
 
-        let popular = remote.symbols.filter { $0.categories.contains(.popular) }.map(\.id)
-        #expect(catalog.symbols(in: .popular).map(\.id) == popular)
-        #expect(remote.calls == ["list popular ", "list popular p2"])
+        try await catalog.refresh(category: .popular)
+        #expect(catalog.symbols(in: .popular).map(\.id) == Array(all.prefix(5)))
+        #expect(catalog.canLoadMore(category: .popular))
+
+        while catalog.canLoadMore(category: .popular) { try await catalog.loadMore(category: .popular) }
+        #expect(catalog.symbols(in: .popular).map(\.id) == all)
+        #expect(remote.calls == ["list - ", "list - 5", "list - 10"])
 
         let offline = ScriptedLibrary()
         offline.goOffline()
-        let relaunched = APISymbolCatalog(remote: offline, fileURL: file)
+        let relaunched = APISymbolCatalog(remote: offline, fileURL: file, pageSize: 5)
         await #expect(throws: APIError.offline) { try await relaunched.refresh(category: .popular) }
-        #expect(relaunched.symbols(in: .popular).map(\.id) == popular)
+        #expect(relaunched.symbols(in: .popular).map(\.id) == all)
+    }
+
+    @Test func aShelfAsksForItsCategory() async throws {
+        let remote = ScriptedLibrary()
+        let catalog = APISymbolCatalog(remote: remote, fileURL: tempFile(), pageSize: 20)
+        try await catalog.refresh(category: .animals)
+        #expect(remote.calls == ["list animals "])
+        #expect(catalog.symbols(in: .animals).allSatisfy { $0.categories.contains(.animals) })
+        #expect(!catalog.canLoadMore(category: .animals))
+    }
+
+    @Test func theLastTileLoadsTheNextPage() async throws {
+        let remote = ScriptedLibrary()
+        let catalog = APISymbolCatalog(remote: remote, fileURL: tempFile(), pageSize: 5)
+        let library = LibraryViewModel(appState: AppState(store: InMemoryPreferencesStore()), catalog: catalog)
+        await library.refresh()
+        #expect(library.symbols.count == 5)
+        await library.symbolAppeared(library.symbols[0])
+        #expect(library.symbols.count == 5)
+        await library.symbolAppeared(try #require(library.symbols.last))
+        #expect(library.symbols.count == 10)
     }
 
     @Test func anOpenedSymbolKeepsItsLensesAcrossListRefreshes() async throws {

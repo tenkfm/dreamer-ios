@@ -246,6 +246,8 @@ final class MockSymbolCatalog: SymbolCatalog {
     func symbol(id: LibrarySymbol.ID) -> LibrarySymbol? { symbols.first { $0.id == id } }
 
     func refresh(category: SymbolCategory) async throws(APIError) {}
+    func canLoadMore(category: SymbolCategory) -> Bool { false }
+    func loadMore(category: SymbolCategory) async throws(APIError) {}
 
     func search(_ query: String) async throws(APIError) -> [LibrarySymbol] {
         symbols.filter { $0.title.localizedCaseInsensitiveContains(query) || $0.meaning.localizedCaseInsensitiveContains(query) }

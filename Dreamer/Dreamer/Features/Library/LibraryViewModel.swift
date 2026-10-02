@@ -9,6 +9,8 @@ final class LibraryViewModel {
     var category: SymbolCategory = .popular
     /// The first load of a category with nothing cached yet.
     private(set) var isLoading = false
+    /// The next page is on its way (the spinner under the grid).
+    private(set) var isLoadingMore = false
     private(set) var searchResults: [LibrarySymbol]?
 
     let categories = SymbolCategory.allCases
@@ -45,6 +47,17 @@ final class LibraryViewModel {
         isLoading = catalog.symbols(in: category).isEmpty
         defer { isLoading = false }
         try? await catalog.refresh(category: category)
+    }
+
+    /// More pages of the category, not while searching (search is one page).
+    var canLoadMore: Bool { trimmedQuery.isEmpty && catalog.canLoadMore(category: category) }
+
+    /// The last tile came into view: the next page.
+    func symbolAppeared(_ symbol: LibrarySymbol) async {
+        guard symbol.id == symbols.last?.id, canLoadMore, !isLoadingMore else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
+        try? await catalog.loadMore(category: category)
     }
 
     func imageData(for symbol: LibrarySymbol) async -> Data? {

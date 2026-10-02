@@ -90,6 +90,8 @@ struct HomeSymbolImageTests {
         func symbols(in category: SymbolCategory) -> [LibrarySymbol] { symbols }
         func symbol(id: LibrarySymbol.ID) -> LibrarySymbol? { symbols.first { $0.id == id } }
         func refresh(category: SymbolCategory) async throws(APIError) {}
+        func canLoadMore(category: SymbolCategory) -> Bool { false }
+        func loadMore(category: SymbolCategory) async throws(APIError) {}
         func search(_ query: String) async throws(APIError) -> [LibrarySymbol] { [] }
         func loadSymbol(id: LibrarySymbol.ID) async throws(APIError) -> LibrarySymbol { symbols[0] }
         func imageData(for symbol: LibrarySymbol) async -> Data? {

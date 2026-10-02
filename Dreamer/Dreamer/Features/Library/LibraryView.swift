@@ -75,7 +75,14 @@ struct LibraryView: View {
                         SymbolTile(symbol: symbol, viewModel: viewModel)
                     }
                     .buttonStyle(PressableButtonStyle())
+                    // Lazy grid: the last tile appears only when scrolled near, and loads the next page.
+                    .task { await viewModel.symbolAppeared(symbol) }
                 }
+            }
+            if viewModel.isLoadingMore {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 16)
             }
         }
     }

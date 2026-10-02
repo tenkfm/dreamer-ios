@@ -145,7 +145,12 @@ protocol SymbolCatalog: AnyObject {
     func symbols(in category: SymbolCategory) -> [LibrarySymbol]
     /// The symbol in full when it was opened before, else its list entry.
     func symbol(id: LibrarySymbol.ID) -> LibrarySymbol?
+    /// The first page of a category.
     func refresh(category: SymbolCategory) async throws(APIError)
+    /// Whether the category has more pages on the server.
+    func canLoadMore(category: SymbolCategory) -> Bool
+    /// The next page of a category, appended to it.
+    func loadMore(category: SymbolCategory) async throws(APIError)
     /// Server search over titles and meanings (all categories).
     func search(_ query: String) async throws(APIError) -> [LibrarySymbol]
     /// The symbol in full: every lens, the question, related symbols.

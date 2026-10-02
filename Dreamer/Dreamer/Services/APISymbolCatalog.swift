@@ -22,6 +22,8 @@ final class APISymbolCatalog: SymbolCatalog {
         var categories: [SymbolCategory: [String]] = [:]
         /// Every slug seen, in first-seen order.
         var order: [String] = []
+        /// Where the next page of a category starts; absent when it is complete.
+        var nextCursors: [SymbolCategory: String] = [:]
     }
 
     private(set) var snapshot: Snapshot
@@ -30,16 +32,17 @@ final class APISymbolCatalog: SymbolCatalog {
     @ObservationIgnored private let fileURL: URL?
     @ObservationIgnored private let images: DreamImageCache
     @ObservationIgnored private let session: URLSession
-    /// A category is at most a few pages; this stops a runaway cursor.
-    @ObservationIgnored private let maxPages = 10
+    /// Symbols per page: the first page shows at once, the next ones load as the grid scrolls.
+    @ObservationIgnored private let pageSize: Int
 
     init(remote: any LibraryRemote, fileURL: URL? = APISymbolCatalog.defaultFileURL,
          images: DreamImageCache = DreamImageCache(directory: URL.cachesDirectory.appending(path: "SymbolImages", directoryHint: .isDirectory)),
-         session: URLSession = APIClient.mediaSession) {
+         session: URLSession = APIClient.mediaSession, pageSize: Int = 20) {
         self.remote = remote
         self.fileURL = fileURL
         self.images = images
         self.session = session
+        self.pageSize = pageSize
         snapshot = fileURL.flatMap { try? JSONDecoder().decode(Snapshot.self, from: Data(contentsOf: $0)) } ?? Snapshot()
     }
 
@@ -55,18 +58,35 @@ final class APISymbolCatalog: SymbolCatalog {
 
     func symbol(id: LibrarySymbol.ID) -> LibrarySymbol? { snapshot.symbols[id] }
 
+    /// "Popular" is the whole library, most popular first: the server's popular shelf holds only a
+    /// handful of the symbols, and the rest would never show. The other chips are their shelves.
+    private func remoteCategory(_ category: SymbolCategory) -> SymbolCategory? {
+        category == .popular ? nil : category
+    }
+
+    /// The first page of a category (again); later pages come with `loadMore`.
     func refresh(category: SymbolCategory) async throws(APIError) {
-        var items: [LibrarySymbol] = []
-        var cursor: String?
-        for _ in 0..<maxPages {
-            let page = try await remote.librarySymbols(query: nil, category: category, cursor: cursor, limit: 50)
-            items += page.items
-            cursor = page.nextCursor
-            if cursor == nil { break }
-        }
+        let page = try await remote.librarySymbols(query: nil, category: remoteCategory(category), cursor: nil, limit: pageSize)
         var next = snapshot
-        items.forEach { merge($0, into: &next) }
-        next.categories[category] = items.map(\.id)
+        page.items.forEach { merge($0, into: &next) }
+        next.categories[category] = page.items.map(\.id)
+        next.nextCursors[category] = page.nextCursor
+        commit(next)
+    }
+
+    func canLoadMore(category: SymbolCategory) -> Bool {
+        snapshot.nextCursors[category] != nil
+    }
+
+    /// The next page of a category, appended.
+    func loadMore(category: SymbolCategory) async throws(APIError) {
+        guard let cursor = snapshot.nextCursors[category] else { return }
+        let page = try await remote.librarySymbols(query: nil, category: remoteCategory(category), cursor: cursor, limit: pageSize)
+        var next = snapshot
+        page.items.forEach { merge($0, into: &next) }
+        let known = Set(next.categories[category] ?? [])
+        next.categories[category, default: []] += page.items.map(\.id).filter { !known.contains($0) }
+        next.nextCursors[category] = page.nextCursor
         commit(next)
     }
 
