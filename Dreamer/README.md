@@ -770,7 +770,8 @@ It also describes the Instruments checks that need an iPhone 12.
 
 ## Accessibility and motion
 
-Haptics mark target actions, never navigation. Taps: a light impact on every primary button, a
+Haptics mark target actions, never navigation. Taps: a heavy impact on Home's mic (the main
+button), a light impact on every primary button, a
 selection tick on choices, chips, toggles, the tab bar and the voice player, start and stop for
 recording. Outcomes, through `HapticEvent` (`DesignSystem/Haptics.swift`: a view model sets it,
 the view plays it with `.haptic(_:)`): success for copied, saved to Photos, shared, a new main
