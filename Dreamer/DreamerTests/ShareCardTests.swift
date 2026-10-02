@@ -61,8 +61,12 @@ struct DreamSharingTests {
         let viewModel = makeViewModel(card: FixedCard(result: .success(cardPNG())))
         await viewModel.share()
         let item = try #require(viewModel.shareItem)
+        guard case .image(let image) = item.content else {
+            Issue.record("a dream without a film shares the card")
+            return
+        }
         // The 9:16 card, not the dream image.
-        #expect(abs(item.image.size.width / item.image.size.height - 9.0 / 16.0) < 0.001)
+        #expect(abs(image.size.width / image.size.height - 9.0 / 16.0) < 0.001)
     }
 
     @Test func withoutTheCardTheDreamImageIsShared() async {

@@ -1,10 +1,10 @@
-# Normalized copy of the Dreamer API contract 1.1.1 (dreamer-platform openapi.yaml).
+# Normalized copy of the Dreamer API contract 1.4.0 (dreamer-platform openapi.yaml).
 # Written by scripts/sync-openapi.sh - do not edit. Only change: nullable `anyOf [X, null]`
 # values became optional `X` (see scripts/normalize_openapi.py).
 openapi: 3.1.0
 info:
   title: Dreamer API
-  version: 1.1.1
+  version: 1.4.0
   description: 'API of the Dreamer iOS app (phase 1, app2app). Generated from the zod schemas in packages/shared - do not
     edit by hand; run `pnpm contract`.
 
@@ -18,8 +18,6 @@ info:
 
     The guide - auth, pagination, the event stream, idempotency, limits, webhooks: docs/api.md.'
 servers:
-- url: https://staging-api.dreamerapp.io
-  description: This server
 - url: https://{host}
   description: Production or staging
   variables:
@@ -57,6 +55,8 @@ tags:
   description: APNs tokens
 - name: Webhooks
   description: Called by RevenueCat and kie.ai, not by the app
+- name: Web
+  description: The free dream interpreter of dreamerapp.io - called by the site, not by the app
 paths:
   /health:
     get:
@@ -125,9 +125,9 @@ paths:
                 $ref: '#/components/schemas/AuthTokens'
               example:
                 accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
-                accessExpiresAt: '2026-10-01T07:27:00.000Z'
+                accessExpiresAt: 2026-10-01 07:27:00+00:00
                 refreshToken: rt_example_refresh_token_value_0123456789
-                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
+                refreshExpiresAt: 2026-11-30 07:12:00+00:00
                 user:
                   id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
                   isNew: true
@@ -196,9 +196,9 @@ paths:
                 $ref: '#/components/schemas/AuthTokens'
               example:
                 accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
-                accessExpiresAt: '2026-10-01T07:27:00.000Z'
+                accessExpiresAt: 2026-10-01 07:27:00+00:00
                 refreshToken: rt_example_refresh_token_value_0123456789
-                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
+                refreshExpiresAt: 2026-11-30 07:12:00+00:00
                 user:
                   id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
                   isNew: true
@@ -329,9 +329,9 @@ paths:
                 $ref: '#/components/schemas/AuthTokens'
               example:
                 accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
-                accessExpiresAt: '2026-10-01T07:27:00.000Z'
+                accessExpiresAt: 2026-10-01 07:27:00+00:00
                 refreshToken: rt_example_refresh_token_value_0123456789
-                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
+                refreshExpiresAt: 2026-11-30 07:12:00+00:00
                 user:
                   id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
                   isNew: true
@@ -400,9 +400,9 @@ paths:
                 $ref: '#/components/schemas/AuthTokens'
               example:
                 accessToken: eyJhbGciOiJIUzI1NiJ9.example.access
-                accessExpiresAt: '2026-10-01T07:27:00.000Z'
+                accessExpiresAt: 2026-10-01 07:27:00+00:00
                 refreshToken: rt_example_refresh_token_value_0123456789
-                refreshExpiresAt: '2026-11-30T07:12:00.000Z'
+                refreshExpiresAt: 2026-11-30 07:12:00+00:00
                 user:
                   id: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
                   isNew: false
@@ -530,7 +530,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
-                createdAt: '2026-09-20T07:00:00.000Z'
+                createdAt: 2026-09-20 07:00:00+00:00
         '401':
           description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
           content:
@@ -596,7 +596,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
-                createdAt: '2026-09-20T07:00:00.000Z'
+                createdAt: 2026-09-20 07:00:00+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -699,11 +699,11 @@ paths:
                 $ref: '#/components/schemas/DataExport'
               example:
                 format: dreamer-export-v1
-                exportedAt: '2026-09-25T09:00:00.000Z'
+                exportedAt: 2026-09-25 09:00:00+00:00
                 account:
                   id: 7d0f3c2a-5b1e-4c8d-9a6f-2e4b8c1d3f5a
                   email: anna@example.com
-                  createdAt: '2026-09-01T08:00:00.000Z'
+                  createdAt: 2026-09-01 08:00:00+00:00
                   signInMethods:
                   - apple
                   paywallVariant: hard
@@ -719,19 +719,19 @@ paths:
                     time: 07:30
                   timezone: Europe/Warsaw
                   nightMode: true
-                  createdAt: '2026-09-01T08:00:00.000Z'
+                  createdAt: 2026-09-01 08:00:00+00:00
                 subscription:
                   status: trialing
                   plan: yearly
                   store: appStore
-                  expiresAt: '2026-10-01T07:12:00.000Z'
+                  expiresAt: 2026-10-01 07:12:00+00:00
                   willRenew: true
                 devices:
                 - platform: ios
                   environment: production
                   tokenEnding: a1b2c3
-                  registeredAt: '2026-09-01T08:01:00.000Z'
-                  lastSeenAt: '2026-09-25T06:58:00.000Z'
+                  registeredAt: 2026-09-01 08:01:00+00:00
+                  lastSeenAt: 2026-09-25 06:58:00+00:00
                 dreams: []
                 aiUsage:
                 - kind: interpret
@@ -819,8 +819,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: '2026-09-24T11:12:00.000Z'
-                recordedAt: '2026-09-24T11:10:00.000Z'
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -876,8 +876,15 @@ paths:
                     durationSec: 72
                   spiritual: null
                   dreamBook: null
+                video:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4
+                  durationSec: 72.8
+                  lens: psychology
+                  width: 1080
+                  height: 1920
                 notes: ''
-                updatedAt: '2026-09-24T11:12:30.000Z'
+                updatedAt: 2026-09-24 11:12:30+00:00
         '201':
           description: Created, interpretation queued
           content:
@@ -887,8 +894,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: '2026-09-24T11:12:00.000Z'
-                recordedAt: '2026-09-24T11:10:00.000Z'
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
                 title: null
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -907,8 +914,15 @@ paths:
                   psychology: null
                   spiritual: null
                   dreamBook: null
+                video:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4
+                  durationSec: 72.8
+                  lens: psychology
+                  width: 1080
+                  height: 1920
                 notes: ''
-                updatedAt: '2026-09-24T11:12:30.000Z'
+                updatedAt: 2026-09-24 11:12:30+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -1024,8 +1038,8 @@ paths:
               example:
                 items:
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e20
-                  createdAt: '2026-09-24T11:12:00.000Z'
-                  weekOf: '2026-09-21'
+                  createdAt: 2026-09-24 11:12:00+00:00
+                  weekOf: 2026-09-21
                   title: The house with endless stairs
                   status: ready
                   emotions:
@@ -1038,8 +1052,8 @@ paths:
                   - voice
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e21
-                  createdAt: '2026-09-22T10:48:00.000Z'
-                  weekOf: '2026-09-21'
+                  createdAt: 2026-09-22 10:48:00+00:00
+                  weekOf: 2026-09-21
                   title: Flying over a frozen lake
                   status: ready
                   emotions:
@@ -1051,8 +1065,8 @@ paths:
                   - stairs
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e22
-                  createdAt: '2026-09-21T11:30:00.000Z'
-                  weekOf: '2026-09-21'
+                  createdAt: 2026-09-21 11:30:00+00:00
+                  weekOf: 2026-09-21
                   title: Late for an exam I never took
                   status: ready
                   emotions:
@@ -1064,8 +1078,8 @@ paths:
                   - school
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e23
-                  createdAt: '2026-09-17T10:55:00.000Z'
-                  weekOf: '2026-09-14'
+                  createdAt: 2026-09-17 10:55:00+00:00
+                  weekOf: 2026-09-14
                   title: My old dog came back
                   status: ready
                   emotions:
@@ -1077,8 +1091,8 @@ paths:
                   - home
                   snippet: null
                 - id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e24
-                  createdAt: '2026-09-15T09:40:00.000Z'
-                  weekOf: '2026-09-14'
+                  createdAt: 2026-09-15 09:40:00+00:00
+                  weekOf: 2026-09-14
                   title: Chased through a night market
                   status: ready
                   emotions:
@@ -1155,8 +1169,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: '2026-09-24T11:12:00.000Z'
-                recordedAt: '2026-09-24T11:10:00.000Z'
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -1212,8 +1226,15 @@ paths:
                     durationSec: 72
                   spiritual: null
                   dreamBook: null
+                video:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4
+                  durationSec: 72.8
+                  lens: psychology
+                  width: 1080
+                  height: 1920
                 notes: ''
-                updatedAt: '2026-09-24T11:12:30.000Z'
+                updatedAt: 2026-09-24 11:12:30+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -1298,8 +1319,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: '2026-09-24T11:12:00.000Z'
-                recordedAt: '2026-09-24T11:10:00.000Z'
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -1355,8 +1376,15 @@ paths:
                     durationSec: 72
                   spiritual: null
                   dreamBook: null
+                video:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4
+                  durationSec: 72.8
+                  lens: psychology
+                  width: 1080
+                  height: 1920
                 notes: Work stress, for sure.
-                updatedAt: '2026-09-24T11:12:30.000Z'
+                updatedAt: 2026-09-24 11:12:30+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -1779,8 +1807,8 @@ paths:
               example:
                 id: 0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f
                 clientId: b1f0c6e2-5d8a-4b7e-9c3f-2a1e0d9c8b7a
-                createdAt: '2026-09-24T11:12:00.000Z'
-                recordedAt: '2026-09-24T11:10:00.000Z'
+                createdAt: 2026-09-24 11:12:00+00:00
+                recordedAt: 2026-09-24 11:10:00+00:00
                 title: The house with endless stairs
                 text: I was back in my grandmother’s house, but the hallway kept getting longer. Every door opened onto another
                   staircase going down, and someone was calling my name from below.
@@ -1836,8 +1864,15 @@ paths:
                     durationSec: 72
                   spiritual: null
                   dreamBook: null
+                video:
+                  status: ready
+                  url: https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4
+                  durationSec: 72.8
+                  lens: psychology
+                  width: 1080
+                  height: 1920
                 notes: ''
-                updatedAt: '2026-09-24T11:12:30.000Z'
+                updatedAt: 2026-09-24 11:12:30+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -2306,7 +2341,7 @@ paths:
               example:
                 recordingId: a3c1e5f7-2b4d-4f6a-8c0e-1f3a5c7e9b2d
                 uploadUrl: https://account.r2.cloudflarestorage.com/dreamer-media/recordings/a3c1e5f7.m4a?X-Amz-Signature=example
-                expiresAt: '2026-09-25T07:27:00.000Z'
+                expiresAt: 2026-09-25 07:27:00+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
           content:
@@ -2466,31 +2501,31 @@ paths:
                 $ref: '#/components/schemas/WeekInsight'
               example:
                 days:
-                - date: '2026-09-21'
+                - date: 2026-09-21
                   letter: M
                   caught: true
                   isToday: false
-                - date: '2026-09-22'
+                - date: 2026-09-22
                   letter: T
                   caught: true
                   isToday: false
-                - date: '2026-09-23'
+                - date: 2026-09-23
                   letter: W
                   caught: false
                   isToday: false
-                - date: '2026-09-24'
+                - date: 2026-09-24
                   letter: T
                   caught: true
                   isToday: false
-                - date: '2026-09-25'
+                - date: 2026-09-25
                   letter: F
                   caught: false
                   isToday: true
-                - date: '2026-09-26'
+                - date: 2026-09-26
                   letter: S
                   caught: false
                   isToday: false
-                - date: '2026-09-27'
+                - date: 2026-09-27
                   letter: S
                   caught: false
                   isToday: false
@@ -2907,7 +2942,7 @@ paths:
                 isPremium: true
                 plan: yearly
                 store: appStore
-                expiresAt: '2026-10-01T07:12:00.000Z'
+                expiresAt: 2026-10-01 07:12:00+00:00
                 willRenew: true
                 freeInterpretationsLeft: 0
                 paywallVariant: hard
@@ -3079,7 +3114,7 @@ paths:
                 $ref: '#/components/schemas/AttestChallenge'
               example:
                 challenge: b3JhbmdlLWx1bmFyLXN0YWlycy1kcmVhbQ
-                expiresAt: '2026-09-25T09:05:00.000Z'
+                expiresAt: 2026-09-25 09:05:00+00:00
         '401':
           description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
           content:
@@ -3337,6 +3372,333 @@ paths:
                 error:
                   code: INTERNAL_ERROR
                   message: See the code
+  /v1/web/config:
+    get:
+      operationId: webConfig
+      tags:
+      - Web
+      summary: Settings the web interpreter page needs
+      security:
+      - webProxy: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebConfig'
+              example:
+                turnstileSiteKey: '0x4AAAAAAA'
+                dailyLimit: 3
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/web/interpret:
+    post:
+      operationId: webInterpret
+      tags:
+      - Web
+      summary: 'A free interpretation: one lens and three symbols'
+      description: For dreamerapp.io/dream-interpreter only. A few a day per browser (deviceId) and per IP (LIMIT_REACHED
+        after that); a Cloudflare Turnstile token once the server has a Turnstile key (BOT_CHECK_FAILED). With `safetyFlag`
+        the page shows support resources instead of a reading.
+      security:
+      - webProxy: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebInterpretRequest'
+            example:
+              text: I was climbing a staircase in my old school and the steps kept turning into water.
+              emotions:
+              - anxious
+              deviceId: 0f8fad5b-d9cb-469f-a165-70867728950e
+              turnstileToken: 0.abc
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebInterpretation'
+              example:
+                id: q3Xr9k2LmQs
+                title: The staircase that turned to water
+                lens: psychology
+                text: This dream sets you in a place where you were once measured and judged...
+                symbols:
+                - name: Old school
+                  meaning: Being tested by old standards
+                - name: Staircase
+                  meaning: Effort toward a goal
+                - name: Water
+                  meaning: Feelings rising underneath
+                safetyFlag: false
+                remainingToday: 2
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '403':
+          description: 'Error: BOT_CHECK_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: BOT_CHECK_FAILED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED, LIMIT_REACHED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+        '503':
+          description: 'Error: PROVIDER_UNAVAILABLE'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: PROVIDER_UNAVAILABLE
+                  message: See the code
+  /v1/web/interpretations/{id}/share:
+    post:
+      operationId: webShare
+      tags:
+      - Web
+      summary: The share link of a web interpretation
+      description: Only the browser that asked for the interpretation can share it; a safety-flagged one cannot (CONFLICT).
+        The page at the link (dreamerapp.io/d/{id}) shows the reading and the symbols - never the dream - and is noindex.
+      security:
+      - webProxy: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebShareRequest'
+            example:
+              deviceId: 0f8fad5b-d9cb-469f-a165-70867728950e
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebShare'
+              example:
+                url: https://dreamerapp.io/d/q3Xr9k2LmQs
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '404':
+          description: 'Error: NOT_FOUND'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: See the code
+        '409':
+          description: 'Error: CONFLICT'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: CONFLICT
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/web/leads:
+    post:
+      operationId: webLead
+      tags:
+      - Web
+      summary: 'Leave an email: "Send to my phone" or the Android waitlist'
+      description: Emails the App Store link (send_to_phone) or a waitlist confirmation (android_waitlist) - once per address
+        and purpose in ten minutes. Marketing emails only with `marketingConsent`.
+      security:
+      - webProxy: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebLeadRequest'
+            example:
+              email: anna@example.com
+              source: send_to_phone
+              marketingConsent: true
+              deviceId: 0f8fad5b-d9cb-469f-a165-70867728950e
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebLead'
+              example:
+                ok: true
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
+  /v1/web/events:
+    post:
+      operationId: webEvent
+      tags:
+      - Web
+      summary: A funnel event of the web interpreter, sent on to analytics
+      security:
+      - webProxy: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebEventRequest'
+            example:
+              event: appstore_click
+              deviceId: 0f8fad5b-d9cb-469f-a165-70867728950e
+              platform: ios
+              cta: button
+      responses:
+        '204':
+          description: Done, no body
+        '400':
+          description: 'Error: VALIDATION_FAILED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
 components:
   securitySchemes:
     bearer:
@@ -3349,6 +3711,11 @@ components:
       in: header
       name: Authorization
       description: The value configured in RevenueCat for the webhook
+    webProxy:
+      type: apiKey
+      in: header
+      name: x-web-proxy-key
+      description: WEB_PROXY_KEY - added by the site's proxy; browsers never call these directly
     kieCallback:
       type: apiKey
       in: query
@@ -3373,10 +3740,8 @@ components:
           required:
           - code
           - message
-          additionalProperties: false
       required:
       - error
-      additionalProperties: false
     ApiErrorCode:
       type: string
       enum:
@@ -3393,6 +3758,7 @@ components:
       - TTS_UNAVAILABLE
       - PROVIDER_UNAVAILABLE
       - LIMIT_REACHED
+      - BOT_CHECK_FAILED
       - INTERNAL_ERROR
     AppleSignIn:
       type: object
@@ -3430,7 +3796,6 @@ components:
       required:
       - challenge
       - expiresAt
-      additionalProperties: false
     AuthTokens:
       type: object
       properties:
@@ -3455,14 +3820,12 @@ components:
           required:
           - id
           - isNew
-          additionalProperties: false
       required:
       - accessToken
       - accessExpiresAt
       - refreshToken
       - refreshExpiresAt
       - user
-      additionalProperties: false
     CreateDream:
       type: object
       properties:
@@ -3544,7 +3907,6 @@ components:
           - signInMethods
           - paywallVariant
           - freeInterpretationsUsed
-          additionalProperties: false
         profile:
           $ref: '#/components/schemas/Profile'
         subscription:
@@ -3564,7 +3926,6 @@ components:
           required:
           - status
           - willRenew
-          additionalProperties: false
         devices:
           type: array
           items:
@@ -3588,7 +3949,6 @@ components:
             - tokenEnding
             - registeredAt
             - lastSeenAt
-            additionalProperties: false
         dreams:
           type: array
           items:
@@ -3638,7 +3998,6 @@ components:
                       - psychology
                       - spiritual
                       - dreamBook
-                      additionalProperties: false
                     - type: object
                       propertyNames:
                         type: string
@@ -3664,7 +4023,6 @@ components:
                       - meaning
                       - icon
                       - keyword
-                      additionalProperties: false
                   safetyFlag:
                     type: boolean
                   createdAt:
@@ -3676,7 +4034,6 @@ components:
                 - symbols
                 - safetyFlag
                 - createdAt
-                additionalProperties: false
               images:
                 type: array
                 items:
@@ -3696,7 +4053,6 @@ components:
                   - version
                   - url
                   - createdAt
-                  additionalProperties: false
               voiceOvers:
                 type: array
                 items:
@@ -3715,7 +4071,6 @@ components:
                   - lens
                   - url
                   - durationSec
-                  additionalProperties: false
             required:
             - id
             - createdAt
@@ -3726,7 +4081,6 @@ components:
             - notes
             - images
             - voiceOvers
-            additionalProperties: false
         aiUsage:
           type: array
           items:
@@ -3741,6 +4095,7 @@ components:
                 - stt
                 - library
                 - eval
+                - web_interpret
               calls:
                 type: integer
                 minimum: -9007199254740991
@@ -3748,7 +4103,6 @@ components:
             required:
             - kind
             - calls
-            additionalProperties: false
       required:
       - format
       - exportedAt
@@ -3757,7 +4111,6 @@ components:
       - devices
       - dreams
       - aiUsage
-      additionalProperties: false
     DreamAudio:
       type: object
       properties:
@@ -3788,12 +4141,10 @@ components:
             - word
             - startSec
             - endSec
-            additionalProperties: false
       required:
       - lens
       - status
       - wordTimings
-      additionalProperties: false
     DreamDetail:
       type: object
       properties:
@@ -3850,7 +4201,6 @@ components:
               - psychology
               - spiritual
               - dreamBook
-              additionalProperties: false
             forYou:
               type: string
             symbols:
@@ -3871,7 +4221,6 @@ components:
                 - meaning
                 - icon
                 - keyword
-                additionalProperties: false
             safetyFlag:
               type: boolean
           required:
@@ -3879,7 +4228,6 @@ components:
           - forYou
           - symbols
           - safetyFlag
-          additionalProperties: false
         image:
           type: object
           properties:
@@ -3909,7 +4257,6 @@ components:
           required:
           - status
           - version
-          additionalProperties: false
         audio:
           type: object
           properties:
@@ -3926,7 +4273,6 @@ components:
                   exclusiveMinimum: 0
               required:
               - status
-              additionalProperties: false
             spiritual:
               type: object
               properties:
@@ -3940,7 +4286,6 @@ components:
                   exclusiveMinimum: 0
               required:
               - status
-              additionalProperties: false
             dreamBook:
               type: object
               properties:
@@ -3954,8 +4299,31 @@ components:
                   exclusiveMinimum: 0
               required:
               - status
-              additionalProperties: false
-          additionalProperties: false
+        video:
+          type: object
+          properties:
+            status:
+              $ref: '#/components/schemas/MediaStatus'
+            url:
+              type: string
+              format: uri
+            durationSec:
+              type: number
+              exclusiveMinimum: 0
+            lens:
+              $ref: '#/components/schemas/Lens'
+            width:
+              type: integer
+              exclusiveMinimum: 0
+              maximum: 9007199254740991
+            height:
+              type: integer
+              exclusiveMinimum: 0
+              maximum: 9007199254740991
+          required:
+          - status
+          - width
+          - height
         notes:
           type: string
         updatedAt:
@@ -3975,7 +4343,6 @@ components:
       - audio
       - notes
       - updatedAt
-      additionalProperties: false
     DreamList:
       type: object
       properties:
@@ -4023,14 +4390,12 @@ components:
             - emotions
             - symbols
             - snippet
-            additionalProperties: false
         nextCursor:
           type: string
           minLength: 1
           maxLength: 200
       required:
       - items
-      additionalProperties: false
     DreamStatus:
       type: string
       enum:
@@ -4060,7 +4425,6 @@ components:
       - status
       - analysisStep
       - title
-      additionalProperties: false
     EmailSent:
       type: object
       properties:
@@ -4069,7 +4433,6 @@ components:
           const: true
       required:
       - sent
-      additionalProperties: false
     EmailSignInRequest:
       type: object
       properties:
@@ -4155,13 +4518,11 @@ components:
           required:
           - database
           - redis
-          additionalProperties: false
       required:
       - status
       - version
       - uptimeSec
       - services
-      additionalProperties: false
     KieCallback:
       type: object
       properties:
@@ -4189,7 +4550,6 @@ components:
           type: boolean
       required:
       - accepted
-      additionalProperties: false
     Lens:
       type: string
       enum:
@@ -4244,7 +4604,6 @@ components:
           - psychology
           - spiritual
           - dreamBook
-          additionalProperties: false
         related:
           type: array
           items:
@@ -4259,7 +4618,6 @@ components:
       - question
       - lenses
       - related
-      additionalProperties: false
     LibrarySymbolList:
       type: object
       properties:
@@ -4290,14 +4648,12 @@ components:
             - meaning
             - icon
             - categories
-            additionalProperties: false
         nextCursor:
           type: string
           minLength: 1
           maxLength: 200
       required:
       - items
-      additionalProperties: false
     LogoutRequest:
       type: object
       properties:
@@ -4345,7 +4701,6 @@ components:
             required:
             - emotion
             - share
-            additionalProperties: false
         recurringSymbols:
           type: array
           items:
@@ -4360,7 +4715,6 @@ components:
             required:
             - keyword
             - count
-            additionalProperties: false
       required:
       - month
       - monthName
@@ -4369,7 +4723,6 @@ components:
       - topSymbol
       - emotions
       - recurringSymbols
-      additionalProperties: false
     MorningInsight:
       type: object
       properties:
@@ -4385,7 +4738,6 @@ components:
       - symbol
       - count
       - text
-      additionalProperties: false
     PlanId:
       type: string
       enum:
@@ -4419,7 +4771,6 @@ components:
           required:
           - enabled
           - time
-          additionalProperties: false
         timezone:
           type: string
           minLength: 1
@@ -4438,7 +4789,6 @@ components:
       - timezone
       - nightMode
       - createdAt
-      additionalProperties: false
     RateLimitDetails:
       type: object
       properties:
@@ -4461,7 +4811,6 @@ components:
           format: date-time
       required:
       - retryAfterSec
-      additionalProperties: false
     RecordingUpload:
       type: object
       properties:
@@ -4478,7 +4827,6 @@ components:
       - recordingId
       - uploadUrl
       - expiresAt
-      additionalProperties: false
     RecordingUploadRequest:
       type: object
       properties:
@@ -4660,7 +5008,6 @@ components:
           - duplicate
       required:
       - outcome
-      additionalProperties: false
     ShareCard:
       type: object
       properties:
@@ -4677,7 +5024,6 @@ components:
       - url
       - width
       - height
-      additionalProperties: false
     Store:
       type: string
       enum:
@@ -4716,7 +5062,6 @@ components:
       - willRenew
       - freeInterpretationsLeft
       - paywallVariant
-      additionalProperties: false
     SubscriptionStatus:
       type: string
       enum:
@@ -4738,7 +5083,6 @@ components:
       required:
       - recordingId
       - text
-      additionalProperties: false
     UnregisterDevice:
       type: object
       properties:
@@ -4783,6 +5127,173 @@ components:
           pattern: ^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$|^UTC$
         nightMode:
           type: boolean
+    WebConfig:
+      type: object
+      properties:
+        turnstileSiteKey:
+          type:
+          - string
+          - 'null'
+        dailyLimit:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+      required:
+      - turnstileSiteKey
+      - dailyLimit
+    WebEventRequest:
+      type: object
+      properties:
+        event:
+          type: string
+          enum:
+          - interpret_submit
+          - result_view
+          - locked_lens_click
+          - appstore_click
+          - email_submit
+        deviceId:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum:
+          - ios
+          - android
+          - desktop
+        locked:
+          type: string
+          enum:
+          - spiritual
+          - dreamBook
+          - image
+          - voice
+          - journal
+        cta:
+          type: string
+          enum:
+          - button
+          - qr
+          - locked
+          - share_page
+          - send_to_phone
+          - android_waitlist
+      required:
+      - event
+      - deviceId
+      - platform
+    WebInterpretRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 20
+          maxLength: 3000
+        emotions:
+          default: []
+          maxItems: 5
+          type: array
+          items:
+            type: string
+            enum:
+            - anxious
+            - calm
+            - scared
+            - happy
+            - confused
+        deviceId:
+          type: string
+          format: uuid
+        turnstileToken:
+          type: string
+          maxLength: 2048
+      required:
+      - text
+      - deviceId
+    WebInterpretation:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        lens:
+          type: string
+          const: psychology
+        text:
+          type: string
+        symbols:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              meaning:
+                type: string
+            required:
+            - name
+            - meaning
+        safetyFlag:
+          type: boolean
+        remainingToday:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+      - id
+      - title
+      - lens
+      - text
+      - symbols
+      - safetyFlag
+      - remainingToday
+    WebLead:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          const: true
+      required:
+      - ok
+    WebLeadRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          maxLength: 254
+          format: email
+        source:
+          type: string
+          enum:
+          - send_to_phone
+          - android_waitlist
+        marketingConsent:
+          default: false
+          type: boolean
+        deviceId:
+          type: string
+          format: uuid
+      required:
+      - email
+      - source
+      - deviceId
+    WebShare:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+      required:
+      - url
+    WebShareRequest:
+      type: object
+      properties:
+        deviceId:
+          type: string
+          format: uuid
+      required:
+      - deviceId
     WeekInsight:
       type: object
       properties:
@@ -4809,7 +5320,6 @@ components:
             - letter
             - caught
             - isToday
-            additionalProperties: false
         count:
           type: integer
           minimum: 0
@@ -4817,4 +5327,3 @@ components:
       required:
       - days
       - count
-      additionalProperties: false

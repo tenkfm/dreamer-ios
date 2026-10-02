@@ -242,6 +242,10 @@ extension Dream {
                            thumbnailURL: makeURL($0.thumbnailUrl), width: $0.width, height: $0.height, version: $0.version)
         }
         audio = Dictionary(uniqueKeysWithValues: Dream.audio(detail.audio).map { entry in (entry.lens, entry.audio) })
+        video = detail.video.map {
+            DreamVideo(status: MediaStatus($0.status), url: makeURL($0.url), duration: $0.durationSec,
+                       lens: $0.lens.map(Lens.init), width: $0.width, height: $0.height)
+        }
         updatedAt = detail.updatedAt
     }
 

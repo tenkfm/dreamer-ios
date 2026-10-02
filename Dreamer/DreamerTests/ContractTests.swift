@@ -95,8 +95,9 @@ struct ContractErrorTests {
     /// fall back to "internal error" and show the wrong screen).
     @Test func everyDocumentedErrorCodeIsKnown() throws {
         var checked = 0
-        // /health answers 503 with its own status body (a degraded environment), not an error.
-        for (operation, responses) in ContractExamples.all where operation != "health" {
+        // /health answers 503 with its own status body (a degraded environment), not an error. The
+        // web* operations are the website's (left out of the generator), with codes of their own.
+        for (operation, responses) in ContractExamples.all where operation != "health" && !operation.hasPrefix("web") {
             for (status, _) in responses {
                 guard let code = Int(status), code >= 400, let body = ContractExamples.body(operation, code) else { continue }
                 let raw = try #require((try JSONSerialization.jsonObject(with: body) as? [String: Any])?["error"] as? [String: Any])["code"] as? String

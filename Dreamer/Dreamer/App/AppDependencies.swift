@@ -360,6 +360,7 @@ extension AppDependencies {
 
     func unlinkAccount() async {
         await imageLoader?.removeAll()
+        DreamVideoFiles.purge()
         // Nothing of the account stays: recordings waiting for upload, any URL cache entry.
         RecordingFiles.purge()
         URLCache.shared.removeAllCachedResponses()

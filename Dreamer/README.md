@@ -123,6 +123,21 @@ dreams. Save to Photos writes the downloaded file. The cache is emptied at sign-
 deletion. Journal thumbnails (`.thumbnail`) arrive with IOS-06. Debug: `-debugScreen interpretation
 -imagePending`.
 
+Dream film (contract 1.4.0, `DreamDetail.video`): the backend cuts a vertical 1080x1920 MP4 from
+the image and the main lens' voice, about 1.5-2 minutes after the interpretation. While
+`video.status` is `pending`, the hero badge says "Making your dream video…" and Interpretation polls
+`GET /v1/dreams/{id}` every 5 s for up to 3 minutes; the polling restarts with every fresh copy of
+the dream (opening the screen, also from a tapped image_ready push, and a new image). Only the media of the answer is
+taken, so notes typed meanwhile stay. When it is `ready`, the image stays as the poster and "Watch
+your dream · 1:13" under the title opens `DreamVideoPlayer` (AVKit, full screen, `playback` /
+`moviePlayback` session) and stops the read-aloud first, since the film carries the same voice.
+The signed link lives about an hour and is never kept: one fetched more than 45 minutes ago is
+replaced by a fresh `GET` before playing. Share and Instagram Stories send the MP4 instead of the
+card; the file is downloaded once to Caches/DreamVideos (complete protection, emptied at sign-out
+and replaced with a new image), and it also plays offline. `failed` or `null`: the image, the card
+and the read-aloud as before. Crisis dreams never show a film. Debug: `-debugScreen interpretation
+-videoReady` or `-videoPending`.
+
 Lenses and notes (IOS-05.3): the main lens of every interpretation is the account's preferred lens
 (the backend reads it from the profile for each dream), so changing it in Settings updates dreams that
 are already open. "Make this my main lens" sets it for the whole account and tracks
@@ -532,13 +547,13 @@ Everything with dream content has complete file protection (unreadable while the
 locked):
 - the SwiftData store (drafts, journal, dreams in full) in Application Support/Dreamer;
 - `insights.json`;
-- the dream image cache;
+- the dream image cache and the downloaded dream films;
 - recordings waiting for upload.
 Tokens and App Attest key ids live in the Keychain
 (`AfterFirstUnlockThisDeviceOnly`). API answers are never written to the shared URL cache
 (`urlCache = nil`, no cookies). Media behind presigned links download through an ephemeral
 session, and the app keeps its own protected caches. Sign-out and account deletion empty all of
-them: journal, drafts, image cache, insights, recordings, URL cache, SDK identities. Nothing is
+them: journal, drafts, image and film caches, insights, recordings, URL cache, SDK identities. Nothing is
 printed. The only `os.Logger` lines are an analytics debug line in Debug builds (event names and
 enum values) and a write failure without details. There are no ATS exceptions and no plain
 `http://`. `PrivacyGuardTests` fails the build when any of this regresses. To check a device:
@@ -688,6 +703,7 @@ xcrun simctl launch booted com.braincode.dreamer.io -debugScreen journal -night
 | `-micPermission notDetermined\|denied\|restricted` | Microphone permission states |
 | `-featureFlag name=true\|false` | Overrides a remote flag |
 | `-debugAdvance` | The onboarding taps "Continue" by itself every 2.5 s, up to the account step |
+| `-videoReady`, `-videoPending` | With `-debugScreen interpretation`: the dream film ready (play button) or being made |
 | `-premiumRequired` | The mock backend refuses a dream with PREMIUM_REQUIRED (the analysis screen's paywall state) |
 | `-openLink <url>` | Opens a link at launch as if the system had routed it (`./run.sh link:"<url>"`), for sign-in links Safari keeps |
 | `-uiTesting`, `-uiTestOpenEmailLink` | UI tests: fresh preferences; the mock "opens" the sign-in link |

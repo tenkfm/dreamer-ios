@@ -25,7 +25,7 @@ struct InterpretationView: View {
         }
         .toast($viewModel.toastMessage)
         .sheet(item: $viewModel.shareItem) { item in
-            ActivityView(items: [item.image]) { activity, completed in
+            ActivityView(items: item.activityItems) { activity, completed in
                 viewModel.shareSheetClosed(activity: activity, completed: completed)
             }
             .presentationDetents([.medium, .large])
@@ -37,6 +37,11 @@ struct InterpretationView: View {
         }
         .trackScreen(.interpretation)
         .task(id: viewModel.imageRequest) { await viewModel.loadImage() }
+        // Separate from the image: the film keeps being awaited after the picture is shown.
+        .task(id: viewModel.imageRequest) { await viewModel.watchVideo() }
+        .fullScreenCover(item: $viewModel.videoPlayback) { playback in
+            DreamVideoPlayer(url: playback.url)
+        }
         .task(id: viewModel.mainLens) { viewModel.prepareVoice() }
         .onDisappear {
             viewModel.stopPlayback()
@@ -71,6 +76,16 @@ struct InterpretationView: View {
 
     // MARK: Content
 
+    /// The film on the hero: the image is its poster, a tap plays it.
+    private var heroVideo: DreamHero.Video? {
+        if viewModel.isVideoReady {
+            return .ready(duration: viewModel.videoDurationText, isPreparing: viewModel.isPreparingVideo) {
+                Task { await viewModel.playVideo() }
+            }
+        }
+        return viewModel.isVideoPending ? .pending : nil
+    }
+
     private func content(dream: Dream, topInset: CGFloat) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.section) {
@@ -79,7 +94,8 @@ struct InterpretationView: View {
                           loadedImage: viewModel.loadedImage,
                           phase: viewModel.support == nil ? viewModel.imagePhase : .asset,
                           canRegenerate: viewModel.canRegenerateImage,
-                          onRegenerate: { Task { await viewModel.regenerateImage() } })
+                          onRegenerate: { Task { await viewModel.regenerateImage() } },
+                          video: viewModel.support == nil ? heroVideo : nil)
                 if let support = viewModel.support {
                     Group {
                         SupportCard(content: support).enterUp(0.5)
@@ -242,13 +258,56 @@ private struct DreamHero: View {
     var phase: InterpretationViewModel.ImagePhase = .asset
     var canRegenerate = false
     var onRegenerate: () -> Void = {}
+    var video: Video?
+
+    enum Video {
+        /// The server is cutting the film.
+        case pending
+        case ready(duration: String?, isPreparing: Bool, play: () -> Void)
+    }
+
+    /// The film is ready: a play button on the poster, with its length.
+    @ViewBuilder private var playButton: some View {
+        if case .ready(let duration, let isPreparing, let play) = video {
+            Button(action: play) {
+                HStack(spacing: 10) {
+                    if isPreparing {
+                        ProgressView().tint(DS.Palette.ink)
+                    } else {
+                        Image(systemName: "play.fill").font(.system(size: 15, weight: .semibold))
+                    }
+                    Text(duration.map { String(localized: "Watch your dream · \($0)") } ?? String(localized: "Watch your dream"))
+                        .textStyle(.bodyStrong, color: DS.Palette.ink)
+                }
+                .foregroundStyle(DS.Palette.ink)
+                .padding(.horizontal, 20)
+                .frame(height: 48)
+                .background(Capsule().fill(DS.Palette.white.opacity(0.92)))
+                .shadow(color: DS.Palette.shadow.opacity(0.25), radius: 14, x: 0, y: 8)
+                .contentShape(Capsule())
+            }
+            .buttonStyle(PressableButtonStyle())
+            .disabled(isPreparing)
+            .accessibilityHint("Plays the film of your dream with its voice-over")
+        }
+    }
 
     /// "AI dream image" on a shown image; while painting, what is happening; after a failure, a retry.
     @ViewBuilder private var imageBadge: some View {
         Group {
             switch phase {
             case .asset, .ready:
-                badgeCapsule { Text("AI dream image") }
+                if case .pending = video {
+                    badgeCapsule {
+                        HStack(spacing: 6) {
+                            ProgressView().controlSize(.mini).tint(DS.Palette.textPrimary)
+                            Text("Making your dream video…")
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                } else {
+                    badgeCapsule { Text(video == nil ? "AI dream image" : "AI dream video") }
+                }
             case .generating, .loading:
                 badgeCapsule {
                     HStack(spacing: 6) {
@@ -321,6 +380,11 @@ private struct DreamHero: View {
                         }
                     }
                 }
+                // In the title block, not over the picture: the hero's top already holds the header
+                // buttons and the badge, and a button centred there covered the badge.
+                playButton
+                    .padding(.top, 6)
+                    .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .leading)))
             }
             .padding(.horizontal, DS.Space.screen)
             .enterUp(0.35)
@@ -329,6 +393,7 @@ private struct DreamHero: View {
         .overlay(alignment: .topTrailing) {
             if showsImageBadge { imageBadge }
         }
+        .animation(.soft(0.5), value: video.map { if case .ready = $0 { true } else { false } } ?? false)
         .onAppear {
             withAnimation(.easeOut(duration: 1.6)) { revealed = true }
         }

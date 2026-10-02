@@ -79,6 +79,9 @@ enum DS {
         /// The trial badge on the paywall's plans ("7 days free"): a warm yellow that catches the eye.
         static let trialBadge      = Color(hex: 0xF8D25C)
 
+        /// Behind the full-screen dream film (letterboxing, if any).
+        static let videoBackdrop   = Color.black
+
         /// The tag and the week-strip ring of a dream told but not read yet.
         static let pendingTag      = Color(hex: 0xF7CDBD)
 

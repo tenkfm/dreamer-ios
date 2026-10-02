@@ -60,6 +60,14 @@ enum InstagramStories {
         return UIApplication.shared.canOpenURL(url)
     }
 
+    /// The dream film as the story's background (vertical, so it fills the story).
+    static func share(backgroundVideo video: Data, appID: String) async -> Bool {
+        guard let url = shareURL(appID: appID) else { return false }
+        UIPasteboard.general.setItems([["com.instagram.sharedSticker.backgroundVideo": video]],
+                                      options: [.expirationDate: Date.now.addingTimeInterval(5 * 60)])
+        return await UIApplication.shared.open(url)
+    }
+
     static func share(background image: Data, appID: String) async -> Bool {
         guard let url = shareURL(appID: appID) else { return false }
         UIPasteboard.general.setItems([["com.instagram.sharedSticker.backgroundImage": image]],

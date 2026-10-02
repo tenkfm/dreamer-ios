@@ -85,7 +85,19 @@ enum DebugLaunch {
         case .library: state.open(.library)
         case .settings, .deleteAccount: state.push(.settings, on: .today)
         case .interpretation:
-            if let dream = dependencies.dreamStore.summaries.first { state.push(.interpretation(dream.id), on: .today) }
+            if let id = dependencies.dreamStore.summaries.first?.id {
+                // `-videoReady` / `-videoPending`: the dream film's two states on the hero.
+                let arguments = ProcessInfo.processInfo.arguments
+                if var dream = dependencies.dreamStore.dream(id: id),
+                   arguments.contains("-videoReady") || arguments.contains("-videoPending") {
+                    let ready = arguments.contains("-videoReady")
+                    dream.video = DreamVideo(status: ready ? .ready : .pending,
+                                             url: ready ? URL(string: "https://example.invalid/dream.mp4") : nil,
+                                             duration: ready ? 72.8 : nil, lens: .psychology, width: 1080, height: 1920)
+                    dependencies.dreamStore.save(dream)
+                }
+                state.push(.interpretation(id), on: .today)
+            }
         case .support:
             if let id = dependencies.dreamStore.summaries.first?.id, var dream = dependencies.dreamStore.dream(id: id) {
                 dream.interpretation?.safetyFlag = true

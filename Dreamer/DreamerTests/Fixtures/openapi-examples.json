@@ -89,7 +89,15 @@
       "status": "ready",
       "text": "I was back in my grandmother\u2019s house, but the hallway kept getting longer. Every door opened onto another staircase going down, and someone was calling my name from below.",
       "title": "The house with endless stairs",
-      "updatedAt": "2026-09-24T11:12:30.000Z"
+      "updatedAt": "2026-09-24T11:12:30.000Z",
+      "video": {
+        "durationSec": 72.8,
+        "height": 1920,
+        "lens": "psychology",
+        "status": "ready",
+        "url": "https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4",
+        "width": 1080
+      }
     },
     "201": {
       "analysisStep": 0,
@@ -116,7 +124,15 @@
       "status": "analyzing",
       "text": "I was back in my grandmother\u2019s house, but the hallway kept getting longer. Every door opened onto another staircase going down, and someone was calling my name from below.",
       "title": null,
-      "updatedAt": "2026-09-24T11:12:30.000Z"
+      "updatedAt": "2026-09-24T11:12:30.000Z",
+      "video": {
+        "durationSec": 72.8,
+        "height": 1920,
+        "lens": "psychology",
+        "status": "ready",
+        "url": "https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4",
+        "width": 1080
+      }
     },
     "400": {
       "error": {
@@ -415,7 +431,15 @@
       "status": "ready",
       "text": "I was back in my grandmother\u2019s house, but the hallway kept getting longer. Every door opened onto another staircase going down, and someone was calling my name from below.",
       "title": "The house with endless stairs",
-      "updatedAt": "2026-09-24T11:12:30.000Z"
+      "updatedAt": "2026-09-24T11:12:30.000Z",
+      "video": {
+        "durationSec": 72.8,
+        "height": 1920,
+        "lens": "psychology",
+        "status": "ready",
+        "url": "https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4",
+        "width": 1080
+      }
     },
     "400": {
       "error": {
@@ -1126,7 +1150,15 @@
       "status": "ready",
       "text": "I was back in my grandmother\u2019s house, but the hallway kept getting longer. Every door opened onto another staircase going down, and someone was calling my name from below.",
       "title": "The house with endless stairs",
-      "updatedAt": "2026-09-24T11:12:30.000Z"
+      "updatedAt": "2026-09-24T11:12:30.000Z",
+      "video": {
+        "durationSec": 72.8,
+        "height": 1920,
+        "lens": "psychology",
+        "status": "ready",
+        "url": "https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4",
+        "width": 1080
+      }
     },
     "400": {
       "error": {
@@ -1661,7 +1693,15 @@
       "status": "ready",
       "text": "I was back in my grandmother\u2019s house, but the hallway kept getting longer. Every door opened onto another staircase going down, and someone was calling my name from below.",
       "title": "The house with endless stairs",
-      "updatedAt": "2026-09-24T11:12:30.000Z"
+      "updatedAt": "2026-09-24T11:12:30.000Z",
+      "video": {
+        "durationSec": 72.8,
+        "height": 1920,
+        "lens": "psychology",
+        "status": "ready",
+        "url": "https://media.example.com/dreams/0b7e9d3c-1a2f-4c5d-8e6f-7a8b9c0d1e2f/video-3f9c2a7e1b4d8c60.mp4",
+        "width": 1080
+      }
     },
     "400": {
       "error": {
@@ -1754,6 +1794,156 @@
     "401": {
       "error": {
         "code": "AUTH_LINK_EXPIRED",
+        "message": "See the code"
+      }
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    }
+  },
+  "webConfig": {
+    "200": {
+      "dailyLimit": 3,
+      "turnstileSiteKey": "0x4AAAAAAA"
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    }
+  },
+  "webEvent": {
+    "400": {
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "See the code"
+      }
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    }
+  },
+  "webInterpret": {
+    "200": {
+      "id": "q3Xr9k2LmQs",
+      "lens": "psychology",
+      "remainingToday": 2,
+      "safetyFlag": false,
+      "symbols": [
+        {
+          "meaning": "Being tested by old standards",
+          "name": "Old school"
+        },
+        {
+          "meaning": "Effort toward a goal",
+          "name": "Staircase"
+        },
+        {
+          "meaning": "Feelings rising underneath",
+          "name": "Water"
+        }
+      ],
+      "text": "This dream sets you in a place where you were once measured and judged...",
+      "title": "The staircase that turned to water"
+    },
+    "400": {
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "See the code"
+      }
+    },
+    "403": {
+      "error": {
+        "code": "BOT_CHECK_FAILED",
+        "message": "See the code"
+      }
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    },
+    "503": {
+      "error": {
+        "code": "PROVIDER_UNAVAILABLE",
+        "message": "See the code"
+      }
+    }
+  },
+  "webLead": {
+    "200": {
+      "ok": true
+    },
+    "400": {
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "See the code"
+      }
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    }
+  },
+  "webShare": {
+    "200": {
+      "url": "https://dreamerapp.io/d/q3Xr9k2LmQs"
+    },
+    "400": {
+      "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "See the code"
+      }
+    },
+    "404": {
+      "error": {
+        "code": "NOT_FOUND",
+        "message": "See the code"
+      }
+    },
+    "409": {
+      "error": {
+        "code": "CONFLICT",
         "message": "See the code"
       }
     },

@@ -10,6 +10,7 @@ namingStrategy: idiomatic
 #   morningInsight: top-level nullable schema, not supported by the generator - called by hand in APIClient
 #   revenuecatWebhook: server to server
 #   kieCallback: server to server
+#   webConfig, webEvent, webInterpret, webLead, webShare: the website's free interpreter, not the app
 filter:
   operations:
     - health

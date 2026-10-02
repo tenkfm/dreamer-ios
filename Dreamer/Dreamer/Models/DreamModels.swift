@@ -126,6 +126,8 @@ struct Dream: Identifiable, Codable, Hashable, Sendable {
     /// Generated image from the backend (URLs); `imageName` stays the asset used by mocks.
     var image: DreamImageInfo?
     var audio: [Lens: DreamAudio] = [:]
+    /// The dream film; nil without an interpretation, for crisis dreams, in mock mode.
+    var video: DreamVideo?
     var updatedAt: Date?
 
     /// Shown until the generated image is available. Light only: a dream image does not follow night mode.

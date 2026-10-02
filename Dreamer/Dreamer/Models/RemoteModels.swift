@@ -96,6 +96,21 @@ struct WordTiming: Sendable, Equatable, Hashable, Codable {
     var end: TimeInterval
 }
 
+/// The dream as a short vertical film (contract 1.4.0): the image with a slow zoom, the main lens'
+/// voice-over and word-by-word subtitles. 1080 x 1920, H.264 + AAC, plays in AVPlayer.
+struct DreamVideo: Sendable, Equatable, Hashable, Codable {
+    /// `pending` while the server waits for the image and the voice and cuts the film (about 1.5-2
+    /// minutes after the interpretation); `failed` means the image and the player stay.
+    var status: MediaStatus
+    /// Signed and short-lived (about an hour): never kept for later, taken fresh from the dream.
+    var url: URL?
+    var duration: TimeInterval?
+    /// The lens whose voice-over the film carries.
+    var lens: Lens?
+    var width: Int
+    var height: Int
+}
+
 struct DreamAudio: Sendable, Equatable, Hashable, Codable {
     var lens: Lens
     var status: MediaStatus

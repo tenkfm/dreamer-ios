@@ -21,13 +21,36 @@ final class InterpretationViewModel {
     private(set) var imageRequest = UUID()
     /// The share card is being fetched (the backend renders it on the first ask).
     private(set) var isPreparingShare = false
-    /// Set to present the share sheet with the card.
+    /// Set to present the share sheet with the card or the film.
     var shareItem: ShareItem?
 
     struct ShareItem: Identifiable {
+        enum Content {
+            case image(UIImage)
+            /// The downloaded MP4: the share sheet offers Save Video, Messages, Instagram...
+            case video(URL)
+        }
         let id = UUID()
-        let image: UIImage
+        let content: Content
+
+        var activityItems: [Any] {
+            switch content {
+            case .image(let image): [image]
+            case .video(let file): [file]
+            }
+        }
     }
+
+    /// Set to play the dream film full screen.
+    var videoPlayback: VideoPlayback?
+
+    struct VideoPlayback: Identifiable {
+        let id = UUID()
+        let url: URL
+    }
+
+    /// A fresh link is being fetched before the film plays.
+    private(set) var isPreparingVideo = false
     var toastMessage: String?
     /// Saved on the device at once and on the backend a moment after typing stops.
     var notes: String {
@@ -72,6 +95,10 @@ final class InterpretationViewModel {
     private let instagramAppID: String?
     @ObservationIgnored private var cardData: Data?
     private let region: Locale.Region?
+    private let videoPollInterval: Duration
+    private let now: () -> Date
+    /// When the dream's links were last fetched from the server (the film's is signed for ~an hour).
+    @ObservationIgnored private var mediaFetchedAt: Date?
 
     init(dreamID: Dream.ID,
          store: any DreamStore,
@@ -89,6 +116,8 @@ final class InterpretationViewModel {
          imagePollInterval: Duration = .seconds(3),
          shareCards: (any ShareCardProviding)? = nil,
          instagramAppID: String? = nil,
+         videoPollInterval: Duration = .seconds(5),
+         now: @escaping () -> Date = Date.init,
          dateFormatter: DreamDateFormatter = DreamDateFormatter()) {
         let dream = store.dream(id: dreamID)
         self.dreamID = dreamID
@@ -111,6 +140,8 @@ final class InterpretationViewModel {
         self.imagePollInterval = imagePollInterval
         self.shareCards = shareCards
         self.instagramAppID = instagramAppID
+        self.videoPollInterval = videoPollInterval
+        self.now = now
     }
 
     // MARK: Content
@@ -208,8 +239,95 @@ final class InterpretationViewModel {
         if let unsentNotes { fresh.notes = unsentNotes }
         dream = fresh
         notes = fresh.notes
+        mediaFetchedAt = now()
         imageRequest = UUID()
         viewed()
+    }
+
+    // MARK: Video
+
+    /// The dream film; none for crisis dreams.
+    var video: DreamVideo? { support == nil ? dream?.video : nil }
+
+    var isVideoReady: Bool { video?.status == .ready && video?.url != nil }
+
+    /// The server is cutting the film (it waits for the image and the voice).
+    var isVideoPending: Bool { video?.status == .pending }
+
+    var videoDurationText: String? {
+        guard let seconds = video?.duration else { return nil }
+        let total = Int(seconds.rounded())
+        return String(format: "%d:%02d", total / 60, total % 60)
+    }
+
+    /// Three minutes of asking every 5 s: there is no push for the film, and it comes 1.5-2 minutes
+    /// after the interpretation.
+    static let maxVideoPolls = 36
+
+    /// While the film is being cut and the screen is open, the dream is asked for again.
+    func watchVideo() async {
+        guard let dreamID = dream?.id, let imageActions else { return }
+        var polls = 0
+        while dream?.video?.status == .pending, polls < Self.maxVideoPolls {
+            try? await Task.sleep(for: videoPollInterval)
+            guard !Task.isCancelled else { return }
+            polls += 1
+            if let fresh = try? await imageActions.refreshDream(id: dreamID) { applyMedia(from: fresh) }
+        }
+    }
+
+    /// A link fetched less than this long ago is used as is.
+    static let videoLinkLifetime: TimeInterval = 45 * 60
+
+    /// "Play": the downloaded file when there is one (offline too), else a fresh link.
+    func playVideo() async {
+        guard isVideoReady, !isPreparingVideo, let dreamID = dream?.id else { return }
+        // The film carries the main lens' voice: the player for it would talk over it.
+        readAloud.stop()
+        let local = DreamVideoFiles.file(for: dreamID)
+        if FileManager.default.fileExists(atPath: local.path()) {
+            videoPlayback = VideoPlayback(url: local)
+            return
+        }
+        isPreparingVideo = true
+        defer { isPreparingVideo = false }
+        guard let url = await freshVideoURL() else {
+            toastMessage = String(localized: "Couldn’t play your dream video. Please try again.")
+            return
+        }
+        videoPlayback = VideoPlayback(url: url)
+    }
+
+    private func freshVideoURL() async -> URL? {
+        // Mock mode: nothing to refresh from, and the link does not expire.
+        guard imageActions != nil else { return isVideoReady ? video?.url : nil }
+        if let fetched = mediaFetchedAt, now().timeIntervalSince(fetched) < Self.videoLinkLifetime, isVideoReady {
+            return video?.url
+        }
+        guard let imageActions, let dreamID = dream?.id,
+              let fresh = try? await imageActions.refreshDream(id: dreamID) else { return nil }
+        applyMedia(from: fresh)
+        return isVideoReady ? video?.url : nil
+    }
+
+    /// The film as a file on the device, for the share sheet and Instagram.
+    private func videoFile() async -> URL? {
+        guard isVideoReady, let dreamID = dream?.id else { return nil }
+        let local = DreamVideoFiles.file(for: dreamID)
+        if FileManager.default.fileExists(atPath: local.path()) { return local }
+        guard let url = await freshVideoURL() else { return nil }
+        return try? await DreamVideoFiles.local(dreamID: dreamID, from: url)
+    }
+
+    /// The media of a fresh copy (film, voices, image); the notes typed meanwhile stay.
+    private func applyMedia(from fresh: Dream) {
+        guard var dream else { return }
+        dream.video = fresh.video
+        dream.audio = fresh.audio
+        if let image = fresh.image { dream.image = image }
+        self.dream = dream
+        store.save(dream)
+        mediaFetchedAt = now()
     }
 
     // MARK: Image
@@ -266,6 +384,9 @@ final class InterpretationViewModel {
         do {
             let fresh = try await imageActions.regenerateImage(id: dreamID)
             if let image = fresh.image { updateImageInfo(image) }
+            // A new image means a new film: the downloaded one is the old picture.
+            DreamVideoFiles.remove(dreamID: dreamID)
+            applyMedia(from: fresh)
             loadedImage = nil
             loadedImageData = nil
             imagePhase = .generating
@@ -293,17 +414,40 @@ final class InterpretationViewModel {
         support == nil && InstagramStories.isAvailable(appID: instagramAppID)
     }
 
-    /// "Share": the 9:16 card in the share sheet (which also offers Save Image).
+    /// "Share": the dream film once it is ready (vertical, made for stories), else the 9:16 card.
+    /// The share sheet also offers Save Video / Save Image.
     func share() async {
-        guard !isPreparingShare, let data = await preparedCard(), let image = UIImage(data: data) else {
+        guard !isPreparingShare else { return }
+        if isVideoReady {
+            isPreparingShare = true
+            let file = await videoFile()
+            isPreparingShare = false
+            if let file {
+                shareItem = ShareItem(content: .video(file))
+            } else {
+                toastMessage = String(localized: "Couldn’t prepare your dream video. Please try again.")
+            }
+            return
+        }
+        guard let data = await preparedCard(), let image = UIImage(data: data) else {
             if !isPreparingShare { toastMessage = String(localized: "Couldn’t prepare your dream card. Please try again.") }
             return
         }
-        shareItem = ShareItem(image: image)
+        shareItem = ShareItem(content: .image(image))
     }
 
     func shareToStories() async {
-        guard let instagramAppID, !isPreparingShare, let data = await preparedCard() else { return }
+        guard let instagramAppID, !isPreparingShare else { return }
+        if isVideoReady {
+            isPreparingShare = true
+            let file = await videoFile()
+            isPreparingShare = false
+            if let file, let data = try? Data(contentsOf: file),
+               await InstagramStories.share(backgroundVideo: data, appID: instagramAppID) { return }
+            toastMessage = String(localized: "Couldn’t open Instagram")
+            return
+        }
+        guard let data = await preparedCard() else { return }
         if !(await InstagramStories.share(background: data, appID: instagramAppID)) {
             toastMessage = String(localized: "Couldn’t open Instagram")
         }
