@@ -40,7 +40,7 @@ struct InterpretationView: View {
         // Separate from the image: the film keeps being awaited after the picture is shown.
         .task(id: viewModel.imageRequest) { await viewModel.watchVideo() }
         .fullScreenCover(item: $viewModel.videoPlayback) { playback in
-            DreamVideoPlayer(url: playback.url)
+            DreamVideoPlayer(url: playback.url, viewModel: viewModel)
         }
         .task(id: viewModel.mainLens) { viewModel.prepareVoice() }
         .onDisappear {

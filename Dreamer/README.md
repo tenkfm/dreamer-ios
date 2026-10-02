@@ -129,8 +129,11 @@ the image and the main lens' voice, about 1.5-2 minutes after the interpretation
 `GET /v1/dreams/{id}` every 5 s for up to 3 minutes; the polling restarts with every fresh copy of
 the dream (opening the screen, also from a tapped image_ready push, and a new image). Only the media of the answer is
 taken, so notes typed meanwhile stay. When it is `ready`, the image stays as the poster and "Watch
-your dream · 1:13" under the title opens `DreamVideoPlayer` (AVKit, full screen, `playback` /
-`moviePlayback` session) and stops the read-aloud first, since the film carries the same voice.
+your dream · 1:13" under the title opens `DreamVideoPlayer` and stops the read-aloud first, since
+the film carries the same voice. The player is our own AVPlayerLayer with aspect fill, edge to edge
+(AVKit's player letterboxed the 9:16 film on the taller screen): tap to pause or play again, a thin
+progress line, Close, and Share, which sends the MP4 from a sheet of its own over the player
+(`playback` / `moviePlayback` session, heard in silent mode).
 The signed link lives about an hour and is never kept: one fetched more than 45 minutes ago is
 replaced by a fresh `GET` before playing. Share and Instagram Stories send the MP4 instead of the
 card; the file is downloaded once to Caches/DreamVideos (complete protection, emptied at sign-out
@@ -703,7 +706,7 @@ xcrun simctl launch booted com.braincode.dreamer.io -debugScreen journal -night
 | `-micPermission notDetermined\|denied\|restricted` | Microphone permission states |
 | `-featureFlag name=true\|false` | Overrides a remote flag |
 | `-debugAdvance` | The onboarding taps "Continue" by itself every 2.5 s, up to the account step |
-| `-videoReady`, `-videoPending` | With `-debugScreen interpretation`: the dream film ready (play button) or being made |
+| `-videoReady`, `-videoPending` | With `-debugScreen interpretation`: the dream film ready (play button) or being made; `-videoURL <url>` gives the ready film a real MP4 |
 | `-premiumRequired` | The mock backend refuses a dream with PREMIUM_REQUIRED (the analysis screen's paywall state) |
 | `-openLink <url>` | Opens a link at launch as if the system had routed it (`./run.sh link:"<url>"`), for sign-in links Safari keeps |
 | `-uiTesting`, `-uiTestOpenEmailLink` | UI tests: fresh preferences; the mock "opens" the sign-in link |

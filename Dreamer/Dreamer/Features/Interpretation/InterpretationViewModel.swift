@@ -43,6 +43,8 @@ final class InterpretationViewModel {
 
     /// Set to play the dream film full screen.
     var videoPlayback: VideoPlayback?
+    /// The share sheet over the player: the screen's own sheet cannot open while the player covers it.
+    var playerShareItem: ShareItem?
 
     struct VideoPlayback: Identifiable {
         let id = UUID()
@@ -436,6 +438,19 @@ final class InterpretationViewModel {
         shareItem = ShareItem(content: .image(image))
     }
 
+    /// "Share" in the player: the film itself.
+    func shareFromPlayer() async {
+        guard isVideoReady, !isPreparingShare else { return }
+        isPreparingShare = true
+        let file = await videoFile()
+        isPreparingShare = false
+        if let file {
+            playerShareItem = ShareItem(content: .video(file))
+        } else {
+            toastMessage = String(localized: "Couldn’t prepare your dream video. Please try again.")
+        }
+    }
+
     func shareToStories() async {
         guard let instagramAppID, !isPreparingShare else { return }
         if isVideoReady {
@@ -456,6 +471,7 @@ final class InterpretationViewModel {
     /// The share sheet closed; `completed` is false when the user cancelled.
     func shareSheetClosed(activity: UIActivity.ActivityType?, completed: Bool) {
         shareItem = nil
+        playerShareItem = nil
         guard completed else { return }
         analytics.track(.dreamShared(target: activity == .saveToCameraRoll ? .photos : .shareSheet))
     }

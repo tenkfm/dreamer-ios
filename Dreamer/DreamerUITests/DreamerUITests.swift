@@ -119,6 +119,39 @@ final class DreamerUITests: XCTestCase {
         try audit(app)
     }
 
+    /// The film opens edge to edge with Close and Share. `TEST_RUNNER_VIDEO_URL` (optional) gives it
+    /// a real MP4 to play; without it the poster stands in.
+    @MainActor
+    func testTheDreamFilmPlaysFullScreen() throws {
+        var arguments = ["-debugScreen", "interpretation", "-videoReady"]
+        let videoURL = ProcessInfo.processInfo.environment["VIDEO_URL"]
+        if let videoURL { arguments += ["-videoURL", videoURL] }
+        let app = launch(arguments)
+
+        tap(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Watch your dream")).firstMatch)
+        let film = app.otherElements["Your dream video"]
+        XCTAssertTrue(film.waitForExistence(timeout: 5))
+        XCTAssertEqual(film.frame.size, app.windows.firstMatch.frame.size, "the film fills the screen")
+        XCTAssertTrue(app.buttons["videoShare"].exists)
+        try audit(app)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+
+        if videoURL != nil {
+            // The downloaded MP4 in the system sheet, which offers Save Video for a film.
+            app.buttons["videoShare"].tap()
+            XCTAssertTrue(app.descendants(matching: .any)["Save Video"].waitForExistence(timeout: 15))
+            add(XCTAttachment(screenshot: app.screenshot()))
+            app.swipeDown(velocity: .fast)
+            RunLoop.current.run(until: .now.addingTimeInterval(1))
+        }
+
+        tap(app.buttons["Close"])
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Watch your dream")).firstMatch
+            .waitForExistence(timeout: 5))
+    }
+
     @MainActor
     func testDeletingTheAccountStartsOver() throws {
         let app = launch(["-debugScreen", "settings"])
