@@ -15,6 +15,47 @@ struct TranscriptStitcherTests {
         #expect(stitcher.partial.isEmpty)
     }
 
+    /// iOS 17+: after a pause the same request goes on with only the new utterance in its partials,
+    /// and closes the old one with metadata. The new phrase is added, never written over the old.
+    @Test func aPhraseAfterAPauseIsAddedAtTheEnd() {
+        var stitcher = TranscriptStitcher()
+        _ = stitcher.update(partial: "I was flying")
+        _ = stitcher.update(partial: "I was flying over the sea.")
+        #expect(stitcher.endUtterance() == "I was flying over the sea.")
+        #expect(stitcher.update(partial: "Then") == "I was flying over the sea. Then")
+        #expect(stitcher.update(partial: "Then I fell") == "I was flying over the sea. Then I fell")
+        // The request ends later with only its last utterance in the final result.
+        #expect(stitcher.commit("Then I fell.") == "I was flying over the sea. Then I fell.")
+    }
+
+    /// The same reset without the metadata: a much shorter partial that begins differently.
+    @Test func aSilentRestartKeepsTheOldPhrase() {
+        var stitcher = TranscriptStitcher()
+        _ = stitcher.update(partial: "There was a long staircase")
+        #expect(stitcher.update(partial: "It") == "There was a long staircase It")
+        #expect(stitcher.update(partial: "It went down") == "There was a long staircase It went down")
+    }
+
+    /// A recognizer that does not start over repeats what it closed: the repeat is dropped.
+    @Test func aRepeatedUtteranceIsNotDoubled() {
+        var stitcher = TranscriptStitcher()
+        _ = stitcher.update(partial: "I was flying.")
+        _ = stitcher.endUtterance()
+        #expect(stitcher.update(partial: "I was flying. Then") == "I was flying. Then")
+        #expect(stitcher.update(partial: "I was flying. Then I fell") == "I was flying. Then I fell")
+        _ = stitcher.endUtterance()
+        #expect(stitcher.update(partial: "I was flying. Then I fell - and woke") == "I was flying. Then I fell - and woke")
+        #expect(stitcher.commit("I was flying. Then I fell - and woke up.") == "I was flying. Then I fell - and woke up.")
+    }
+
+    /// Revisions of the same utterance stay revisions, even when they shrink a little.
+    @Test func aRevisionIsNotANewPhrase() {
+        var stitcher = TranscriptStitcher()
+        _ = stitcher.update(partial: "I saw my grand mother")
+        #expect(stitcher.update(partial: "I saw my grandmother") == "I saw my grandmother")
+        #expect(stitcher.update(partial: "I saw") == "I saw")
+    }
+
     @Test func emptySegmentsAddNoSpaces() {
         var stitcher = TranscriptStitcher()
         #expect(stitcher.commit("") == "")

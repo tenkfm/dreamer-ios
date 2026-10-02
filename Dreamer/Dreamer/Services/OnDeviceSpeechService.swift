@@ -196,9 +196,14 @@ private final class SpeechSession: @unchecked Sendable {
         let (text, isCurrent, ended) = state.withLock { state -> (String?, Bool, Bool) in
             let isCurrent = state.request === request
             guard isCurrent, let result else { return (nil, isCurrent, state.ended) }
-            let text = result.isFinal
-                ? state.stitcher.commit(result.bestTranscription.formattedString)
-                : state.stitcher.update(partial: result.bestTranscription.formattedString)
+            let formatted = result.bestTranscription.formattedString
+            var text = result.isFinal ? state.stitcher.commit(formatted) : state.stitcher.update(partial: formatted)
+            // iOS 17+ closes an utterance at a pause without ending the request, and the next
+            // partials hold only the new one; the metadata marks that close. Without keeping the
+            // closed utterance, the next phrase replaced the previous one on screen.
+            if !result.isFinal, result.speechRecognitionMetadata != nil {
+                text = state.stitcher.endUtterance()
+            }
             return (text, isCurrent, state.ended)
         }
         if let text { continuation.yield(.transcript(text)) }
@@ -230,24 +235,76 @@ private final class SpeechSession: @unchecked Sendable {
     }
 }
 
-/// Joins the finished recognition segments with the one being recognized.
+/// Joins the finished recognition segments with the one being recognized. A segment ends with a
+/// request (the ~1 minute limit) or with an utterance inside it (a pause, on iOS 17+).
 struct TranscriptStitcher: Equatable, Sendable {
     private(set) var committed = ""
     private(set) var partial = ""
+    /// What this request's closed utterances said: a recognizer that does not start over after a
+    /// pause repeats it at the head of its next partials, and the repeat is dropped.
+    private var heardInRequest = ""
 
     var text: String { Self.join(committed, partial) }
 
     /// The current segment changed; returns the whole transcript.
-    mutating func update(partial: String) -> String {
-        self.partial = partial
+    mutating func update(partial new: String) -> String {
+        let new = Self.dropping(heardInRequest, from: new)
+        // A pause can start a new utterance with no signal at all: a partial far shorter than the
+        // last one that no longer begins like it is new speech, and the old text is kept.
+        if Self.startsOver(from: partial, to: new) { closeUtterance() }
+        partial = new
         return text
     }
 
-    /// The current segment is final; the next one starts empty.
+    /// The request is final; the next one starts empty.
     mutating func commit(_ final: String) -> String {
-        committed = Self.join(committed, final)
-        partial = ""
+        partial = Self.dropping(heardInRequest, from: final)
+        closeUtterance()
+        heardInRequest = ""
         return committed
+    }
+
+    /// The recognizer closed an utterance (a pause) and goes on in the same request: what it heard
+    /// is kept, and what follows is added after it instead of replacing it.
+    mutating func endUtterance() -> String {
+        closeUtterance()
+        return committed
+    }
+
+    private mutating func closeUtterance() {
+        let segment = partial.trimmingCharacters(in: .whitespaces)
+        partial = ""
+        guard !segment.isEmpty else { return }
+        committed = Self.join(committed, segment)
+        heardInRequest = Self.join(heardInRequest, segment)
+    }
+
+    private static func startsOver(from old: String, to new: String) -> Bool {
+        guard let oldFirst = words(old).first, let newFirst = words(new).first else { return false }
+        return new.count * 2 < old.count && oldFirst != newFirst
+    }
+
+    /// `text` without a leading repeat of `head` (compared by words, ignoring case and punctuation).
+    private static func dropping(_ head: String, from text: String) -> String {
+        let repeated = words(head)
+        guard !repeated.isEmpty, words(text).starts(with: repeated) else { return text }
+        var remaining = repeated.count
+        let tokens = text.split(whereSeparator: \.isWhitespace)
+        let rest = tokens.drop { token in
+            guard remaining > 0 else { return false }
+            // Tokens of punctuation alone are no word: they go with the repeat.
+            if !normalized(token).isEmpty { remaining -= 1 }
+            return true
+        }
+        return rest.joined(separator: " ")
+    }
+
+    private static func words(_ text: String) -> [String] {
+        text.split(whereSeparator: \.isWhitespace).map(normalized).filter { !$0.isEmpty }
+    }
+
+    private static func normalized(_ token: Substring) -> String {
+        token.lowercased().filter { $0.isLetter || $0.isNumber }
     }
 
     private static func join(_ head: String, _ tail: String) -> String {
