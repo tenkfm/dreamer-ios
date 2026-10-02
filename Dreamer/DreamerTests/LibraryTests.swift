@@ -69,6 +69,18 @@ struct APISymbolCatalogTests {
         #expect(relaunched.symbols(in: .popular).map(\.id) == all)
     }
 
+    /// Back from a symbol (or Home refreshing Popular): the pages already loaded stay, so the
+    /// scroll position does not jump.
+    @Test func refreshingKeepsThePagesLoadedSince() async throws {
+        let catalog = APISymbolCatalog(remote: ScriptedLibrary(), fileURL: tempFile(), pageSize: 5)
+        try await catalog.refresh(category: .popular)
+        try await catalog.loadMore(category: .popular)
+        #expect(catalog.symbols(in: .popular).count == 10)
+        try await catalog.refresh(category: .popular)
+        #expect(catalog.symbols(in: .popular).count == 10)
+        #expect(catalog.canLoadMore(category: .popular))
+    }
+
     @Test func aShelfAsksForItsCategory() async throws {
         let remote = ScriptedLibrary()
         let catalog = APISymbolCatalog(remote: remote, fileURL: tempFile(), pageSize: 20)

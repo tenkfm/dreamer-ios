@@ -69,8 +69,14 @@ final class APISymbolCatalog: SymbolCatalog {
         let page = try await remote.librarySymbols(query: nil, category: remoteCategory(category), cursor: nil, limit: pageSize)
         var next = snapshot
         page.items.forEach { merge($0, into: &next) }
-        next.categories[category] = page.items.map(\.id)
-        next.nextCursors[category] = page.nextCursor
+        let fresh = page.items.map(\.id)
+        let current = next.categories[category] ?? []
+        // The same first page as before: keep the pages loaded since. Coming back to the Library
+        // (or Home refreshing Popular) used to cut the list to 20, and the scroll position jumped.
+        if current.count <= fresh.count || Array(current.prefix(fresh.count)) != fresh {
+            next.categories[category] = fresh
+            next.nextCursors[category] = page.nextCursor
+        }
         commit(next)
     }
 
