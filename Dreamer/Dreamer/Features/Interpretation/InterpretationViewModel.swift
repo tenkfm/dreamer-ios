@@ -216,6 +216,7 @@ final class InterpretationViewModel {
         readAloud.stop()
         appState.setPreferredLens(lens)
         expandedLenses = []
+        haptic = HapticEvent(.success)
         analytics.track(.lensPromoted(from: previous, to: lens))
     }
 
@@ -252,13 +253,12 @@ final class InterpretationViewModel {
         let text = text(for: mainLens)
         guard !text.isEmpty else { return }
         UIPasteboard.general.string = text
-        copyCount += 1
+        haptic = HapticEvent(.success)
         toastMessage = String(localized: "Copied")
     }
 
-    /// Grows with every copy that happened: the view's haptic follows it, not the tap, so an empty
-    /// reading gives no feedback for a copy that did not happen.
-    private(set) var copyCount = 0
+    /// How the last target action ended (copied, saved, shared, a new lens or image), felt.
+    private(set) var haptic: HapticEvent?
 
     /// True once when the dream was opened for its notes (`AppState.openNotes`).
     func takeNotesFocus() -> Bool {
@@ -414,7 +414,10 @@ final class InterpretationViewModel {
             loadedImageData = nil
             imagePhase = .generating
             imageRequest = UUID()
+            // Accepted, not done: the painting takes a few seconds more.
+            haptic = HapticEvent(.impact)
         } catch {
+            haptic = HapticEvent(.error)
             toastMessage = switch error.code {
             case .rateLimited, .limitReached: String(localized: "That’s all the new images for today. Try again tomorrow.")
             default: String(localized: "Couldn’t make a new image. Please try again.")
@@ -494,6 +497,7 @@ final class InterpretationViewModel {
         shareItem = nil
         playerShareItem = nil
         guard completed else { return }
+        haptic = HapticEvent(.success)
         analytics.track(.dreamShared(target: activity == .saveToCameraRoll ? .photos : .shareSheet))
     }
 
@@ -523,11 +527,14 @@ final class InterpretationViewModel {
             } else {
                 try await imageSaver.saveImage(named: imageName)
             }
+            haptic = HapticEvent(.success)
             toastMessage = String(localized: "Saved to Photos")
             analytics.track(.dreamShared(target: .photos))
         } catch ImageSavingError.accessDenied {
+            haptic = HapticEvent(.error)
             toastMessage = String(localized: "Allow Photos access in Settings to save")
         } catch {
+            haptic = HapticEvent(.error)
             toastMessage = String(localized: "Couldn’t save the image")
         }
     }

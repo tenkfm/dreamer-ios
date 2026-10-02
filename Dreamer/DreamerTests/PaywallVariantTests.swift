@@ -91,6 +91,7 @@ struct PaywallVariantTests {
         let viewModel = PaywallViewModel(purchases: MockPurchaseService(delay: .zero, restoredPlan: nil), appState: appState)
         await viewModel.restore()
         #expect(viewModel.alertMessage == "We couldn’t find a previous purchase.")
+        #expect(viewModel.haptic?.kind == .warning)
         #expect(appState.subscription == .none)
     }
 }

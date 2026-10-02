@@ -14,6 +14,8 @@ final class SettingsViewModel {
     var isDeleteConfirmationPresented = false
     var isSignOutConfirmationPresented = false
     var alertMessage: String?
+    /// How the last restore ended, felt.
+    private(set) var haptic: HapticEvent?
     private(set) var isRestoring = false
     private(set) var isDeleting = false
     private(set) var isSigningOut = false
@@ -111,11 +113,14 @@ final class SettingsViewModel {
             if entitlement.isPremium {
                 let plan = entitlement.plan ?? .yearly
                 appState.activateSubscription(plan)
+                haptic = HapticEvent(.success)
                 alertMessage = String(localized: "Your \(plan.title.lowercased()) subscription is restored.")
             } else {
+                haptic = HapticEvent(.warning)
                 alertMessage = String(localized: "We couldn’t find a previous purchase.")
             }
         } catch {
+            haptic = HapticEvent(.error)
             alertMessage = String(localized: "Restore failed. Please try again.")
         }
     }

@@ -179,6 +179,7 @@ struct JournalListTests {
         await viewModel.confirmDelete()
         #expect(!store.summaries.contains { $0.id == row.id })
         #expect(viewModel.deleteCandidate == nil)
+        #expect(viewModel.haptic?.kind == .success)
     }
 
     @Test func weekRangesReadNaturally() {

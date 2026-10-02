@@ -143,7 +143,7 @@ and the read-aloud as before. Crisis dreams never show a film. Debug: `-debugScr
 -videoReady` or `-videoPending`.
 
 Copy text: a pill under the main reading copies the main lens' text, as shown, to the pasteboard
-and says "Copied" with a success haptic. The dream's words reach the pasteboard only on that tap.
+and says "Copied" with a success haptic (see Accessibility and motion). The dream's words reach the pasteboard only on that tap.
 
 Lenses and notes (IOS-05.3): the main lens of every interpretation is the account's preferred lens
 (the backend reads it from the profile for each dream), so changing it in Settings updates dreams that
@@ -769,6 +769,14 @@ catalog; the build then ships its `.lproj`.
 It also describes the Instruments checks that need an iPhone 12.
 
 ## Accessibility and motion
+
+Haptics mark target actions, never navigation. Taps: a light impact on every primary button, a
+selection tick on choices, chips, toggles, the tab bar and the voice player, start and stop for
+recording. Outcomes, through `HapticEvent` (`DesignSystem/Haptics.swift`: a view model sets it,
+the view plays it with `.haptic(_:)`): success for copied, saved to Photos, shared, a new main
+lens, a purchase or restore, a deleted dream, a sign-in link sent and a finished reading; a medium
+impact for a new image accepted; a warning for a pending purchase, nothing to restore, a dream kept
+for later (offline or waiting for a plan); an error for a failure. Cancelling feels like nothing.
 
 All loops (orb breathing, sky drift, waveforms, sparkles, thumbs) run on `TimelineView` and freeze
 with Reduce Motion. Icon-only buttons have labels, Dynamic Type

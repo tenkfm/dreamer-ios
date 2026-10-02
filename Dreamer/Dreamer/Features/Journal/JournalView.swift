@@ -41,6 +41,7 @@ struct JournalView: View {
         .onAppear { viewModel.opened() }
         .trackScreen(.journal)
         .toast($viewModel.toastMessage)
+        .haptic(viewModel.haptic)
         .confirmationDialog("Delete this dream?", isPresented: isConfirmingDelete, titleVisibility: .visible,
                             presenting: viewModel.deleteCandidate) { _ in
             Button("Delete dream", role: .destructive) { Task { await viewModel.confirmDelete() } }

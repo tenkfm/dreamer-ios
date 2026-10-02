@@ -165,6 +165,7 @@ struct InterpretationImageTests {
                                            actions: Regenerator(.failure(.server(.init(code: .rateLimited, message: "", status: 429)))))
         await viewModel.regenerateImage()
         #expect(viewModel.toastMessage == "That’s all the new images for today. Try again tomorrow.")
+        #expect(viewModel.haptic?.kind == .error)
     }
 
     @Test func theKillSwitchAndCrisisDreamsHideRegeneration() {
@@ -192,6 +193,7 @@ struct InterpretationImageTests {
         #expect(saver.data != nil)
         #expect(saver.names.isEmpty)
         #expect(viewModel.toastMessage == "Saved to Photos")
+        #expect(viewModel.haptic?.kind == .success)
     }
 
     @Test func savingWaitsForThePainting() async {

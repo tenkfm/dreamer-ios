@@ -56,6 +56,8 @@ final class JournalViewModel {
     /// The row waiting for "Delete" to be confirmed.
     var deleteCandidate: Row?
     var toastMessage: String?
+    /// How the last deletion ended, felt.
+    private(set) var haptic: HapticEvent?
 
     private let appState: AppState
     private let store: any DreamStore
@@ -322,11 +324,14 @@ final class JournalViewModel {
         if let draft = row.pendingDraft {
             // Never reached the backend: forgetting the draft is the whole deletion.
             drafts?.discard(clientId: draft.clientId)
+            haptic = HapticEvent(.success)
             return
         }
         do {
             try await store.delete(id: row.id)
+            haptic = HapticEvent(.success)
         } catch {
+            haptic = HapticEvent(.error)
             toastMessage = ErrorState(error).kind == .offline
                 ? String(localized: "You’re offline. Try deleting again when you’re connected.")
                 : String(localized: "Couldn’t delete this dream. Please try again.")

@@ -122,6 +122,12 @@ struct AnalysisView: View {
             }
         }
         .sensoryFeedback(.success, trigger: viewModel.isFinished) { _, finished in finished }
+        // Kept for later (offline, or waiting for a plan) is not a failure: a warning, not an error.
+        .sensoryFeedback(.warning, trigger: viewModel.isSavedOffline) { _, saved in saved }
+        .sensoryFeedback(trigger: viewModel.errorMessage) { _, message in
+            guard message != nil else { return nil }
+            return viewModel.errorState?.action == .openPaywall ? .warning : .error
+        }
     }
 
     private var showsWrittenText: Bool {

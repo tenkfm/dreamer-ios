@@ -33,6 +33,11 @@ struct SignInView: View {
         .scrollDismissesKeyboard(.interactively)
         .animation(.soft(0.5), value: viewModel.phase)
         .animation(.soft(0.3), value: viewModel.error)
+        // The link is on its way; a sign-in that failed (a cancel sets no error).
+        .sensoryFeedback(.success, trigger: viewModel.phase) { _, phase in
+            if case .checkInbox = phase { true } else { false }
+        }
+        .sensoryFeedback(.error, trigger: viewModel.error) { _, error in error != nil }
     }
 
     private var header: some View {

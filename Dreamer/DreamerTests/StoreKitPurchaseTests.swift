@@ -48,6 +48,7 @@ struct StoreKitPurchaseTests {
         await viewModel.purchase()
 
         #expect(viewModel.alertMessage == nil)
+        #expect(viewModel.haptic?.kind == .success)
         #expect(appState.subscription == .active(.weekly))
         #expect(appState.rootScreen == .main)
         #expect(await StoreKitPurchaseService.currentEntitlement().isPremium)

@@ -31,6 +31,8 @@ final class PaywallViewModel {
     private(set) var isPurchasing = false
     private(set) var isRestoring = false
     var alertMessage: String?
+    /// How the last purchase or restore ended, felt.
+    private(set) var haptic: HapticEvent?
 
     /// A benefit to the person (not a feature list): what they get, and how, in one line each.
     struct Perk: Hashable {
@@ -155,16 +157,20 @@ final class PaywallViewModel {
         do {
             switch try await purchases.purchase(selectedPlan) {
             case .purchased(let entitlement) where entitlement.isPremium:
+                haptic = HapticEvent(.success)
                 appState.activateSubscription(entitlement.plan ?? selectedPlan)
                 onFinish?()
             case .purchased:
+                haptic = HapticEvent(.warning)
                 alertMessage = String(localized: "The purchase went through but access isn’t active yet. Try Restore in a moment.")
             case .cancelled:
                 break
             case .pending:
+                haptic = HapticEvent(.warning)
                 alertMessage = String(localized: "Your purchase is waiting for approval. Dreamer unlocks as soon as it’s approved.")
             }
         } catch {
+            haptic = HapticEvent(.error)
             alertMessage = String(localized: "The purchase didn’t go through. Please try again.")
         }
     }
@@ -176,12 +182,15 @@ final class PaywallViewModel {
         do {
             let entitlement = try await purchases.restore()
             if entitlement.isPremium {
+                haptic = HapticEvent(.success)
                 appState.activateSubscription(entitlement.plan ?? .yearly)
                 onFinish?()
             } else {
+                haptic = HapticEvent(.warning)
                 alertMessage = String(localized: "We couldn’t find a previous purchase.")
             }
         } catch {
+            haptic = HapticEvent(.error)
             alertMessage = String(localized: "Restore failed. Please try again.")
         }
     }

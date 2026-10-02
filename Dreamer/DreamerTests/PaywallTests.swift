@@ -102,5 +102,7 @@ struct PaywallCopyTests {
 
         #expect(appState.subscription == .none)
         #expect(viewModel.alertMessage == nil)
+        // Cancelling is the user's choice, not an outcome to feel.
+        #expect(viewModel.haptic == nil)
     }
 }

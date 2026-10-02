@@ -28,6 +28,7 @@ struct PaywallView: View {
                 .padding(.top, DS.Space.headerTop)
             }
         }
+        .haptic(viewModel.haptic)
         .task { await viewModel.loadProducts() }
         .onAppear { viewModel.viewed() }
         .trackScreen(.paywall)

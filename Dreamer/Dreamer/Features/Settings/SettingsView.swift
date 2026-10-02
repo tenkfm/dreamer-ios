@@ -78,6 +78,7 @@ struct SettingsView: View {
         #if DEBUG
         .onAppear { if DebugLaunch.screen == .deleteAccount { viewModel.isDeleteConfirmationPresented = true } }
         #endif
+        .haptic(viewModel.haptic)
         .alert("Dreamer", isPresented: alertBinding) {
             Button("OK", role: .cancel) {}
         } message: {
