@@ -35,7 +35,9 @@ enum DS {
         static let icon            = Color(day: 0x5670A3, night: 0xA9BDEF)
         static let iconSoft        = Color(day: 0x7FA2DC, night: 0x8FB0EA)
         static let accent          = Color(day: 0x3F5E9C, night: 0xA3BBF4)
-        static let cta             = Color(day: 0x2E4677, night: 0x4A67B3)
+        /// Night is a saturated blue (Tony: the muted one looked washed out on navy); white text on it
+        /// keeps about 5.8:1.
+        static let cta             = Color(day: 0x2E4677, night: 0x3B5BDB)
         static let peach           = Color(hex: 0xF2A488)
         static let tabInactive     = Color(day: 0x8392B4, night: 0x7D89AB)
         static let segmentInactive = Color(day: 0x5B6785, night: 0x9AA5C2)
