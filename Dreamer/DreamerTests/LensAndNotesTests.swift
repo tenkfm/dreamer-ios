@@ -1,6 +1,7 @@
 import Foundation
 import os
 import Testing
+import UIKit
 @testable import Dreamer
 
 /// Records the notes it receives; can fail on demand.
@@ -59,6 +60,17 @@ struct LensPromotionTests {
         #expect(appState.unsyncedProfile == ProfileUpdate(preferredLens: .spiritual))
         #expect(appState.profileWriteRequest != nil)
         #expect(analytics.events == [.lensPromoted(from: .psychology, to: .spiritual)])
+    }
+
+    @Test func copyingTakesTheMainLensAsShown() {
+        let appState = AppState(store: InMemoryPreferencesStore())
+        let (viewModel, _) = makeViewModel(appState: appState)
+        appState.preferredLens = .spiritual
+
+        viewModel.copyInterpretation()
+
+        #expect(UIPasteboard.general.string == viewModel.text(for: .spiritual))
+        #expect(viewModel.toastMessage == "Copied")
     }
 
     @Test func aLensChangedInSettingsShowsOnAnOpenDream() {

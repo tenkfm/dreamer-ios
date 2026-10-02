@@ -142,6 +142,9 @@ and replaced with a new image), and it also plays offline. `failed` or `null`: t
 and the read-aloud as before. Crisis dreams never show a film. Debug: `-debugScreen interpretation
 -videoReady` or `-videoPending`.
 
+Copy text: a pill under the main reading copies the main lens' text, as shown, to the pasteboard
+and says "Copied". The dream's words reach the pasteboard only on that tap.
+
 Lenses and notes (IOS-05.3): the main lens of every interpretation is the account's preferred lens
 (the backend reads it from the profile for each dream), so changing it in Settings updates dreams that
 are already open. "Make this my main lens" sets it for the whole account and tracks

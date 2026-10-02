@@ -113,6 +113,14 @@ final class DreamerUITests: XCTestCase {
         XCTAssertTrue(overline.waitForExistence(timeout: 5))
         try audit(app)
 
+        let copy = app.buttons["Copy text"]
+        scrollTo(copy, in: app)
+        copy.tap()
+        XCTAssertTrue(app.staticTexts["Copied"].waitForExistence(timeout: 3))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+
         tap(app.buttons["Back"])
         tap(app.buttons["Journal"])
         XCTAssertTrue(app.staticTexts["This week"].waitForExistence(timeout: 5))

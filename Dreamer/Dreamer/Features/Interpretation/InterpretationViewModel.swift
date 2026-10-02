@@ -246,6 +246,15 @@ final class InterpretationViewModel {
         viewed()
     }
 
+    /// "Copy text": the reading of the main lens as shown, for a note or a message. The dream's
+    /// words reach the pasteboard only on this tap.
+    func copyInterpretation() {
+        let text = text(for: mainLens)
+        guard !text.isEmpty else { return }
+        UIPasteboard.general.string = text
+        toastMessage = String(localized: "Copied")
+    }
+
     /// True once when the dream was opened for its notes (`AppState.openNotes`).
     func takeNotesFocus() -> Bool {
         guard appState.notesFocus == dreamID else { return false }

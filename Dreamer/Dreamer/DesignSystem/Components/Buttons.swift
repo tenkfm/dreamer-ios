@@ -82,20 +82,27 @@ struct TextLinkButton: View {
     }
 }
 
-/// White capsule with a 12 pt label ("See the pattern", "Make this my main lens").
+/// White capsule with a 12 pt label and an optional icon ("See the pattern", "Copy text").
 struct PillButton: View {
     var title: String
+    var systemImage: String? = nil
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title).font(DreamerFont.fixed(12)).foregroundStyle(DS.Palette.textPrimary)
-                .padding(.horizontal, 14)
-                .frame(height: 30)
-                .background(Capsule().fill(DS.Palette.surface))
-                .shadow(color: DS.Palette.shadow.opacity(0.15), radius: 6, x: 0, y: 4)
-                .frame(minHeight: 44)
-                .contentShape(Rectangle())
+            HStack(spacing: 6) {
+                if let systemImage {
+                    Image(systemName: systemImage).font(.system(size: 11, weight: .regular)).accessibilityHidden(true)
+                }
+                Text(title).font(DreamerFont.fixed(12))
+            }
+            .foregroundStyle(DS.Palette.textPrimary)
+            .padding(.horizontal, 14)
+            .frame(height: 30)
+            .background(Capsule().fill(DS.Palette.surface))
+            .shadow(color: DS.Palette.shadow.opacity(0.15), radius: 6, x: 0, y: 4)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(PressableButtonStyle())
     }
