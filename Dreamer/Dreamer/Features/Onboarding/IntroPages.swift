@@ -26,12 +26,10 @@ private struct IntroContentLayout<Top: View, Hero: View>: View {
                         .textStyle(.display)
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
-                        .enterUp(0.25)
                     Text(message)
                         .textStyle(.body, color: DS.Palette.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, DS.Space.text - DS.Space.cta)
-                        .enterUp(0.35)
                 }
                 .fixedSize(horizontal: false, vertical: true)
             }
@@ -112,10 +110,8 @@ struct WelcomeContent: View {
                     .foregroundStyle(DS.Palette.white)
                     .skyTextShadow()
             }
-            .enterUp(0.15)
         } hero: {
             IntroOrb(glyph: .moon, topPadding: 40, action: onContinue)
-                .enterUp(0.2)
         }
     }
 }
@@ -133,7 +129,6 @@ struct RecordIntroContent: View {
         ) {
             IntroHeroStack(spacing: 30) {
                 IntroOrb(glyph: .mic, action: onContinue)
-                    .enterUp(0.1)
                 TypewriterText(text: MockData.onboardingQuote, startDelay: 0.7)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
@@ -141,7 +136,6 @@ struct RecordIntroContent: View {
                     .frame(maxWidth: .infinity)
                     .glassCard(radius: DS.Radius.option)
                     .padding(.horizontal, 36 - DS.Space.cta)
-                    .enterUp(0.2)
             }
         }
     }
@@ -157,7 +151,6 @@ struct UnderstandContent: View {
         ) {
             IntroHeroStack(spacing: 18) {
                 FannedImages()
-                    .enterUp(0.1)
                 HStack(spacing: 8) {
                     TwinklingSparkle(size: 12)
                     Text("Stairs · Roots · A voice")
@@ -167,7 +160,6 @@ struct UnderstandContent: View {
                 .padding(.horizontal, 16)
                 .frame(height: 32)
                 .glassCapsule()
-                .enterUp(0.2)
             }
             .padding(.top, 30)
         }

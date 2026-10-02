@@ -13,9 +13,6 @@ struct OnboardingFlowView: View {
     /// the view had in its last update).
     @State private var shownStep: Step
     @State private var forward = true
-    /// After the first step change the screens and contents arrive by their transitions, so the
-    /// per-element entrance plays only when the flow first appears.
-    @State private var hasMoved = false
     @Environment(AppDependencies.self) private var dependencies
     @Environment(AppState.self) private var appState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -48,7 +45,6 @@ struct OnboardingFlowView: View {
                 }
             }
             .zIndex(1)
-            .environment(\.entranceAnimated, !hasMoved)
         }
         .sensoryFeedback(.selection, trigger: viewModel.step)
         .trackScreen(.onboarding)
@@ -60,7 +56,6 @@ struct OnboardingFlowView: View {
         .onChange(of: viewModel.step, initial: true) { old, step in
             guard step != shownStep else { return }
             forward = step > old
-            hasMoved = true
             Task { @MainActor in
                 let target = viewModel.step
                 let pushes = target.screen != shownStep.screen
@@ -176,7 +171,6 @@ private struct OnboardingPagesView: View {
                     .transition(.opacity)
             }
         })
-        .enterUp(0.1)
     }
 
     private var quizProgress: some View {
@@ -249,7 +243,6 @@ private struct OnboardingPagesView: View {
             .padding(.bottom, 8)
         }
         .padding(.horizontal, DS.Space.cta)
-        .enterUp(0.9)
     }
 
     private var ctaTitle: String {

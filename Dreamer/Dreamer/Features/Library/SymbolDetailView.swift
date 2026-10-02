@@ -25,7 +25,6 @@ struct SymbolDetailView: View {
             HeaderBar(leading: {
                 GlassIconButton(systemImage: "chevron.left", accessibilityLabel: "Back") { dismiss() }
             }, center: { EmptyView() })
-            .enterUp(0.1)
         }
         .task { await viewModel.appeared() }
         .trackScreen(.symbol)
@@ -36,7 +35,7 @@ struct SymbolDetailView: View {
             VStack(alignment: .leading, spacing: DS.Space.section) {
                 hero(symbol)
                 Group {
-                    meaningCard(symbol).enterUp(0.5)
+                    meaningCard(symbol)
                     ForEach(viewModel.lenses, id: \.lens) { item in
                         VStack(alignment: .leading, spacing: 10) {
                             Overline(text: item.lens.title)
@@ -113,7 +112,6 @@ struct SymbolDetailView: View {
                 Text(symbol.meaning).textStyle(.body, color: DS.Palette.textSecondary)
             }
             .padding(.horizontal, DS.Space.screen)
-            .enterUp(0.3)
         }
         .frame(height: 320)
     }

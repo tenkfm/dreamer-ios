@@ -70,7 +70,6 @@ struct InterpretationView: View {
                 }
             }
         }
-        .enterUp(0.1)
     }
 
 
@@ -99,7 +98,7 @@ struct InterpretationView: View {
                               video: viewModel.support == nil ? heroVideo : nil)
                     if let support = viewModel.support {
                         Group {
-                            SupportCard(content: support).enterUp(0.5)
+                            SupportCard(content: support)
                             thoughts
                             disclaimer
                         }
@@ -115,7 +114,7 @@ struct InterpretationView: View {
             .scrollDismissesKeyboard(.interactively)
             .task {
                 guard viewModel.takeNotesFocus() else { return }
-                // After the entrance: scrolling during the first layout lands short of the notes.
+                // After the first layout: scrolling during it lands short of the notes.
                 try? await Task.sleep(for: .milliseconds(450))
                 withAnimation(.soft(0.6)) { proxy.scrollTo(Self.notesAnchor, anchor: .center) }
             }
@@ -126,11 +125,11 @@ struct InterpretationView: View {
 
     @ViewBuilder private func reading(_ dream: Dream) -> some View {
         if !dream.symbols.isEmpty {
-            keySymbols(dream.symbols).enterUp(0.5)
+            keySymbols(dream.symbols)
         }
         Group {
-            mainInterpretation.enterUp(0.65)
-            otherPerspectives.enterUp(0.8)
+            mainInterpretation
+            otherPerspectives
             if let forYou = viewModel.forYou {
                 InsightCard(overline: "For you, right now", text: forYou)
             }
@@ -335,7 +334,6 @@ private struct DreamHero: View {
         }
         .padding(.top, topInset + DS.Space.headerTop + DS.Size.iconButton + 14)
         .padding(.trailing, DS.Space.screen)
-        .enterUp(0.3)
         .animation(.soft(0.4), value: phase)
     }
 
@@ -398,7 +396,6 @@ private struct DreamHero: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .leading)))
             }
             .padding(.horizontal, DS.Space.screen)
-            .enterUp(0.35)
         }
         .frame(height: DS.Size.heroHeight)
         .overlay(alignment: .topTrailing) {

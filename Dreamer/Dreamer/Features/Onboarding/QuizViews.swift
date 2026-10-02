@@ -18,7 +18,6 @@ private struct QuizContentLayout<Options: View>: View {
                     .padding(.top, 56)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
-                    .enterUp(0.1)
                 VStack(spacing: DS.Space.stack) {
                     options()
                 }
@@ -43,7 +42,6 @@ struct QuizGoalContent: View {
                 RadioOptionCard(title: goal.title, glyph: goal.glyph, isSelected: viewModel.goal == goal) {
                     viewModel.goal = goal
                 }
-                .enterUp(0.2 + Double(index) * 0.08)
             }
         }
     }
@@ -60,7 +58,6 @@ struct QuizLensContent: View {
                 RadioOptionCard(title: lens.title, subtitle: lens.summary, isSelected: viewModel.lens == lens) {
                     viewModel.lens = lens
                 }
-                .enterUp(0.2 + Double(index) * 0.08)
             }
         }
     }

@@ -18,19 +18,16 @@ struct AnalysisView: View {
                     OrbView(glyph: .sparkle, size: .analysis)
                 }
                 .padding(.top, 70)
-                .enterUp(0.25)
                 .accessibilityHidden(true)
 
                 Text("Reading your dream")
                     .textStyle(.display)
                     .padding(.top, 40)
                     .accessibilityAddTraits(.isHeader)
-                    .enterUp(0.35)
 
                 stepsCard
                     .padding(.top, 34)
                     .padding(.horizontal, 40 - DS.Space.screen)
-                    .enterUp(0.5)
 
                 if showsWrittenText {
                     // The newest lines of the main lens while it is being written.

@@ -23,7 +23,7 @@ struct MainTabView: View {
             }
             .id(tab)
 
-            // Stays mounted so its entrance plays once; slides away on pushed screens.
+            // Stays mounted across tabs; slides away on pushed screens.
             let isRoot = appState.path(for: tab).isEmpty
             DreamerTabBar(items: AppTab.allCases.map { ($0, $0.tabBarItem) }, selection: $appState.selectedTab)
                 .padding(.bottom, DS.Size.tabBarBottom)
@@ -32,7 +32,6 @@ struct MainTabView: View {
                 .allowsHitTesting(isRoot)
                 .accessibilityHidden(!isRoot)
                 .animation(.soft(0.45), value: isRoot)
-                .enterUp(1.1, distance: 40)
                 .ignoresSafeArea(.container, edges: .bottom)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)

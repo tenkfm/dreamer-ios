@@ -16,23 +16,18 @@ struct LibraryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     HeaderBar(center: { ScreenTitle(text: "Library") }, trailing: { EmptyView() })
-                        .enterUp(0.1)
                     GlassSearchField(placeholder: "Search a symbol, e.g. teeth", text: $viewModel.query)
                         .padding(.horizontal, DS.Space.screen)
                         .padding(.top, 18)
-                        .enterUp(0.25)
                     categories
                         .padding(.top, 8)
-                        .enterUp(0.35)
                     SectionHeader(title: viewModel.sectionTitle)
                         .padding(.horizontal, DS.Space.screen)
                         .padding(.top, 14)
-                        .enterUp(0.45)
                     grid
                         .environment(\.lightweightGlass, true)
                         .padding(.horizontal, DS.Space.screen)
                         .padding(.top, 14)
-                        .enterUp(0.55)
                 }
                 .padding(.bottom, DS.Space.tabBarClearance)
             }

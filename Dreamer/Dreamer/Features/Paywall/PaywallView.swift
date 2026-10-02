@@ -26,7 +26,6 @@ struct PaywallView: View {
                 GlassIconButton(systemImage: "xmark", accessibilityLabel: "Close") { viewModel.close() }
                 .padding(.trailing, DS.Space.screen)
                 .padding(.top, DS.Space.headerTop)
-                .enterUp(0.1)
             }
         }
         .task { await viewModel.loadProducts() }
@@ -44,11 +43,11 @@ struct PaywallView: View {
             VStack(spacing: 0) {
                 header
                 Spacer(minLength: 20)
-                perksCard.enterUp(0.4)
+                perksCard
                 plans.padding(.top, 30)
                 Spacer(minLength: 24)
                 cta.padding(.horizontal, DS.Space.cta - DS.Space.screen)
-                footer.enterUp(1)
+                footer
             }
             .padding(.horizontal, DS.Space.screen)
         }
@@ -65,12 +64,11 @@ struct PaywallView: View {
                         .skyTextShadow()
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
-                        .enterUp(0.2)
-                    perkList.padding(.top, 22).enterUp(0.35)
+                    perkList.padding(.top, 22)
                     plans.padding(.top, 24)
                     Spacer(minLength: 20)
                     cta.padding(.horizontal, DS.Space.cta - DS.Space.screen)
-                    footer.enterUp(1)
+                    footer
                 }
                 .padding(.horizontal, DS.Space.screen)
                 .padding(.top, -30)
@@ -127,7 +125,6 @@ struct PaywallView: View {
         }
         .disabled(viewModel.selectedProduct == nil)
         .opacity(viewModel.selectedProduct == nil ? 0.6 : 1)
-        .enterUp(0.9)
     }
 
     private var header: some View {
@@ -140,7 +137,6 @@ struct PaywallView: View {
                 .accessibilityAddTraits(.isHeader)
         }
         .padding(.top, 60)
-        .enterUp(0.2)
     }
 
     private var perksCard: some View {
@@ -190,7 +186,6 @@ struct PaywallView: View {
                              isSelected: viewModel.selectedPlan == product.plan) {
                         viewModel.select(product.plan)
                     }
-                    .enterUp(0.55 + Double(index) * 0.15)
                 }
             }
         }

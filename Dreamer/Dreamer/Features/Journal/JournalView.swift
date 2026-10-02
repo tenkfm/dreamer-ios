@@ -14,7 +14,7 @@ struct JournalView: View {
             ScreenBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    header.enterUp(0.1)
+                    header
                     if viewModel.isSearching {
                         VStack(alignment: .leading, spacing: 14) {
                             GlassSearchField(placeholder: "Search your dreams", text: $viewModel.query)
@@ -26,7 +26,6 @@ struct JournalView: View {
                     } else {
                         JournalSummaryCard(summary: viewModel.summary)
                             .padding(.top, 18)
-                            .enterUp(0.3)
                     }
                     list
                 }
@@ -100,8 +99,8 @@ struct JournalView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 40)
         }
-        ForEach(Array(viewModel.sections.enumerated()), id: \.element.id) { index, section in
-            self.section(title: section.title, rows: section.rows, delay: 0.45 + Double(min(index, 2)) * 0.15)
+        ForEach(viewModel.sections) { section in
+            self.section(title: section.title, rows: section.rows)
         }
         if viewModel.canLoadMore {
             ProgressView()
@@ -110,7 +109,7 @@ struct JournalView: View {
         }
     }
 
-    private func section(title: String, rows: [JournalViewModel.Row], delay: Double) -> some View {
+    private func section(title: String, rows: [JournalViewModel.Row]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: title)
             VStack(spacing: DS.Space.stack) {
@@ -123,7 +122,6 @@ struct JournalView: View {
                         Button("Delete dream", systemImage: "trash", role: .destructive) { viewModel.askToDelete(row) }
                     }
                     .task { await viewModel.rowAppeared(row) }
-                    .enterUp(delay + Double(min(index, 5)) * 0.1)
                 }
             }
         }

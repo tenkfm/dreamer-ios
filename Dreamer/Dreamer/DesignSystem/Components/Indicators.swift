@@ -31,65 +31,44 @@ extension PageDots {
 
 // MARK: - Progress capsule
 
-/// 6 pt progress track. Grows from 0 on appear and animates between values.
+/// 6 pt progress track. Shows its value at once; a new value slides to its place.
 struct ProgressCapsule: View {
     var value: Double   // 0...1
-    var initialValue: Double = 0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.entranceActive) private var entranceActive
-    @State private var shown: Double?
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Capsule().fill(DS.Palette.track)
                 Capsule().fill(DS.Palette.cta)
-                    .frame(width: geo.size.width * (shown ?? initialValue))
+                    .frame(width: geo.size.width * value)
             }
         }
         .frame(height: 6)
-        .onAppear { if entranceActive { grow() } }
-        .onChange(of: entranceActive) { _, active in if active { grow() } }
-        .onChange(of: value) { _, newValue in
-            withAnimation(reduceMotion ? nil : .soft(1)) { shown = newValue }
-        }
+        .animation(reduceMotion ? nil : .soft(1), value: value)
         .accessibilityElement()
         .accessibilityValue("\(Int(value * 100)) percent")
-    }
-
-    private func grow() {
-        guard shown == nil else { return }
-        guard !reduceMotion else { shown = value; return }
-        withAnimation(.soft(1).delay(0.3)) { shown = value }
     }
 }
 
 // MARK: - Ring
 
-/// Circular progress ring (Journal summary). Trims from 0 to value on appear, ~1.4 s.
+/// Circular progress ring (Journal summary). Shows its value at once.
 struct ProgressRing<Label: View>: View {
     var value: Double
     var lineWidth: CGFloat = 5
     @ViewBuilder var label: () -> Label
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var shown: Double = 0
-
     var body: some View {
         ZStack {
             Circle().stroke(DS.Palette.track, lineWidth: lineWidth)
             Circle()
-                .trim(from: 0, to: shown)
+                .trim(from: 0, to: value)
                 .stroke(DS.Palette.iconSoft, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             label()
         }
-        .onAppear {
-            guard !reduceMotion else { shown = value; return }
-            withAnimation(.easeOut(duration: 1.4).delay(0.3)) { shown = value }
-        }
-        .onChange(of: value) { _, newValue in shown = newValue }
     }
 }
 
@@ -104,24 +83,22 @@ struct WeekDayState: Identifiable, Hashable {
     var isPending = false
 }
 
-/// 7 circles: empty ring or white filled with a check that pops in one after another.
+/// 7 circles: empty ring or white filled with a check.
 struct WeekStrip: View {
     var days: [WeekDayState]
-    /// Delay before the first check pops (docs: 1.14 s on Home).
-    var popDelay: Double = 1.14
     /// A day with a dream not read yet was tapped.
     var onPendingTap: (WeekDayState) -> Void = { _ in }
 
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(Array(days.enumerated()), id: \.element.id) { offset, day in
+            ForEach(days) { day in
                 if day.isPending {
-                    Button { onPendingTap(day) } label: { column(day, offset: offset) }
+                    Button { onPendingTap(day) } label: { column(day) }
                         .buttonStyle(PressableButtonStyle())
                         .accessibilityLabel("\(day.accessibilityName), a dream not read yet")
                         .accessibilityHint("Reads it now")
                 } else {
-                    column(day, offset: offset)
+                    column(day)
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel("\(day.accessibilityName), \(day.isDone ? "dream caught" : "no dream")")
                 }
@@ -129,27 +106,18 @@ struct WeekStrip: View {
         }
     }
 
-    private func column(_ day: WeekDayState, offset: Int) -> some View {
+    private func column(_ day: WeekDayState) -> some View {
         VStack(spacing: 8) {
-            WeekDayCircle(isDone: day.isDone, isPending: day.isPending,
-                          delay: popDelay + Double(doneIndex(before: offset)) * 0.12)
+            WeekDayCircle(isDone: day.isDone, isPending: day.isPending)
             Text(day.letter).textStyle(.small, color: DS.Palette.textTertiary)
         }
         .frame(maxWidth: .infinity)
-    }
-
-    private func doneIndex(before offset: Int) -> Int {
-        days.prefix(offset).filter(\.isDone).count
     }
 }
 
 private struct WeekDayCircle: View {
     var isDone: Bool
     var isPending = false
-    var delay: Double
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var popped = false
 
     var body: some View {
         ZStack {
@@ -170,15 +138,9 @@ private struct WeekDayCircle: View {
                     .frame(width: 38, height: 38)
                     .background(Circle().fill(DS.Palette.surface))
                     .shadow(color: DS.Palette.shadow.opacity(0.18), radius: 7, x: 0, y: 4)
-                    .scaleEffect(popped ? 1 : 0.4)
-                    .opacity(popped ? 1 : 0)
             }
         }
         .frame(width: 38, height: 38)
-        .onAppear {
-            guard !reduceMotion else { popped = true; return }
-            withAnimation(.pop.delay(delay)) { popped = true }
-        }
     }
 }
 

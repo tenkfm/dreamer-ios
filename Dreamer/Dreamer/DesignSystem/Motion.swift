@@ -68,41 +68,6 @@ extension EnvironmentValues {
     /// False while a view is built but not on screen yet (e.g. the next page of a pager).
     /// Entrance animations wait for it to become true, then play once.
     @Entry var entranceActive: Bool = true
-    /// False on a screen that arrives with a transition of its own (a push): its elements come
-    /// with it instead of rising one by one after it has landed.
-    @Entry var entranceAnimated: Bool = true
-}
-
-// MARK: - Enter-up entrance
-
-struct EnterUp: ViewModifier {
-    var delay: Double
-    var distance: CGFloat = 18
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.entranceActive) private var entranceActive
-    @Environment(\.entranceAnimated) private var entranceAnimated
-    @State private var shown = false
-
-    func body(content: Content) -> some View {
-        let visible = shown || reduceMotion || !entranceAnimated
-        return content
-            .opacity(visible ? 1 : 0)
-            .offset(y: visible ? 0 : distance)
-            .onAppear { if entranceActive { reveal() } }
-            .onChange(of: entranceActive) { _, active in if active { reveal() } }
-    }
-
-    private func reveal() {
-        guard !reduceMotion, !shown else { return }
-        withAnimation(.soft().delay(delay)) { shown = true }
-    }
-}
-
-extension View {
-    /// Staggered entrance: opacity 0 -> 1, y +18 -> 0, 0.9 s soft ease-out.
-    func enterUp(_ delay: Double = 0, distance: CGFloat = 18) -> some View {
-        modifier(EnterUp(delay: delay, distance: distance))
-    }
 }
 
 extension AnyTransition {

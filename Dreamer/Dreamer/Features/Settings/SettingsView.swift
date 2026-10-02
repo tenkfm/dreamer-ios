@@ -24,10 +24,9 @@ struct SettingsView: View {
                         ScreenTitle(text: "Settings")
                     })
                     .padding(.horizontal, -DS.Space.screen)
-                    .enterUp(0.1)
 
-                    preferencesGroup.padding(.top, 8).enterUp(0.3)
-                    accountGroup.enterUp(0.45)
+                    preferencesGroup.padding(.top, 8)
+                    accountGroup
 
                     VStack(spacing: 0) {
                         TextLinkButton(title: viewModel.isSigningOut ? "Signing out…" : "Sign out") {
@@ -39,7 +38,6 @@ struct SettingsView: View {
                         }
                     }
                     .padding(.top, 14)
-                    .enterUp(0.6)
                 }
                 .padding(.horizontal, DS.Space.screen)
                 .padding(.bottom, 40)

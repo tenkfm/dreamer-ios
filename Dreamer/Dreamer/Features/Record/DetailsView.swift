@@ -21,7 +21,6 @@ struct DetailsView: View {
                 .truncationMode(.tail)
                 .skyTextShadow()
                 .padding(.horizontal, DS.Space.text - 4)
-                .enterUp(0.1)
             Spacer(minLength: 24)
             BottomSheetContainer {
                 ViewThatFits(in: .vertical) {

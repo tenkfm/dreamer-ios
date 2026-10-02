@@ -263,8 +263,8 @@ The intro pages and the quiz are one screen (`OnboardingPagesView`): the top bar
 direction of the move), the panoramic sky pans with the steps, and the top bar morphs from the logo
 and "Skip" to Back and the quiz progress, which fills from 1 of 2 to 2 of 2. Swipes left and right
 page as the buttons do. The account step and the paywall are separate screens that come in like a
-navigation push (`Animation.push`). The staggered entrance plays only when the flow first appears;
-after that the transitions carry every change. `-debugAdvance` walks the flow by itself, for
+navigation push (`Animation.push`). Elements have no entrance of their own: the transitions carry
+every change. `-debugAdvance` walks the flow by itself, for
 watching or recording the changes.
 `AuthService` (`APIAuthService` / `MockAuthService`) stores tokens through `TokenManager`; at
 launch the Keychain decides whether the user is still signed in.
@@ -768,7 +768,7 @@ It also describes the Instruments checks that need an iPhone 12.
 ## Accessibility and motion
 
 All loops (orb breathing, sky drift, waveforms, sparkles, thumbs) run on `TimelineView` and freeze
-with Reduce Motion; entrance animations are skipped too. Icon-only buttons have labels, Dynamic Type
+with Reduce Motion. Icon-only buttons have labels, Dynamic Type
 is capped at `.xxLarge`, and screens scroll on small devices (iPhone SE).
 
 Accessibility check (IOS-10.2):
@@ -778,8 +778,8 @@ Accessibility check (IOS-10.2):
 - The custom switch reads as a switch (`.isToggle`), the selected tab is marked selected, and the
   sign-in error card offers a "Dismiss" action.
 - With Increase Contrast, white titles on the sky get a denser shadow.
-- Reduce Motion stops every looping animation and entrance (`LoopingView`, `EnterUp`, the image
-  reveal).
+- Reduce Motion stops every looping animation and the image reveal (`LoopingView`). Elements have
+  no entrance animation: screens show complete at once.
 - Manual VoiceOver run of onboarding -> Record (keyboard) -> Interpretation: every icon button
   has a label and the steps of Analysis are read with their state. UI tests (IOS-11.2) add
   `performAccessibilityAudit()` on the same screens.

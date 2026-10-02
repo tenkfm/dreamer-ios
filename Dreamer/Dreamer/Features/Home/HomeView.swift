@@ -16,20 +16,18 @@ struct HomeView: View {
             SkyBackground(kind: .top)
             ScrollView {
                 VStack(spacing: 0) {
-                    header.enterUp(0.1)
+                    header
                     OrbButton(glyph: .mic, size: .home, accessibilityLabel: "Record last night’s dream") {
                         viewModel.startRecording()
                     }
                     .padding(.top, 6)
-                    .enterUp(0.3)
-                    greeting.enterUp(0.4)
-                    weekCard.padding(.top, 20).enterUp(0.55)
-                    cards.padding(.top, 14).enterUp(0.7)
+                    greeting
+                    weekCard.padding(.top, 20)
+                    cards.padding(.top, 14)
                     SectionHeader(title: "Dreamed about today", trailing: "See all") { viewModel.seeAllSymbols() }
                         .padding(.horizontal, DS.Space.screen)
                         .padding(.top, 22)
-                        .enterUp(0.85)
-                    thumbs.padding(.top, 4).enterUp(0.95)
+                    thumbs.padding(.top, 4)
                 }
                 .padding(.bottom, DS.Space.tabBarClearance)
             }

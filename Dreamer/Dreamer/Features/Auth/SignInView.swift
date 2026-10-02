@@ -47,7 +47,6 @@ struct SignInView: View {
         // HeaderBar keeps its own screen margin; this only cancels the content's CTA margin, so the
         // header buttons stand where they do on every other screen.
         .padding(.horizontal, -DS.Space.cta)
-        .enterUp(0.1)
     }
 
     // MARK: Form
@@ -65,7 +64,6 @@ struct SignInView: View {
                     .multilineTextAlignment(.center)
             }
             .fixedSize(horizontal: false, vertical: true)
-            .enterUp(0.25)
 
             Spacer(minLength: 28)
 
@@ -86,14 +84,13 @@ struct SignInView: View {
                 .disabled(!viewModel.isEmailValid || viewModel.isWorking)
                 .opacity(viewModel.isEmailValid ? 1 : 0.6)
             }
-            .enterUp(0.4)
 
             if let error = viewModel.error {
                 errorLine(error).padding(.top, 14)
             }
 
             Spacer(minLength: 24)
-            legalLine.enterUp(0.6)
+            legalLine
         }
     }
 
@@ -196,7 +193,6 @@ struct SignInView: View {
             Spacer(minLength: 20)
             OrbView(glyph: .envelope, size: .onboarding)
                 .accessibilityHidden(true)
-                .enterUp(0.1)
             VStack(spacing: 10) {
                 Text("Check your inbox")
                     .textStyle(.display)
@@ -207,7 +203,6 @@ struct SignInView: View {
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 28)
-            .enterUp(0.25)
 
             if let error = viewModel.error {
                 errorLine(error).padding(.top, 18)
@@ -225,7 +220,6 @@ struct SignInView: View {
                 TextLinkButton(title: "Use another email") { viewModel.useAnotherEmail() }
             }
             .padding(.bottom, 8)
-            .enterUp(0.4)
         }
     }
 

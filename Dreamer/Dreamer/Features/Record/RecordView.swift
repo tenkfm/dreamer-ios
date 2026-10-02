@@ -10,19 +10,17 @@ struct RecordView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header.enterUp(0.1)
+            header
             OrbView(glyph: .mic, size: .record, isActive: viewModel.isRecording)
                 .contentShape(Circle())
                 .onTapGesture { viewModel.resume() }
                 .padding(.top, 30)
-                .enterUp(0.25)
                 .accessibilityHidden(!viewModel.canContinue)
                 .accessibilityLabel("Continue recording")
                 .accessibilityAddTraits(.isButton)
             WaveformBars(count: RecordViewModel.barCount, barWidth: 4, height: 40, spacing: 5, color: DS.Palette.iconSoft,
                          isAnimating: viewModel.isRecording, levels: viewModel.levels)
                 .padding(.top, 34)
-                .enterUp(0.4)
             // Short text sits right under the waveform; long text keeps its newest line in view.
             GeometryReader { geo in
                 ScrollView {
@@ -37,12 +35,10 @@ struct RecordView: View {
                 .scrollIndicators(.hidden)
             }
             .padding(.top, 22)
-            .enterUp(0.5)
             .accessibilityLabel(viewModel.transcript.isEmpty ? liveTextNote ?? "Listening" : viewModel.transcript)
             pauseNote
             bottomBar
                 .opacity(viewModel.access == .listening || viewModel.access == .unknown ? 1 : 0)
-                .enterUp(0.9)
         }
         .onChange(of: scenePhase) { _, phase in
             // Home, lock screen or app switcher: stop listening and keep the words.
