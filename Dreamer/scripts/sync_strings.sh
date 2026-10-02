@@ -5,7 +5,11 @@
 #   xcodebuild ... build && scripts/sync_strings.sh
 set -e
 cd "${0:A:h}/.."
-objects=$(find ~/Library/Developer/Xcode/DerivedData -path "*Dreamer.build/Debug-iphonesimulator/Dreamer.build/Objects-normal/*" -name "*.stringsdata" -print | head -1 | xargs dirname)
+# The newest Debug build: run.sh and the fastlane lanes build into build/DerivedData, Xcode into
+# ~/Library/Developer/Xcode/DerivedData. Looking only at Xcode's left the lanes' strings out.
+objects=$(find build/DerivedData ~/Library/Developer/Xcode/DerivedData \
+    -path "*Dreamer.build/Debug-iphonesimulator/Dreamer.build/Objects-normal/*" -name "*.stringsdata" \
+    -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1 | xargs dirname)
 [[ -n "$objects" ]] || { echo "Build the Debug scheme for a simulator first." >&2; exit 1; }
 args=()
 for file in $objects/*.stringsdata; do args+=(--stringsdata "$file"); done

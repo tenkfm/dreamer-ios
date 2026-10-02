@@ -75,6 +75,8 @@ enum AppTab: String, CaseIterable, Hashable, Sendable {
 
 enum Route: Hashable, Sendable {
     case settings
+    /// Settings -> Voice.
+    case voice
     case interpretation(Dream.ID)
     case symbol(LibrarySymbol.ID)
 }

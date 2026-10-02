@@ -428,6 +428,21 @@ again whenever it goes to the background, and hides its content in the app switc
 passcode is the fallback (`deviceOwnerAuthentication`). `NSFaceIDUsageDescription` is in
 Info.plist. Debug: `-lockJournal`.
 
+Voice (contract 1.6.0, `Features/Settings/VoicePicker*`, `Services/Voices.swift`): Settings ->
+Voice shows the current voice's name and opens the picker. `GET /v1/voices` is asked every time it
+opens (a preview the server was still making may be ready). All / Male / Female filter on the
+device by `gender`; neutral voices show under All only. Each row has a play button for
+`previewUrl` (streamed with `AVVoicePlayback`, the Listen session), one preview at a time, stopped
+when the screen or the app goes away; a tap on play never picks. A null `previewUrl` disables play
+and says "Preview coming soon". A tap on the row moves the checkmark at once and saves with
+`PATCH /v1/me { voice }`; a failure puts it back with "Couldn’t save your voice. Try again." and,
+on 400 (the voice left the catalog), asks for the list again. Only the newest of overlapping picks
+counts. `AppState.voiceID` / `voiceName` keep the pick across launches, follow the profile pulled
+from the server (a voice picked elsewhere is named by the next list; until then the id stands in)
+and are reset at sign-out. New dreams and their videos use the voice; a dream already voiced keeps
+its own, which the line under the list says. No analytics event: the tracking plan has none.
+Debug: `-debugScreen voice`.
+
 ## Feature flags
 
 `Services/FeatureFlags.swift` lists the remote switches with their code defaults, chosen so the
@@ -712,7 +727,7 @@ xcrun simctl launch booted com.braincode.dreamer.io -debugScreen journal -night
 
 | Argument | Effect |
 |---|---|
-| `-debugScreen <name>` | Opens `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings deleteAccount interpretation support symbol record details analysis paywallSheet` on mock data |
+| `-debugScreen <name>` | Opens `welcome recordIntro understand quizGoal quizLens account paywall home journal library settings voice deleteAccount interpretation support symbol record details analysis paywallSheet` on mock data |
 | `-mockServices` / `-liveServices` | All mocks for a normal launch / the backend for a debug screen |
 | `-night`, `-day` | Force the appearance |
 | `-debugTime HH:mm` | Today at that time for the Home greeting |

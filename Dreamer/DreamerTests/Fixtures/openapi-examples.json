@@ -336,7 +336,8 @@
           "enabled": true,
           "time": "07:30"
         },
-        "timezone": "Europe/Warsaw"
+        "timezone": "Europe/Warsaw",
+        "voice": "clint"
       },
       "subscription": {
         "expiresAt": "2026-10-01T07:12:00.000Z",
@@ -601,7 +602,8 @@
         "enabled": true,
         "time": "07:30"
       },
-      "timezone": "America/New_York"
+      "timezone": "America/New_York",
+      "voice": "clint"
     },
     "401": {
       "error": {
@@ -935,6 +937,49 @@
         "code": "VALIDATION_FAILED",
         "message": "See the code"
       }
+    },
+    "401": {
+      "error": {
+        "code": "AUTH_REQUIRED",
+        "message": "See the code"
+      }
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    }
+  },
+  "listVoices": {
+    "200": {
+      "defaultVoiceId": "clint",
+      "items": [
+        {
+          "accent": "american",
+          "description": "Deep, intimate baritone",
+          "gender": "male",
+          "id": "clint",
+          "isDefault": true,
+          "name": "Clint",
+          "previewUrl": "https://media.example.com/voices/previews/clint-3f2a9c1b7d4e.mp3"
+        },
+        {
+          "accent": "american",
+          "description": "Warm audiobook narrator",
+          "gender": "female",
+          "id": "eve",
+          "isDefault": false,
+          "name": "Eve",
+          "previewUrl": "https://media.example.com/voices/previews/eve-8b1c0d2e4f6a.mp3"
+        }
+      ]
     },
     "401": {
       "error": {
@@ -1801,7 +1846,8 @@
         "enabled": true,
         "time": "07:30"
       },
-      "timezone": "America/New_York"
+      "timezone": "America/New_York",
+      "voice": "clint"
     },
     "400": {
       "error": {

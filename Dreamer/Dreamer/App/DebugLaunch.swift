@@ -9,7 +9,7 @@ import Foundation
 enum DebugLaunch {
     enum Screen: String {
         case welcome, recordIntro, understand, quizGoal, quizLens, account, paywall
-        case home, journal, library, settings, deleteAccount, interpretation, symbol
+        case home, journal, library, settings, voice, deleteAccount, interpretation, symbol
         /// Home with the paywall sheet up (its gradient and light footer).
         case paywallSheet
         /// Interpretation of a crisis-flagged dream (the support screen).
@@ -84,6 +84,9 @@ enum DebugLaunch {
         case .journal: state.open(.journal)
         case .library: state.open(.library)
         case .settings, .deleteAccount: state.push(.settings, on: .today)
+        case .voice:
+            state.push(.settings, on: .today)
+            state.push(.voice, on: .today)
         case .interpretation:
             if let id = dependencies.dreamStore.summaries.first?.id {
                 // `-videoReady` / `-videoPending`: the dream film's two states on the hero.

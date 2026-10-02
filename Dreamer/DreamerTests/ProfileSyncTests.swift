@@ -34,7 +34,7 @@ struct ProfileSyncTests {
 
         let profiles = MockProfileService(profile: UserProfile(
             id: "user-1", email: "anna@example.com", name: "Maria Lopez", goal: .remember, preferredLens: .spiritual,
-            reminder: .init(enabled: false, time: "08:15"), timezone: "Europe/Warsaw", nightMode: false, createdAt: .now))
+            reminder: .init(enabled: false, time: "08:15"), timezone: "Europe/Warsaw", nightMode: false, voice: "clint", createdAt: .now))
         await ProfileSync(appState: appState, profiles: profiles, timeZone: { warsaw }).run(.pull)
 
         #expect(appState.userName == "Maria")

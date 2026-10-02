@@ -44,6 +44,8 @@ final class AppDependencies {
     let shareCards: (any ShareCardProviding)?
     /// The backend's week, morning and month insights (nil in mock mode: computed from the dreams).
     let insights: InsightStore?
+    /// The voices to read dreams in (Settings -> Voice).
+    let voices: any VoiceService
     /// Install attribution (the MMP); a no-op until it is chosen.
     let attribution: any AttributionService
     /// Ad networks' SDKs (Meta, TikTok); none until their app ids exist.
@@ -83,6 +85,7 @@ final class AppDependencies {
          imageActions: (any DreamImageActions)? = nil,
          shareCards: (any ShareCardProviding)? = nil,
          insights: InsightStore? = nil,
+         voices: any VoiceService = MockVoiceService(),
          attribution: any AttributionService = NoopAttribution(),
          adNetworks: [any AdNetworkSDK] = [],
          instagramAppID: String? = nil,
@@ -117,6 +120,7 @@ final class AppDependencies {
         self.imageActions = imageActions
         self.shareCards = shareCards
         self.insights = insights
+        self.voices = voices
         self.attribution = attribution
         self.adNetworks = adNetworks
         trackingConsent = TrackingConsent(permission: trackingPermission, analytics: analytics,
@@ -213,6 +217,7 @@ final class AppDependencies {
             imageActions: api,
             shareCards: APIShareCardProvider(client: api),
             insights: InsightStore(service: api),
+            voices: api,
             instagramAppID: config.facebookAppID,
             makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
             makeReadAloudService: {

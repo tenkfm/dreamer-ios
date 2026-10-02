@@ -153,6 +153,7 @@ extension UserProfile {
                   reminder: Reminder(enabled: profile.reminder.enabled, time: profile.reminder.time),
                   timezone: profile.timezone,
                   nightMode: profile.nightMode,
+                  voice: profile.voice,
                   createdAt: profile.createdAt)
     }
 }
@@ -169,7 +170,8 @@ extension ProfileUpdate {
             preferredLens: preferredLens?.contract,
             reminder: reminder,
             timezone: timezone,
-            nightMode: nightMode
+            nightMode: nightMode,
+            voice: voice
         )
     }
 }
@@ -295,6 +297,15 @@ extension WeekInsight {
         self.init(days: week.days.map {
             Day(date: APIDates.parseDay($0.date) ?? .distantPast, letter: $0.letter, caught: $0.caught, isToday: $0.isToday)
         }, count: week.count)
+    }
+}
+
+extension VoiceList {
+    init(_ list: Components.Schemas.VoiceList) {
+        self.init(items: list.items.map {
+            Voice(id: $0.id, name: $0.name, gender: Voice.Gender(rawValue: $0.gender.rawValue) ?? .neutral,
+                  accent: $0.accent, description: $0.description, previewURL: makeURL($0.previewUrl), isDefault: $0.isDefault)
+        }, defaultVoiceID: list.defaultVoiceId)
     }
 }
 

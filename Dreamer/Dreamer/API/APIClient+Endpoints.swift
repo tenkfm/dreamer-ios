@@ -252,6 +252,13 @@ extension APIClient {
         return try body { try ok.body.json }.cards.map(HomeCard.init)
     }
 
+    /// The voices to pick in Settings, in the order to show.
+    func voices() async throws(APIError) -> VoiceList {
+        let output = try await perform { try await client.listVoices() }
+        guard case .ok(let ok) = output else { return try unexpected() }
+        return VoiceList(try body { try ok.body.json })
+    }
+
     // MARK: - Library
 
     func librarySymbols(query: String? = nil, category: SymbolCategory? = nil, cursor: String? = nil, limit: Int = 30)

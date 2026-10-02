@@ -41,6 +41,7 @@ filter:
     - weekInsight
     - monthInsight
     - homeCards
+    - listVoices
     - listLibrarySymbols
     - getLibrarySymbol
     - getSubscription

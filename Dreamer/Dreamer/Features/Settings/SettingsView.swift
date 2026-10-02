@@ -96,6 +96,8 @@ struct SettingsView: View {
             SettingsDivider()
             navigationRow("sparkle", "Default lens", value: viewModel.preferredLens.title) { viewModel.activeSheet = .lens }
             SettingsDivider()
+            navigationRow("waveform", "Voice", value: viewModel.voiceName) { viewModel.openVoice() }
+            SettingsDivider()
             toggleRow("moon", "Night mode after 9 PM", isOn: $viewModel.nightModeAfter9)
             SettingsDivider()
             toggleRow("lock", "Lock journal with Face ID", isOn: lockBinding)

@@ -1,10 +1,10 @@
-# Normalized copy of the Dreamer API contract 1.5.0 (dreamer-platform openapi.yaml).
+# Normalized copy of the Dreamer API contract 1.6.0 (dreamer-platform openapi.yaml).
 # Written by scripts/sync-openapi.sh - do not edit. Only change: nullable `anyOf [X, null]`
 # values became optional `X` (see scripts/normalize_openapi.py).
 openapi: 3.1.0
 info:
   title: Dreamer API
-  version: 1.5.0
+  version: 1.6.0
   description: 'API of the Dreamer iOS app (phase 1, app2app). Generated from the zod schemas in packages/shared - do not
     edit by hand; run `pnpm contract`.
 
@@ -530,6 +530,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
+                voice: clint
                 createdAt: 2026-09-20 07:00:00+00:00
         '401':
           description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
@@ -565,7 +566,7 @@ paths:
       operationId: updateProfile
       tags:
       - Profile
-      summary: Update the profile (quiz answers, lens, reminder, time zone)
+      summary: Update the profile (quiz answers, lens, reminder, time zone, voice)
       security:
       - bearer: []
       requestBody:
@@ -596,6 +597,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
+                voice: clint
                 createdAt: 2026-09-20 07:00:00+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
@@ -679,6 +681,70 @@ paths:
                 error:
                   code: INTERNAL_ERROR
                   message: See the code
+  /v1/voices:
+    get:
+      operationId: listVoices
+      tags:
+      - Profile
+      summary: 'Settings -> Voice: the voices to pick, each with a preview'
+      description: 'Filter by `gender` on the device. Save the pick with PATCH /v1/me { voice }: new voice-overs (and their
+        videos) use it, a dream already voiced keeps its voice.'
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceList'
+              example:
+                items:
+                - id: clint
+                  name: Clint
+                  gender: male
+                  accent: american
+                  description: Deep, intimate baritone
+                  previewUrl: https://media.example.com/voices/previews/clint-3f2a9c1b7d4e.mp3
+                  isDefault: true
+                - id: eve
+                  name: Eve
+                  gender: female
+                  accent: american
+                  description: Warm audiobook narrator
+                  previewUrl: https://media.example.com/voices/previews/eve-8b1c0d2e4f6a.mp3
+                  isDefault: false
+                defaultVoiceId: clint
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
   /v1/me/export:
     get:
       operationId: exportData
@@ -719,6 +785,7 @@ paths:
                     time: 07:30
                   timezone: Europe/Warsaw
                   nightMode: true
+                  voice: clint
                   createdAt: 2026-09-01 08:00:00+00:00
                 subscription:
                   status: trialing
@@ -4904,6 +4971,8 @@ components:
           pattern: ^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$|^UTC$
         nightMode:
           type: boolean
+        voice:
+          type: string
         createdAt:
           type: string
           format: date-time
@@ -4914,6 +4983,7 @@ components:
       - reminder
       - timezone
       - nightMode
+      - voice
       - createdAt
     RateLimitDetails:
       type: object
@@ -5253,6 +5323,49 @@ components:
           pattern: ^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$|^UTC$
         nightMode:
           type: boolean
+        voice:
+          type: string
+          minLength: 1
+          maxLength: 40
+    VoiceList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              gender:
+                type: string
+                enum:
+                - male
+                - female
+                - neutral
+              accent:
+                type: string
+              description:
+                type: string
+              previewUrl:
+                type: string
+                format: uri
+              isDefault:
+                type: boolean
+            required:
+            - id
+            - name
+            - gender
+            - accent
+            - description
+            - isDefault
+        defaultVoiceId:
+          type: string
+      required:
+      - items
+      - defaultVoiceId
     WebConfig:
       type: object
       properties:

@@ -186,6 +186,8 @@ struct UserPreferences: Codable, Hashable, Sendable {
         freeInterpretationsLeft = try container.decodeIfPresent(Int.self, forKey: .freeInterpretationsLeft) ?? 0
         unsyncedProfile = try container.decodeIfPresent(ProfileUpdate.self, forKey: .unsyncedProfile)
         reminderPromptShown = try container.decodeIfPresent(Bool.self, forKey: .reminderPromptShown) ?? false
+        voiceID = try container.decodeIfPresent(String.self, forKey: .voiceID) ?? defaults.voiceID
+        voiceName = try container.decodeIfPresent(String.self, forKey: .voiceName)
     }
 
     var onboardingCompleted = false
@@ -205,6 +207,10 @@ struct UserPreferences: Codable, Hashable, Sendable {
     /// Profile changes made on this device that the backend has not confirmed yet.
     var unsyncedProfile: ProfileUpdate?
     var reminderPromptShown = false
+    /// The voice dreams are read in (`voice` of the profile); the server's default until it answers.
+    var voiceID = "clint"
+    /// Its name, for the Settings row; nil until the voice list has named it.
+    var voiceName: String?
 }
 
 @MainActor

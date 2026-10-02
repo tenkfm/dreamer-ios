@@ -41,6 +41,11 @@ final class SettingsViewModel {
     }
 
     /// Settings -> Subscription: subscribers manage it in the App Store sheet, others see the plans.
+    /// The voice dreams are read in; its id until the voice list has named it.
+    var voiceName: String { appState.voiceName ?? appState.voiceID.capitalized }
+
+    func openVoice() { appState.push(.voice, on: appState.selectedTab) }
+
     func openSubscription() {
         if appState.subscription != .none {
             isManagingSubscription = true

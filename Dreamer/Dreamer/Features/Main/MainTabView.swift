@@ -114,6 +114,12 @@ private struct RouteDestination: View {
                                            unlink: dependencies.unlinkAccount,
                                            unregisterPush: dependencies.unregisterPush),
                 analytics: dependencies.analytics))
+        case .voice:
+            ViewModelHost {
+                VoicePickerViewModel(appState: appState, service: dependencies.voices, player: AVVoicePlayback())
+            } content: { viewModel in
+                VoicePickerView(viewModel: viewModel)
+            }
         case .interpretation(let id):
             ViewModelHost {
                 InterpretationViewModel(dreamID: id, store: dependencies.dreamStore, appState: appState,

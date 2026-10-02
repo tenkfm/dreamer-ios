@@ -27,7 +27,8 @@ struct SettingsSyncTests {
     @Test func theServersProfileIsNotSentBack() {
         let appState = signedIn()
         appState.apply(UserProfile(id: "user-1", email: nil, name: nil, goal: nil, preferredLens: .spiritual,
-                                   reminder: .init(enabled: false, time: "08:00"), timezone: "UTC", nightMode: false, createdAt: .now))
+                                   reminder: .init(enabled: false, time: "08:00"), timezone: "UTC", nightMode: false, voice: "eve", createdAt: .now))
+        #expect(appState.voiceID == "eve")
         #expect(appState.reminders.reminderMinutes == 8 * 60)
         #expect(appState.unsyncedProfile == nil)
     }

@@ -20,7 +20,7 @@ actor MockProfileService: ProfileService {
 
     init(profile: UserProfile = UserProfile(id: "mock-user", email: nil, name: "Anna", goal: nil, preferredLens: .psychology,
                                             reminder: .init(enabled: true, time: "07:30"), timezone: "UTC",
-                                            nightMode: true, createdAt: .now)) {
+                                            nightMode: true, voice: "clint", createdAt: .now)) {
         stored = profile
     }
 
@@ -34,6 +34,7 @@ actor MockProfileService: ProfileService {
         if let time = update.reminderTime { stored.reminder.time = time }
         if let timezone = update.timezone { stored.timezone = timezone }
         if let nightMode = update.nightMode { stored.nightMode = nightMode }
+        if let voice = update.voice { stored.voice = voice }
         return stored
     }
 }

@@ -31,6 +31,8 @@ struct UserProfile: Sendable, Equatable {
     /// IANA time zone the backend computes insights in.
     var timezone: String
     var nightMode: Bool
+    /// Id of the voice new dreams are read in; the default ("clint") until one is picked.
+    var voice: String
     var createdAt: Date
 }
 
@@ -43,6 +45,7 @@ struct ProfileUpdate: Sendable, Hashable, Codable {
     var reminderTime: String?
     var timezone: String?
     var nightMode: Bool?
+    var voice: String?
 
     /// This update with `newer`'s fields on top (a later change of the same field wins).
     func merging(_ newer: ProfileUpdate) -> ProfileUpdate {
@@ -52,7 +55,8 @@ struct ProfileUpdate: Sendable, Hashable, Codable {
                       reminderEnabled: newer.reminderEnabled ?? reminderEnabled,
                       reminderTime: newer.reminderTime ?? reminderTime,
                       timezone: newer.timezone ?? timezone,
-                      nightMode: newer.nightMode ?? nightMode)
+                      nightMode: newer.nightMode ?? nightMode,
+                      voice: newer.voice ?? voice)
     }
 }
 
@@ -229,6 +233,29 @@ struct WeekInsight: Sendable, Equatable, Codable {
 
     var days: [Day]
     var count: Int
+}
+
+/// A voice the dreams can be read in (`GET /v1/voices`), in the order to show.
+struct Voice: Sendable, Equatable, Identifiable, Codable {
+    enum Gender: String, Sendable, Codable {
+        case male, female, neutral
+    }
+
+    /// Ours ("clint", "eve"); the ElevenLabs id stays on the server.
+    var id: String
+    var name: String
+    var gender: Gender
+    /// "american", "british"...
+    var accent: String
+    var description: String
+    /// The same short line about a dream in this voice; nil while the server is still making it.
+    var previewURL: URL?
+    var isDefault: Bool
+}
+
+struct VoiceList: Sendable, Equatable {
+    var items: [Voice]
+    var defaultVoiceID: String
 }
 
 /// A card at the top of Home (`GET /v1/insights/cards`, one or two, never none). It carries all it

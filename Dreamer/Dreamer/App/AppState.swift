@@ -25,6 +25,9 @@ final class AppState {
     @ObservationIgnored private var applyingServerProfile = false
     /// The signed-in account; nil when signed out.
     private(set) var userID: String? { didSet { persist() } }
+    /// The voice new dreams are read in, saved on the server at once by the voice screen.
+    private(set) var voiceID: String { didSet { persist() } }
+    private(set) var voiceName: String? { didSet { persist() } }
 
     // MARK: Navigation
 
@@ -88,6 +91,8 @@ final class AppState {
         freeInterpretationsLeft = saved.freeInterpretationsLeft
         unsyncedProfile = saved.unsyncedProfile
         reminderPromptShown = saved.reminderPromptShown
+        voiceID = saved.voiceID
+        voiceName = saved.voiceName
     }
 
     /// Onboarding until the user has an account and has been through it (new users) or signed
@@ -176,9 +181,17 @@ final class AppState {
         let parts = profile.reminder.time.split(separator: ":").compactMap { Int($0) }
         if parts.count == 2 { updated.reminderMinutes = parts[0] * 60 + parts[1] }
         updated.nightModeAfter9 = profile.nightMode
+        // Picked on another device: the name comes with the next voice list.
+        if profile.voice != voiceID { setVoice(id: profile.voice, name: nil) }
         applyingServerProfile = true
         reminders = updated
         applyingServerProfile = false
+    }
+
+    /// The voice the server confirmed; the name shows in Settings (nil: the id stands in).
+    func setVoice(id: String, name: String?) {
+        voiceID = id
+        voiceName = name
     }
 
     /// Reminder, its time and night mode live in the profile too (`PATCH /v1/me`); the Face ID lock
@@ -209,6 +222,9 @@ final class AppState {
         storedPaywallVariant = nil
         freeInterpretationsLeft = 0
         subscription = .none
+        // The voice is the account's: the next account's profile brings its own.
+        voiceID = UserPreferences().voiceID
+        voiceName = nil
         selectedTab = .today
         paths = [:]
         isRecordFlowPresented = false
@@ -312,6 +328,8 @@ final class AppState {
         reminders = fresh.reminders
         userID = nil
         unsyncedProfile = nil
+        voiceID = fresh.voiceID
+        voiceName = fresh.voiceName
         nightModeOverride = nil
         selectedTab = .today
         paths = [:]
@@ -397,6 +415,8 @@ final class AppState {
         preferences.freeInterpretationsLeft = freeInterpretationsLeft
         preferences.unsyncedProfile = unsyncedProfile
         preferences.reminderPromptShown = reminderPromptShown
+        preferences.voiceID = voiceID
+        preferences.voiceName = voiceName
         store.save(preferences)
     }
 }
