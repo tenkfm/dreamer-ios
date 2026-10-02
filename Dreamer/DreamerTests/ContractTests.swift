@@ -75,7 +75,7 @@ struct ContractSuccessTests {
         let week = try await ContractExamples.client("weekInsight", status: 200).weekInsight()
         #expect(week.days.count == 7)
         _ = try await ContractExamples.client("monthInsight", status: 200).monthInsight()
-        _ = try await ContractExamples.client("morningInsight", status: 200).morningInsight()
+        #expect(try await !ContractExamples.client("homeCards", status: 200).homeCards().isEmpty)
         let symbols = try await ContractExamples.client("listLibrarySymbols", status: 200).librarySymbols()
         #expect(!symbols.items.isEmpty)
         let symbol = try await ContractExamples.client("getLibrarySymbol", status: 200).librarySymbol(slug: "teeth")

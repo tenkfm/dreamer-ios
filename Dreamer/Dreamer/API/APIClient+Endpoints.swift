@@ -245,6 +245,13 @@ extension APIClient {
         return MonthInsight(try body { try ok.body.json })
     }
 
+    /// Home's one or two cards. Asked each time Home shows: they follow the hour and the journal.
+    func homeCards() async throws(APIError) -> [HomeCard] {
+        let output = try await perform { try await client.homeCards() }
+        guard case .ok(let ok) = output else { return try unexpected() }
+        return try body { try ok.body.json }.cards.map(HomeCard.init)
+    }
+
     // MARK: - Library
 
     func librarySymbols(query: String? = nil, category: SymbolCategory? = nil, cursor: String? = nil, limit: Int = 30)

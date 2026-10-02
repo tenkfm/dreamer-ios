@@ -1,23 +1,9 @@
 import Foundation
 
-// Calls that do not go through the generated client: `GET /v1/insights/morning` (a top-level
-// nullable body the generator cannot express) and the event stream. They get the same bearer
+// Calls that do not go through the generated client (the event stream). They get the same bearer
 // token, refresh-and-retry and error mapping as the generated calls.
 
 extension APIClient {
-    /// `GET /v1/insights/morning`: nil when there is no pattern yet (the body is JSON `null`).
-    func morningInsight() async throws(APIError) -> MorningInsight? {
-        let (data, _) = try await sendAuthorized(path: "/v1/insights/morning")
-        if String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines) == "null" {
-            return nil
-        }
-        do {
-            return try JSONDecoder().decode(MorningInsight.self, from: data)
-        } catch {
-            throw APIError.invalidResponse(status: 200)
-        }
-    }
-
     /// Builds a request to `path` (with query) on the API host.
     func makeRequest(path: String, method: String = "GET", accept: String = "application/json") -> URLRequest {
         let url = URL(string: path, relativeTo: baseURL) ?? baseURL.appending(path: path)

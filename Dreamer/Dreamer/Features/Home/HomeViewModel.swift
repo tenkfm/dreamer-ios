@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import UIKit
 
 @MainActor
 @Observable
@@ -101,24 +102,75 @@ final class HomeViewModel {
         }
     }
 
-    // MARK: Insight
+    // MARK: Cards
 
-    /// The backend's morning insight, or (mock mode) the most repeated symbol this week.
-    var insight: String? {
-        if let insights { return insights.morning?.text }
-        let dreams = dreamsThisWeek
-        let counts = dreams.reduce(into: [String: Int]()) { counts, dream in
-            for keyword in Set(dream.symbols) { counts[keyword, default: 0] += 1 }
-        }
-        guard let top = counts.max(by: { ($0.value, $1.key) < ($1.value, $0.key) }), top.value >= 2 else { return nil }
-        return "\(top.key.capitalized) appeared in \(top.value) of your dreams this week."
+    /// The backend's one or two cards (the last ones offline). Before any answer, the invitation, so
+    /// the spot is never empty. Mock mode: the contract's examples on the seed dreams.
+    var cards: [HomeCard] {
+        guard let insights else { return mockCards }
+        return insights.cards ?? [Self.invitation]
     }
 
-    let insightPlaceholder = String(localized: "Tell a dream each morning and your patterns will appear here.")
+    static let invitation = HomeCard(
+        id: "invitation", kind: "record_prompt", overline: String(localized: "Your morning insight"), title: nil,
+        text: String(localized: "Tell a dream each morning and your patterns will appear here."), imageURL: nil, action: nil)
 
-    /// The backend says nothing yet (null): no card, except for a new user, who gets the invitation.
-    var showsInsightCard: Bool {
-        insight != nil || insights == nil || (store.summaries.isEmpty && (insights?.month?.dreamCount ?? 0) == 0)
+    /// The copy of the contract's examples: a recap of the newest dream and a tip.
+    private var mockCards: [HomeCard] {
+        var cards: [HomeCard] = []
+        if let dream = store.summaries.first {
+            cards.append(HomeCard(id: "recap-\(dream.id)", kind: "dream_recap", overline: "Yesterday’s dream", title: dream.title,
+                                  text: "What are you working toward right now?", imageURL: nil,
+                                  action: .init(label: "Add a thought", destination: .dream(dream.id))))
+        }
+        cards.append(HomeCard(id: "tip-stay-still", kind: "tip", overline: "Dream tip", title: "Don’t move yet",
+                              text: "When you wake, keep your eyes closed and stay as you are. Ask: “What was I just dreaming?” "
+                                + "The first minute is when most dreams are won or lost.",
+                              imageURL: nil,
+                              action: .init(label: "Read more",
+                                            destination: .article(URL(string: "https://dreamerapp.io/sleep/how-to-remember-dreams")!))))
+        return cards
+    }
+
+    /// Pictures by card: the links are signed anew at every refresh, the card id is stable for the day.
+    @ObservationIgnored private var cardImages: [String: UIImage] = [:]
+
+    /// The card's picture, downloaded once a day; mock mode: the dream's asset.
+    func image(for card: HomeCard) async -> UIImage? {
+        if let cached = cardImages[card.id] { return cached }
+        let image: UIImage?
+        if let url = card.imageURL, insights != nil {
+            guard let (data, response) = try? await APIClient.mediaSession.data(from: url),
+                  (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+            // Cards are about 100 pt wide (a banner is wider but short).
+            image = await ImageDownsampler.decoded(from: data, pointSize: 360)
+        } else if insights == nil, case .dream(let id)? = card.action?.destination, let dream = store.dream(id: id) {
+            // Like the dream's hero: no image name means the placeholder.
+            image = DreamImage.uiImage(named: dream.imageName)
+        } else {
+            image = nil
+        }
+        if let image { cardImages[card.id] = image }
+        return image
+    }
+
+    /// Set to open an article in the in-app browser.
+    var article: Article?
+
+    struct Article: Identifiable {
+        let url: URL
+        var id: URL { url }
+    }
+
+    /// A card's button.
+    func perform(_ action: HomeCard.Action) {
+        switch action.destination {
+        case .journal: appState.open(.journal)
+        case .dream(let id): appState.openNotes(of: id)
+        case .librarySymbol(let slug): appState.open(.library, route: .symbol(slug))
+        case .record: startRecording()
+        case .article(let url): article = Article(url: url)
+        }
     }
 
     /// Changes when a dream is added or removed, so the insights are asked again.
@@ -153,7 +205,6 @@ final class HomeViewModel {
     func openSettings() { appState.push(.settings, on: .today) }
     func toggleNightMode() { appState.toggleNightMode() }
     func startRecording() { appState.presentRecordFlow() }
-    func seePattern() { appState.open(.journal) }
     func seeAllSymbols() { appState.open(.library) }
     func open(_ symbol: LibrarySymbol) { appState.open(.library, route: .symbol(symbol.id)) }
 }

@@ -231,10 +231,35 @@ struct WeekInsight: Sendable, Equatable, Codable {
     var count: Int
 }
 
-struct MorningInsight: Sendable, Equatable, Codable {
-    var symbol: String
-    var count: Int
+/// A card at the top of Home (`GET /v1/insights/cards`, one or two, never none). It carries all it
+/// shows; the button's destination is the only part the app interprets.
+struct HomeCard: Sendable, Equatable, Codable, Identifiable {
+    /// Where the button leads. A target this build does not know maps to no action, so its button
+    /// is hidden: a card type added later never breaks an older build (as `video` once did).
+    enum Destination: Sendable, Equatable, Codable {
+        case journal
+        case dream(UUID)
+        case librarySymbol(slug: String)
+        case record
+        /// dreamerapp.io, in the in-app browser.
+        case article(URL)
+    }
+
+    struct Action: Sendable, Equatable, Codable {
+        var label: String
+        var destination: Destination
+    }
+
+    /// Stable for the day ("tip-stay-still").
+    var id: String
+    /// For analytics and styling only: any value renders as a card.
+    var kind: String
+    var overline: String
+    var title: String?
     var text: String
+    /// Signed; a dream image is 9:16, a Library tile 16:9.
+    var imageURL: URL?
+    var action: Action?
 }
 
 struct MonthInsight: Sendable, Equatable, Codable {

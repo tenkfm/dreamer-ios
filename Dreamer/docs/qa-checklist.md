@@ -54,7 +54,7 @@ Review, **Minor** can wait.
 - [ ] Journal opens instantly from the cache, pull-to-refresh, older weeks load while scrolling
 - [ ] Search by a word from the interpretation; emotion chips; offline search
 - [ ] Delete a dream (long press): confirmation, gone on the other device too
-- [ ] Home week strip and caption match the journal; the morning insight card, or none
+- [ ] Home week strip and caption match the journal; one or two Home cards (never none), each button opens its place, an article in the in-app browser
 - [ ] Library categories, search, a symbol with lenses and related symbols; works in Airplane mode after one visit
 
 ## Settings and privacy

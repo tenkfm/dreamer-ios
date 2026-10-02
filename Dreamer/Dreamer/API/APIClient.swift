@@ -16,7 +16,7 @@ protocol AccessTokenProvider: Sendable {
 final class APIClient: Sendable {
     let baseURL: URL
     let client: Client
-    /// Plain session for the calls outside the generated client (SSE, uploads, morningInsight).
+    /// Plain session for the calls outside the generated client (SSE, uploads).
     let session: URLSession
     let tokens: (any AccessTokenProvider)?
     /// Unreadable answers (a contract drift) are reported here; HTTP failures by ErrorReportingMiddleware.

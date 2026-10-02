@@ -246,6 +246,13 @@ final class InterpretationViewModel {
         viewed()
     }
 
+    /// True once when the dream was opened for its notes (`AppState.openNotes`).
+    func takeNotesFocus() -> Bool {
+        guard appState.notesFocus == dreamID else { return false }
+        appState.notesFocus = nil
+        return true
+    }
+
     // MARK: Video
 
     /// The dream film; none for crisis dreams.

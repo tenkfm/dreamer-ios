@@ -7,7 +7,7 @@ accessModifier: internal
 namingStrategy: idiomatic
 # Allowlist of the operations the app calls. scripts/sync-openapi.sh reports contract operations
 # missing here. Left out on purpose:
-#   morningInsight: top-level nullable schema, not supported by the generator - called by hand in APIClient
+#   morningInsight: replaced on Home by homeCards (1.5.0), kept on the server for older builds
 #   revenuecatWebhook: server to server
 #   kieCallback: server to server
 #   webConfig, webEvent, webInterpret, webLead, webShare: the website's free interpreter, not the app
@@ -40,6 +40,7 @@ filter:
     - transcribeRecording
     - weekInsight
     - monthInsight
+    - homeCards
     - listLibrarySymbols
     - getLibrarySymbol
     - getSubscription

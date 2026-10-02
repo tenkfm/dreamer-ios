@@ -327,6 +327,15 @@ final class AppState {
         paths[tab, default: []].append(route)
     }
 
+    /// A dream opened to write in its notes (a Home card's "Add a thought"): Interpretation scrolls
+    /// to them once and clears it.
+    var notesFocus: Dream.ID?
+
+    func openNotes(of dreamID: Dream.ID) {
+        notesFocus = dreamID
+        open(.today, route: .interpretation(dreamID))
+    }
+
     /// Switches tab and optionally opens a route on it.
     func open(_ tab: AppTab, route: Route? = nil) {
         selectedTab = tab

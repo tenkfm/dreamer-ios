@@ -1,10 +1,10 @@
-# Normalized copy of the Dreamer API contract 1.4.0 (dreamer-platform openapi.yaml).
+# Normalized copy of the Dreamer API contract 1.5.0 (dreamer-platform openapi.yaml).
 # Written by scripts/sync-openapi.sh - do not edit. Only change: nullable `anyOf [X, null]`
 # values became optional `X` (see scripts/normalize_openapi.py).
 openapi: 3.1.0
 info:
   title: Dreamer API
-  version: 1.4.0
+  version: 1.5.0
   description: 'API of the Dreamer iOS app (phase 1, app2app). Generated from the zod schemas in packages/shared - do not
     edit by hand; run `pnpm contract`.
 
@@ -2609,6 +2609,78 @@ paths:
                 error:
                   code: INTERNAL_ERROR
                   message: See the code
+  /v1/insights/cards:
+    get:
+      operationId: homeCards
+      tags:
+      - Insights
+      summary: 'Home: one or two cards, never none (pattern, dream recap, symbol, tip...)'
+      security:
+      - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeCards'
+              example:
+                cards:
+                - id: recap-0d4b8a3e-6f0e-4d8e-9a43-2b8f5a1c7e10
+                  kind: dream_recap
+                  overline: Yesterday’s dream
+                  title: The house with endless stairs
+                  text: What are you working toward right now?
+                  imageUrl: https://media.example.com/users/7c1e/dreams/0d4b/image-v1-540.webp
+                  action:
+                    label: Add a thought
+                    target: dream
+                    dreamId: 0d4b8a3e-6f0e-4d8e-9a43-2b8f5a1c7e10
+                    slug: null
+                    url: null
+                - id: tip-stay-still
+                  kind: tip
+                  overline: Dream tip
+                  title: Don’t move yet
+                  text: 'When you wake, keep your eyes closed and stay as you are. Ask: “What was I just dreaming?” The first
+                    minute is when most dreams are won or lost.'
+                  imageUrl: null
+                  action:
+                    label: Read more
+                    target: article
+                    dreamId: null
+                    slug: null
+                    url: https://dreamerapp.io/sleep/how-to-remember-dreams
+        '401':
+          description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: AUTH_REQUIRED
+                  message: See the code
+        '429':
+          description: 'Error: RATE_LIMITED'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: See the code
+        '500':
+          description: 'Error: INTERNAL_ERROR'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                error:
+                  code: INTERNAL_ERROR
+                  message: See the code
   /v1/insights/month:
     get:
       operationId: monthInsight
@@ -4523,6 +4595,60 @@ components:
       - version
       - uptimeSec
       - services
+    HomeCards:
+      type: object
+      properties:
+        cards:
+          minItems: 1
+          maxItems: 2
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              kind:
+                type: string
+              overline:
+                type: string
+              title:
+                type:
+                - string
+                - 'null'
+              text:
+                type: string
+              imageUrl:
+                type: string
+                format: uri
+              action:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  target:
+                    type: string
+                  dreamId:
+                    type: string
+                    format: uuid
+                  slug:
+                    type:
+                    - string
+                    - 'null'
+                  url:
+                    type: string
+                    format: uri
+                required:
+                - label
+                - target
+                - slug
+            required:
+            - id
+            - kind
+            - overline
+            - title
+            - text
+      required:
+      - cards
     KieCallback:
       type: object
       properties:

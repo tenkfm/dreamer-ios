@@ -678,6 +678,60 @@
       "version": "0.1.0"
     }
   },
+  "homeCards": {
+    "200": {
+      "cards": [
+        {
+          "action": {
+            "dreamId": "0d4b8a3e-6f0e-4d8e-9a43-2b8f5a1c7e10",
+            "label": "Add a thought",
+            "slug": null,
+            "target": "dream",
+            "url": null
+          },
+          "id": "recap-0d4b8a3e-6f0e-4d8e-9a43-2b8f5a1c7e10",
+          "imageUrl": "https://media.example.com/users/7c1e/dreams/0d4b/image-v1-540.webp",
+          "kind": "dream_recap",
+          "overline": "Yesterday\u2019s dream",
+          "text": "What are you working toward right now?",
+          "title": "The house with endless stairs"
+        },
+        {
+          "action": {
+            "dreamId": null,
+            "label": "Read more",
+            "slug": null,
+            "target": "article",
+            "url": "https://dreamerapp.io/sleep/how-to-remember-dreams"
+          },
+          "id": "tip-stay-still",
+          "imageUrl": null,
+          "kind": "tip",
+          "overline": "Dream tip",
+          "text": "When you wake, keep your eyes closed and stay as you are. Ask: \u201cWhat was I just dreaming?\u201d The first minute is when most dreams are won or lost.",
+          "title": "Don\u2019t move yet"
+        }
+      ]
+    },
+    "401": {
+      "error": {
+        "code": "AUTH_REQUIRED",
+        "message": "See the code"
+      }
+    },
+    "429": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "See the code"
+      }
+    },
+    "500": {
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "See the code"
+      }
+    }
+  },
   "kieCallback": {
     "200": {
       "accepted": true

@@ -1,12 +1,12 @@
 import Foundation
 import Observation
 
-/// The backend's insights: this week (Home strip), the morning line (Home card) and the month
+/// The backend's insights: this week (Home strip), the cards at the top of Home and the month
 /// (Journal summary). All three are computed on the server in the user's time zone.
 protocol InsightService: Sendable {
     func weekInsight() async throws(APIError) -> WeekInsight
-    /// Nil: nothing worth saying yet (the card is hidden).
-    func morningInsight() async throws(APIError) -> MorningInsight?
+    /// One or two, never none.
+    func homeCards() async throws(APIError) -> [HomeCard]
     /// `month` is "YYYY-MM"; nil = the current month.
     func monthInsight(month: String?) async throws(APIError) -> MonthInsight
 }
@@ -21,9 +21,8 @@ extension APIClient: InsightService {}
 final class InsightStore {
     struct Snapshot: Codable, Equatable {
         var week: WeekInsight?
-        var morning: MorningInsight?
-        /// Distinguishes "no morning insight" from "never asked".
-        var morningLoaded = false
+        /// Nil until the first answer.
+        var cards: [HomeCard]?
         var month: MonthInsight?
     }
 
@@ -44,8 +43,7 @@ final class InsightStore {
     }
 
     var week: WeekInsight? { snapshot.week }
-    var morning: MorningInsight? { snapshot.morning }
-    var hasMorningAnswer: Bool { snapshot.morningLoaded }
+    var cards: [HomeCard]? { snapshot.cards }
     var month: MonthInsight? { snapshot.month }
 
     /// All three at once; each keeps its cached value when its call fails (offline).
@@ -54,14 +52,12 @@ final class InsightStore {
         isRefreshing = true
         defer { isRefreshing = false }
         async let week = try? service.weekInsight()
-        async let morning = Self.morning(from: service)
+        async let cards = try? service.homeCards()
         async let month = try? service.monthInsight(month: nil)
         var next = snapshot
         if let week = await week { next.week = week }
-        if let morning = await morning {
-            next.morning = morning.value
-            next.morningLoaded = true
-        }
+        // An empty list breaks the contract ("never none"): the last cards stay rather than a gap.
+        if let cards = await cards, !cards.isEmpty { next.cards = cards }
         if let month = await month { next.month = month }
         guard next != snapshot else { return }
         snapshot = next
@@ -72,17 +68,6 @@ final class InsightStore {
     func clear() {
         snapshot = Snapshot()
         if let fileURL { try? FileManager.default.removeItem(at: fileURL) }
-    }
-
-    /// Nil when the call failed; `.some(nil)` when the server has no morning insight.
-    private struct MorningAnswer { var value: MorningInsight? }
-
-    private static func morning(from service: any InsightService) async -> MorningAnswer? {
-        do {
-            return MorningAnswer(value: try await service.morningInsight())
-        } catch {
-            return nil
-        }
     }
 
     private func save() {

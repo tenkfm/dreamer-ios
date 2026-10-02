@@ -298,6 +298,38 @@ extension WeekInsight {
     }
 }
 
+extension HomeCard {
+    init(_ card: Components.Schemas.HomeCards.CardsPayloadPayload) {
+        self.init(id: card.id, kind: card.kind, overline: card.overline, title: card.title, text: card.text,
+                  imageURL: makeURL(card.imageUrl),
+                  action: card.action.flatMap { action in
+                      Destination(target: action.target, dreamID: action.dreamId, slug: action.slug, url: action.url)
+                          .map { Action(label: action.label, destination: $0) }
+                  })
+    }
+}
+
+extension HomeCard.Destination {
+    /// Nil for a target this build does not know, or one without what it needs to open.
+    init?(target: String, dreamID: String?, slug: String?, url: String?) {
+        switch target {
+        case "journal": self = .journal
+        case "record": self = .record
+        case "dream":
+            guard let id = dreamID.flatMap(UUID.init(uuidString:)) else { return nil }
+            self = .dream(id)
+        case "library_symbol":
+            guard let slug, !slug.isEmpty else { return nil }
+            self = .librarySymbol(slug: slug)
+        case "article":
+            // Only the web: the in-app browser opens nothing else.
+            guard let url = makeURL(url), url.scheme == "https" else { return nil }
+            self = .article(url)
+        default: return nil
+        }
+    }
+}
+
 extension MonthInsight {
     init(_ month: Components.Schemas.MonthInsight) {
         self.init(month: month.month,

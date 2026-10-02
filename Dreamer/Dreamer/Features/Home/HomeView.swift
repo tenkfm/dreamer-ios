@@ -5,6 +5,7 @@ struct HomeView: View {
     @State private var viewModel: HomeViewModel
     @Environment(AppDependencies.self) private var dependencies
     @Environment(ReminderController.self) private var reminders
+    @Environment(\.scenePhase) private var scenePhase
 
     init(viewModel: HomeViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -23,7 +24,7 @@ struct HomeView: View {
                     .enterUp(0.3)
                     greeting.enterUp(0.4)
                     weekCard.padding(.top, 20).enterUp(0.55)
-                    insightCard.padding(.top, 14).enterUp(0.7)
+                    cards.padding(.top, 14).enterUp(0.7)
                     SectionHeader(title: "Dreamed about today", trailing: "See all") { viewModel.seeAllSymbols() }
                         .padding(.horizontal, DS.Space.screen)
                         .padding(.top, 22)
@@ -36,8 +37,16 @@ struct HomeView: View {
             .scrollBounceBehavior(.basedOnSize)
         }
         .sensoryFeedback(.impact(weight: .light), trigger: viewModel.isNightMode)
-        // On opening and after every new or deleted dream.
+        // Every time Home shows (a tab switch, back from a pushed screen) and after every new or
+        // deleted dream: the cards follow the hour and the journal.
         .task(id: viewModel.dreamCount) { await viewModel.refreshInsights() }
+        // Back from the background: a Home left open overnight still shows the morning's cards.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await viewModel.refreshInsights() } }
+        }
+        .sheet(item: $viewModel.article) { article in
+            SafariView(url: article.url).ignoresSafeArea()
+        }
         .trackScreen(.home)
         // The first Home after onboarding offers the morning reminder (once).
         .task {
@@ -84,23 +93,15 @@ struct HomeView: View {
         .padding(.horizontal, DS.Space.screen)
     }
 
-    @ViewBuilder private var insightCard: some View {
-        if viewModel.showsInsightCard {
-            insightCardContent
-        }
-    }
-
-    private var insightCardContent: some View {
-        Group {
-            if let insight = viewModel.insight {
-                InsightCard(overline: "Your morning insight", text: insight, buttonTitle: "See the pattern") {
-                    viewModel.seePattern()
-                }
-            } else {
-                InsightCard(overline: "Your morning insight", text: viewModel.insightPlaceholder)
+    /// One or two cards, never none.
+    private var cards: some View {
+        VStack(spacing: DS.Space.stack) {
+            ForEach(viewModel.cards) { card in
+                HomeCardView(card: card, viewModel: viewModel)
             }
         }
         .padding(.horizontal, DS.Space.screen)
+        .animation(.soft(0.4), value: viewModel.cards)
     }
 
     private var thumbs: some View {
@@ -117,6 +118,63 @@ struct HomeView: View {
             .padding(.vertical, 10)
         }
         .scrollIndicators(.hidden)
+    }
+}
+
+/// A Home card: overline, title, text, its picture and the button. A wide picture (a Library
+/// tile) is a banner on top, a tall one (a dream) sits beside the text; without one, the sparkle.
+private struct HomeCardView: View {
+    var card: HomeCard
+    var viewModel: HomeViewModel
+    @State private var image: UIImage?
+
+    private var isWide: Bool { image.map { $0.size.width > $0.size.height } ?? false }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            if let image, isWide {
+                // The card sets the width: a filled image on its own would widen it.
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 120)
+                    .overlay { Image(uiImage: image).resizable().scaledToFill() }
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.option, style: .continuous))
+                    .accessibilityHidden(true)
+            }
+            HStack(alignment: .top, spacing: 14) {
+                if image == nil {
+                    TwinklingSparkle(size: 18).padding(.top, 1)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Overline(text: card.overline)
+                    if let title = card.title {
+                        Text(title).textStyle(.heading).fixedSize(horizontal: false, vertical: true)
+                    }
+                    Text(card.text).textStyle(.body).fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if let image, !isWide {
+                    Color.clear
+                        .frame(width: 64, height: 96)
+                        .overlay { Image(uiImage: image).resizable().scaledToFill() }
+                        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.option, style: .continuous))
+                        .accessibilityHidden(true)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            if let action = card.action {
+                PillButton(title: action.label) { viewModel.perform(action) }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.top, -4)
+            }
+        }
+        .padding(.horizontal, DS.Space.cardPaddingLarge)
+        .padding(.vertical, 18)
+        .glassCard(radius: DS.Radius.cardLarge)
+        .task(id: card.imageURL) {
+            let loaded = await viewModel.image(for: card)
+            withAnimation(.soft(0.4)) { image = loaded }
+        }
     }
 }
 

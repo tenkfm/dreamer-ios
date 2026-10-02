@@ -275,7 +275,7 @@ struct JournalAndLibraryTests {
         #expect(viewModel.sections.first?.rows.first?.dateText == "Yesterday")
     }
 
-    @Test func homeInsightFindsTheRepeatedSymbol() {
+    @Test func mockHomeRecapsTheNewestDream() {
         let store = InMemoryDreamStore(seed: MockData.seedDreams(now: now, calendar: calendar))
         let appState = AppState(store: InMemoryPreferencesStore())
         appState.userName = "Anna"
@@ -283,8 +283,18 @@ struct JournalAndLibraryTests {
                                       catalog: MockSymbolCatalog(), now: { now }, calendar: calendar)
 
         #expect(viewModel.greeting == "Good morning, Anna")
-        #expect(viewModel.insight == "Stairs appeared in 3 of your dreams this week.")
+        // Mock mode: the contract's example cards, the recap on the newest seed dream.
+        #expect(viewModel.cards.map(\.kind) == ["dream_recap", "tip"])
+        #expect(viewModel.cards.first?.action?.destination == store.summaries.first.map { .dream($0.id) })
         #expect(viewModel.weekCaption == "3 dreams caught this week")
+    }
+
+    @Test func mockRecapCardShowsTheDreamsPicture() async throws {
+        let store = InMemoryDreamStore(seed: MockData.seedDreams(now: now, calendar: calendar))
+        let viewModel = HomeViewModel(appState: AppState(store: InMemoryPreferencesStore()), store: store,
+                                      catalog: MockSymbolCatalog(), now: { now }, calendar: calendar)
+        let recap = try #require(viewModel.cards.first)
+        #expect(await viewModel.image(for: recap) != nil)
     }
 
     @Test func librarySearchAndCategoriesFilterTiles() {

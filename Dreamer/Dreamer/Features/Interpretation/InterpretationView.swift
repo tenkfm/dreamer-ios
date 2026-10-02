@@ -87,32 +87,42 @@ struct InterpretationView: View {
     }
 
     private func content(dream: Dream, topInset: CGFloat) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DS.Space.section) {
-                DreamHero(dream: dream, dateText: viewModel.dateText, topInset: topInset,
-                          showsImageBadge: viewModel.support == nil,
-                          loadedImage: viewModel.loadedImage,
-                          phase: viewModel.support == nil ? viewModel.imagePhase : .asset,
-                          canRegenerate: viewModel.canRegenerateImage,
-                          onRegenerate: { Task { await viewModel.regenerateImage() } },
-                          video: viewModel.support == nil ? heroVideo : nil)
-                if let support = viewModel.support {
-                    Group {
-                        SupportCard(content: support).enterUp(0.5)
-                        thoughts
-                        disclaimer
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: DS.Space.section) {
+                    DreamHero(dream: dream, dateText: viewModel.dateText, topInset: topInset,
+                              showsImageBadge: viewModel.support == nil,
+                              loadedImage: viewModel.loadedImage,
+                              phase: viewModel.support == nil ? viewModel.imagePhase : .asset,
+                              canRegenerate: viewModel.canRegenerateImage,
+                              onRegenerate: { Task { await viewModel.regenerateImage() } },
+                              video: viewModel.support == nil ? heroVideo : nil)
+                    if let support = viewModel.support {
+                        Group {
+                            SupportCard(content: support).enterUp(0.5)
+                            thoughts
+                            disclaimer
+                        }
+                        .padding(.horizontal, DS.Space.screen)
+                    } else {
+                        reading(dream)
                     }
-                    .padding(.horizontal, DS.Space.screen)
-                } else {
-                    reading(dream)
                 }
+                .padding(.bottom, 40)
             }
-            .padding(.bottom, 40)
+            .scrollIndicators(.hidden)
+            .ignoresSafeArea(edges: .top)
+            .scrollDismissesKeyboard(.interactively)
+            .task {
+                guard viewModel.takeNotesFocus() else { return }
+                // After the entrance: scrolling during the first layout lands short of the notes.
+                try? await Task.sleep(for: .milliseconds(450))
+                withAnimation(.soft(0.6)) { proxy.scrollTo(Self.notesAnchor, anchor: .center) }
+            }
         }
-        .scrollIndicators(.hidden)
-        .ignoresSafeArea(edges: .top)
-        .scrollDismissesKeyboard(.interactively)
     }
+
+    private static let notesAnchor = "notes"
 
     @ViewBuilder private func reading(_ dream: Dream) -> some View {
         if !dream.symbols.isEmpty {
@@ -235,6 +245,7 @@ struct InterpretationView: View {
             Text("Your thoughts").textStyle(.bodyStrong)
             GlassTextEditor(placeholder: "Only you can see this", text: $viewModel.notes)
         }
+        .id(Self.notesAnchor)
     }
 
     private var missingDream: some View {

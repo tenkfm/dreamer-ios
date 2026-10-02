@@ -151,16 +151,6 @@ struct APIClientTests {
         }
     }
 
-    @Test func morningInsightNullMeansNoPattern() async throws {
-        let (client, _) = StubURLProtocol.makeClient(tokens: StaticTokens()) { _ in .json(200, "null") }
-        #expect(try await client.morningInsight() == nil)
-
-        let (withPattern, _) = StubURLProtocol.makeClient(tokens: StaticTokens()) { _ in
-            .json(200, #"{"symbol":"stairs","count":3,"text":"Stairs appeared in 3 of your dreams this week."}"#)
-        }
-        #expect(try await withPattern.morningInsight()?.count == 3)
-    }
-
     @Test func privateRouteWithoutSessionFailsFast() async {
         let (client, host) = StubURLProtocol.makeClient(tokens: SignedOutTokens()) { _ in .json(200, "{}") }
         do {

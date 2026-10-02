@@ -73,7 +73,8 @@ Build products go to `build/DerivedData` (git-ignored).
   `anyOf [X, null]` values to optional `X`, which swift-openapi-generator 1.x would otherwise drop.
 - `openapi-generator-config.yaml` - swift-openapi-generator runs at build time (Xcode asks once to
   trust the plugin; command-line builds pass `-skipPackagePluginValidation`). The operation
-  allowlist leaves out the server webhooks and `morningInsight` (nullable body, called by hand).
+  allowlist leaves out the server webhooks, the website's `web*` operations and `morningInsight`
+  (replaced on Home by `homeCards` in 1.5.0; the server keeps it for older builds).
 - `APIClient` + `APIClient+Endpoints` - every phase 1 endpoint returning models from `Models/`;
   generated types never leave `API/`. `APIClient+Raw` covers the calls outside the generator.
 - `APIError` - one error type: backend codes (`PREMIUM_REQUIRED`, `RATE_LIMITED` with
@@ -180,14 +181,24 @@ refreshes come in. Pictures are cached in `Caches/SymbolImages`, keyed by symbol
 the library works offline once it has been opened.
 
 Insights (IOS-06.3, `Services/InsightStore.swift`): Home's week strip and caption come from
-`GET /v1/insights/week`, and its insight card from `GET /v1/insights/morning`. When that answer is
-`null` the card is hidden, except for a new user with no dreams, who sees the invitation. The
-Journal summary comes from `GET /v1/insights/month`: count, ring (dreams / nights so far), top
-symbol and emotion shares; an empty month says "Tell a dream and your month will take shape here".
-The three are fetched together when Home opens, after every new or deleted dream, and on Journal
-refresh. The last answers are kept in `Application Support/Dreamer/insights.json` (complete
+`GET /v1/insights/week`. The top of Home has one or two cards from `GET /v1/insights/cards`
+(contract 1.5.0, never none): overline, optional title, text, an optional picture (a 9:16 dream image
+beside the text, a 16:9 Library tile as a banner) and a button. The button's `action.target` opens
+the Journal (`journal`), a dream scrolled to "Your thoughts" (`dream`, `AppState.openNotes`), a
+Library symbol (`library_symbol`), the record flow (`record`, the paywall first without access, like
+the mic) or a dreamerapp.io article in `SafariView` (`article`, https only). `kind` and `target` are
+plain strings: an unknown kind renders like any card, and an unknown target, or one missing its
+id, slug or link, hides the button, so a card added later never breaks this build. Before the first
+answer the invitation stands in, and an empty answer keeps the last cards. Pictures are downloaded
+once a day per card id (the links are signed anew each time). There is no analytics event for cards
+yet: the tracking plan has none. The Journal summary comes from `GET /v1/insights/month`: count,
+ring (dreams / nights so far), top symbol and emotion shares; an empty month says "Tell a dream and
+your month will take shape here". The three are fetched together every time Home shows (a tab
+switch, back from a pushed screen), when the app returns to the foreground, after every new or
+deleted dream, and on Journal refresh. The last answers are kept in `Application Support/Dreamer/insights.json` (complete
 protection), so the numbers show offline and at launch, and the file is removed at sign-out.
-Mock mode computes the same numbers from the stored dreams.
+Mock mode computes the same numbers from the stored dreams, and shows the contract's two example
+cards (a recap of the newest dream and a tip).
 
 Search (IOS-06.2): the search field and the emotion chips under it wait 350 ms after the last change,
 then call `GET /v1/dreams?q=&emotion=`. The backend matches titles, symbols, the text and the
