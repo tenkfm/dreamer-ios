@@ -57,12 +57,18 @@ struct DreamVideoPlayer: View {
 
     private var film: some View {
         ZStack {
+            // The screen sets the size; the poster and the film are overlays. A filled image as a
+            // ZStack child widened the player to its own width (a square picture: 874 pt on a 402 pt
+            // screen), which pushed the buttons off the edges and the film off centre.
             DS.Palette.videoBackdrop
-            // The poster until the first frame, so opening does not flash black.
-            if let poster = viewModel.loadedImage {
-                Image(uiImage: poster).resizable().scaledToFill()
-            }
-            PlayerLayerView(player: player)
+                // The poster until the first frame, so opening does not flash black.
+                .overlay {
+                    (viewModel.loadedImage.map(Image.init(uiImage:)) ?? DreamImage.image(named: viewModel.dream?.imageName))
+                        .resizable()
+                        .scaledToFill()
+                }
+                .overlay { PlayerLayerView(player: player) }
+                .clipped()
             if !isPlaying {
                 Image(systemName: "play.fill")
                     .font(.system(size: 30, weight: .semibold))
