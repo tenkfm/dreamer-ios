@@ -39,6 +39,8 @@ final class PaywallViewModel {
         var systemImage: String
         var title: String
         var subtitle: String
+        /// Set apart on the paywall: the newest and most visible benefit.
+        var isHighlighted = false
     }
 
     let perks = [
@@ -49,7 +51,9 @@ final class PaywallViewModel {
         Perk(systemImage: "point.3.connected.trianglepath.dotted", title: String(localized: "See the patterns in your life"),
              subtitle: String(localized: "Recurring symbols reveal what matters")),
         Perk(systemImage: "sun.horizon", title: String(localized: "Wake up calmer and clearer"),
-             subtitle: String(localized: "Turn unsettling dreams into insight"))
+             subtitle: String(localized: "Turn unsettling dreams into insight")),
+        Perk(systemImage: "play.rectangle", title: String(localized: "Watch your dreams come alive"),
+             subtitle: String(localized: "Every dream becomes a short film"), isHighlighted: true)
     ]
 
     private let purchases: any PurchaseService

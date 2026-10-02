@@ -65,10 +65,11 @@ struct PaywallView: View {
                         .skyTextShadow()
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
-                    perkList.padding(.top, 22)
-                    plans.padding(.top, 24)
+                    perkList.padding(.top, 16)
+                    // The plans sit on the button they are bought with; the free space goes above.
                     Spacer(minLength: 20)
-                    cta.padding(.horizontal, DS.Space.cta - DS.Space.screen)
+                    plans
+                    cta.padding(.horizontal, DS.Space.cta - DS.Space.screen).padding(.top, 12)
                     footer
                 }
                 .padding(.horizontal, DS.Space.screen)
@@ -83,7 +84,8 @@ struct PaywallView: View {
         // The screen sets the width: a filled image on its own would widen the whole column.
         Color.clear
             .frame(maxWidth: .infinity)
-            .frame(height: 200)
+            // 140, not 200: with the fifth perk the modal still fits one screen.
+            .frame(height: 140)
             .overlay { Image(.skyTop).resizable().scaledToFill() }
             .clipped()
             // Fades out rather than into a colour, so no seam shows on the gradient behind it.
@@ -96,14 +98,14 @@ struct PaywallView: View {
 
     /// Each benefit: an icon, its name (larger than the old one-liners) and one line of how.
     private var perkList: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 9) {
             ForEach(viewModel.perks, id: \.self) { perk in
                 HStack(spacing: 14) {
                     Image(systemName: perk.systemImage)
                         .font(.system(size: 16, weight: .regular))
                         .foregroundStyle(DS.Palette.icon)
                         .frame(width: 38, height: 38)
-                        .background(Circle().fill(DS.Palette.surface))
+                        .background(Circle().fill(perk.isHighlighted ? DS.Palette.trialBadge : DS.Palette.surface))
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(perk.title).textStyle(.heading, color: DS.Palette.white)
@@ -112,7 +114,20 @@ struct PaywallView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.85)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .padding(.vertical, perk.isHighlighted ? 6 : 0)
+                .padding(.horizontal, perk.isHighlighted ? 10 : 0)
+                .background {
+                    if perk.isHighlighted {
+                        RoundedRectangle(cornerRadius: DS.Radius.option, style: .continuous)
+                            .fill(DS.Palette.white.opacity(0.12))
+                            .overlay(RoundedRectangle(cornerRadius: DS.Radius.option, style: .continuous)
+                                .strokeBorder(DS.Palette.trialBadge.opacity(0.7), lineWidth: 1))
+                    }
+                }
+                // The highlighted row's padding would push its icon off the column: pulled back out.
+                .padding(.horizontal, perk.isHighlighted ? -10 : 0)
                 .accessibilityElement(children: .combine)
             }
         }
@@ -148,7 +163,7 @@ struct PaywallView: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(DS.Palette.icon)
                         .frame(width: 26, height: 26)
-                        .background(Circle().fill(DS.Palette.surface))
+                        .background(Circle().fill(perk.isHighlighted ? DS.Palette.trialBadge : DS.Palette.surface))
                     Text(perk.title).textStyle(.link)
                 }
                 .accessibilityElement(children: .combine)

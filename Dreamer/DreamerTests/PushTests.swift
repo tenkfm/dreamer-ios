@@ -65,6 +65,7 @@ struct PushDeviceTests {
     @Test func thePushTypesOpenTheDream() {
         let id = UUID()
         #expect(NotificationLink(userInfo: ["type": "interpretation_ready", "dreamId": id.uuidString]) == .dream(id))
+        #expect(NotificationLink(userInfo: ["type": "video_ready", "dreamId": id.uuidString]) == .dream(id))
         #expect(NotificationLink(userInfo: ["type": "image_ready", "dreamId": id.uuidString]) == .dream(id))
     }
 

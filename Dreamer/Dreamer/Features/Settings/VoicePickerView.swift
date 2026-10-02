@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Settings -> Voice: All / Male / Female, the voices with a play button each, the checkmark on
-/// the picked one, and a line on what the pick changes.
+/// Settings -> Voice: a line on what the pick changes, All / Male / Female, the voices with a play
+/// button each and the checkmark on the picked one.
 struct VoicePickerView: View {
     @State private var viewModel: VoicePickerViewModel
     @Environment(\.dismiss) private var dismiss
@@ -22,6 +22,14 @@ struct VoicePickerView: View {
                         ScreenTitle(text: "Voice")
                     })
                     .padding(.horizontal, -DS.Space.screen)
+
+                    // What the pick changes, before the user picks: an old dream keeps its voice
+                    // on purpose, so changing it never re-voices the journal.
+                    Text("New dreams and their videos will be read in the voice you pick. Dreams you already have keep their voice.")
+                        .textStyle(.body, color: DS.Palette.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 8)
 
                     DreamerSegmented(options: VoicePickerViewModel.Filter.allCases, selection: $viewModel.filter) { $0.title }
                         .padding(.top, 8)
@@ -64,11 +72,6 @@ struct VoicePickerView: View {
                 }
             }
             .animation(.soft(0.35), value: viewModel.filter)
-            Text("New dreams will be read in this voice.")
-                .textStyle(.secondary, color: DS.Palette.textTertiary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 4)
         }
     }
 }

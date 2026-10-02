@@ -130,7 +130,7 @@ Dream film (contract 1.4.0, `DreamDetail.video`): the backend cuts a vertical 10
 the image and the main lens' voice, about 1.5-2 minutes after the interpretation. While
 `video.status` is `pending`, the hero badge says "Making your dream video…" and Interpretation polls
 `GET /v1/dreams/{id}` every 5 s for up to 3 minutes; the polling restarts with every fresh copy of
-the dream (opening the screen, also from a tapped image_ready push, and a new image). Only the media of the answer is
+the dream (opening the screen, also from a tapped video_ready push, and a new image). Only the media of the answer is
 taken, so notes typed meanwhile stay. When it is `ready`, the image stays as the poster and "Watch
 your dream · 1:13" under the title opens `DreamVideoPlayer` and stops the read-aloud first, since
 the film carries the same voice. The player is our own AVPlayerLayer with aspect fill, edge to edge
@@ -318,6 +318,11 @@ sandbox account. `StoreKitPurchaseTests` use it through SKTestSession and are op
 (`TEST_RUNNER_DREAMER_STOREKIT_TESTS=1` or from Xcode): the command-line simulator of Xcode 26.2
 serves no products to test sessions.
 
+The full-screen paywall (`PaywallSheet`: Settings, the limit, Analysis) fits one iPhone screen:
+a sky picture, "What your dreams reveal", five benefits with a line each, the last one (the dream
+film) set apart with a yellow icon and an outlined row, then the plans pinned to the button with
+the free space above them, and the terms. Debug: `-debugScreen paywallSheet`.
+
 Access (`Services/SubscriptionSync.swift`): for the whole signed-in session the store's
 entitlement stream drives `AppState.subscription`, so a renewal, an expiry or a refund applies at
 once (an expired user lands on the paywall without a relaunch). `GET /v1/subscription` is read at
@@ -412,7 +417,7 @@ account, the app asks APNs for a token. `PushDevices` registers it with
 the build's `aps-environment`, which is sandbox in Debug and production in Staging/TestFlight and
 Release. Sign-out removes the token with `DELETE /v1/devices` before the logout, while the session
 still works; account deletion removes it on the server. The backend's pushes (`interpretation_ready`,
-`image_ready` with `dreamId`) open that dream from a warm or cold start and send
+`video_ready`, formerly `image_ready`, with `dreamId`) open that dream from a warm or cold start and send
 `push_opened {type}`. The open app does not show them, because the screen already shows the
 dream. Real pushes need the APNs key on the backend and a device (see Blockers).
 
@@ -442,7 +447,7 @@ on 400 (the voice left the catalog), asks for the list again. Only the newest of
 counts. `AppState.voiceID` / `voiceName` keep the pick across launches, follow the profile pulled
 from the server (a voice picked elsewhere is named by the next list; until then the id stands in)
 and are reset at sign-out. New dreams and their videos use the voice; a dream already voiced keeps
-its own, which the line under the list says. No analytics event: the tracking plan has none.
+its own, which the description under the title says. No analytics event: the tracking plan has none.
 Debug: `-debugScreen voice`.
 
 ## Feature flags

@@ -31,7 +31,8 @@ enum NotificationLink: Equatable, Sendable {
         switch (userInfo["link"] ?? userInfo["type"]) as? String {
         case "record", "morning_reminder": self = .record
         case "subscription": self = .subscription
-        case "dream", "interpretation_ready", "image_ready":
+        // `video_ready` replaced `image_ready`; the old type still opens a push sent before.
+        case "dream", "interpretation_ready", "video_ready", "image_ready":
             guard let raw = userInfo["dreamId"] as? String, let id = UUID(uuidString: raw) else { return nil }
             self = .dream(id)
         default: return nil
