@@ -37,20 +37,34 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         return true
     }
 
+    // The completion-handler forms, with the handler called on the main thread. The async forms
+    // hand their result back to UIKit from a thread of the concurrency pool, and UIKit asserts on
+    // the main thread there: tapping any notification crashed the app.
+
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                            didReceive response: UNNotificationResponse) async {
+                                            didReceive response: UNNotificationResponse,
+                                            withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
-        guard let link = NotificationLink(userInfo: userInfo) else { return }
+        let link = NotificationLink(userInfo: userInfo)
         // Local reminders carry "link"; the backend's pushes carry "type".
         let pushType = userInfo["type"] as? String
-        await MainActor.run { NotificationRouter.shared.receive(link, pushType: pushType) }
+        nonisolated(unsafe) let done = completionHandler
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated {
+                if let link { NotificationRouter.shared.receive(link, pushType: pushType) }
+                done()
+            }
+        }
     }
 
     /// The backend's pushes say a dream is ready, which the open app already shows; our reminders
     /// still appear as banners.
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                            willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        notification.request.content.userInfo["type"] == nil ? [.banner, .sound] : []
+                                            willPresent notification: UNNotification,
+                                            withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let options: UNNotificationPresentationOptions = notification.request.content.userInfo["type"] == nil ? [.banner, .sound] : []
+        nonisolated(unsafe) let done = completionHandler
+        DispatchQueue.main.async { done(options) }
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
