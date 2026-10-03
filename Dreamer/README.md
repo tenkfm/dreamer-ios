@@ -33,6 +33,8 @@ Debug and Staging builds talk to the staging backend. Without an account there, 
 - `docs/analytics.md`: events, flags, and how to see PostHog, Sentry and RevenueCat while
   debugging
 - `docs/app-store-connect.md`: everything the App Store Connect record needs
+- `docs/app-store-screenshot-prompts.md`: image prompts and draft copy for the seven App Store
+  screenshots
 - `docs/qa-checklist.md`: the manual pass before App Review
 - `docs/performance.md`: measurements and the Instruments checks on devices
 
