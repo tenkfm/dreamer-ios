@@ -1,9 +1,10 @@
 import Foundation
 
-/// External links (placeholders until the legal pages are live).
+/// External links. Terms and privacy are the live pages on dreamerapp.io; support is a placeholder
+/// until the address is chosen.
 enum AppLinks {
-    static let terms = URL(string: "https://dreamer.app/terms")!
-    static let privacy = URL(string: "https://dreamer.app/privacy")!
+    static let terms = URL(string: "https://dreamerapp.io/terms")!
+    static let privacy = URL(string: "https://dreamerapp.io/privacy")!
     static let support = URL(string: "mailto:support@dreamer.app")!
 }
 

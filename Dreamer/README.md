@@ -654,9 +654,11 @@ deliberately absent. The keywords (up to 100 characters, commas, no spaces, none
 word of the name or subtitle, which Apple already indexes) cover the searches around the core
 terms "dream journal", "dream interpretation" and "dream meaning": interpreter, analysis,
 dictionary, symbols, diary, sleep, lucid, tracker, recall, nightmare, jung, reflection. The
-description repeats the auto-renewal terms App Review asks for. Still open (see Blockers): the
-primary and secondary category, the support, marketing and privacy URLs, the copyright holder,
-and Tony's approval of the texts and keywords.
+description repeats the auto-renewal terms App Review asks for and ends with the Terms of Use and
+Privacy Policy links (https://dreamerapp.io/terms and /privacy, also `privacy_url.txt` and
+`AppLinks` in the app: paywall, Settings, sign-in). Still open (see Blockers): the primary and
+secondary category, the support and marketing URLs, the copyright holder, and Tony's approval of
+the texts and keywords.
 
 ## Signing
 
