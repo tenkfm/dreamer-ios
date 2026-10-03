@@ -17,7 +17,7 @@ Run from `Dreamer/`. Everything goes through fastlane (Ruby 3.3.5, `bundle insta
 | `./run.sh test` (unit tests, 315) | about 70 s with the build; the tests themselves take 4 s |
 | `./run.sh screen:<name>` (build, install, open a screen) | 30-60 s |
 | `xcodebuild -project Dreamer.xcodeproj -scheme "Dreamer Staging" -configuration Staging -destination 'generic/platform=iOS Simulator' -skipPackagePluginValidation build` | about 25 s incremental; check it has no Swift warnings |
-| `bundle exec fastlane ui_test` (4 scenarios) | about 2 min; `iterations:10` about 10 min, so only before a release or for a flaky test |
+| `bundle exec fastlane ui_test` (5 scenarios) | about 2 min; `iterations:10` about 10 min, so only before a release or for a flaky test |
 | `bundle exec fastlane screenshots` | about 3 min |
 | `scripts/coverage.sh` | about 2 min |
 

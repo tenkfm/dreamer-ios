@@ -6,12 +6,12 @@ import Testing
 struct VoiceContractTests {
     @Test func theVoiceListAndTheProfilesVoiceMap() async throws {
         let list = try await ContractExamples.client("listVoices", status: 200).voices()
-        #expect(list.defaultVoiceID == "clint")
-        #expect(list.items.map(\.id) == ["clint", "eve"])
-        #expect(list.items[0].isDefault && list.items[0].gender == .male)
+        #expect(list.defaultVoiceID == "eve")
+        #expect(list.items.map(\.id) == ["eve", "george"])
+        #expect(list.items[0].isDefault && list.items[0].gender == .female)
         #expect(list.items[1].previewURL?.pathExtension == "mp3")
         let profile = try await ContractExamples.client("getProfile", status: 200).profile()
-        #expect(profile.voice == "clint")
+        #expect(profile.voice == "eve")
     }
 }
 
@@ -43,15 +43,15 @@ final class ScriptedVoices: VoiceService, @unchecked Sendable {
 
 enum VoiceFixtures {
     static let list = VoiceList(items: [
-        Voice(id: "clint", name: "Clint", gender: .male, accent: "american", description: "Deep",
-              previewURL: URL(string: "https://media.example.com/clint.mp3"), isDefault: true),
         Voice(id: "eve", name: "Eve", gender: .female, accent: "american", description: "Warm",
-              previewURL: URL(string: "https://media.example.com/eve.mp3"), isDefault: false),
+              previewURL: URL(string: "https://media.example.com/eve.mp3"), isDefault: true),
         Voice(id: "george", name: "George", gender: .male, accent: "british", description: "Storyteller",
               previewURL: URL(string: "https://media.example.com/george.mp3"), isDefault: false),
+        Voice(id: "adam", name: "Adam", gender: .male, accent: "american", description: "Deep",
+              previewURL: URL(string: "https://media.example.com/adam.mp3"), isDefault: false),
         Voice(id: "river", name: "River", gender: .neutral, accent: "american", description: "Calm",
               previewURL: nil, isDefault: false)
-    ], defaultVoiceID: "clint")
+    ], defaultVoiceID: "eve")
 }
 
 @MainActor
@@ -67,22 +67,22 @@ struct VoicePickerTests {
         return (viewModel, player, appState)
     }
 
-    @Test func aNewUserHasClintAndSettingsNamesIt() async {
+    @Test func aNewUserHasEveAndSettingsNamesIt() async {
         let appState = AppState(store: InMemoryPreferencesStore())
-        #expect(appState.voiceID == "clint")
+        #expect(appState.voiceID == "eve")
         let settings = SettingsViewModel(appState: appState, purchases: MockPurchaseService(),
                                          account: MockAccountActions())
-        #expect(settings.voiceName == "Clint")
+        #expect(settings.voiceName == "Eve")
         let (viewModel, _, _) = await make(appState: appState)
-        #expect(viewModel.selectedID == "clint")
+        #expect(viewModel.selectedID == "eve")
     }
 
     /// On the device, by gender; the neutral voice only under All.
     @Test func theFilterKeepsNeutralVoicesInAllOnly() async {
         let (viewModel, _, _) = await make()
-        #expect(viewModel.visibleVoices.map(\.id) == ["clint", "eve", "george", "river"])
+        #expect(viewModel.visibleVoices.map(\.id) == ["eve", "george", "adam", "river"])
         viewModel.filter = .male
-        #expect(viewModel.visibleVoices.map(\.id) == ["clint", "george"])
+        #expect(viewModel.visibleVoices.map(\.id) == ["george", "adam"])
         viewModel.filter = .female
         #expect(viewModel.visibleVoices.map(\.id) == ["eve"])
     }
@@ -91,10 +91,10 @@ struct VoicePickerTests {
         let (viewModel, player, _) = await make()
         viewModel.togglePreview(Self.list.items[0])
         viewModel.togglePreview(Self.list.items[1])
-        #expect(player.loads.map(\.lastPathComponent) == ["clint.mp3", "eve.mp3"])
-        #expect(viewModel.playingID == "eve")
+        #expect(player.loads.map(\.lastPathComponent) == ["eve.mp3", "george.mp3"])
+        #expect(viewModel.playingID == "george")
         #expect(player.isPlaying)
-        #expect(viewModel.selectedID == "clint")
+        #expect(viewModel.selectedID == "eve")
 
         viewModel.togglePreview(Self.list.items[1])
         #expect(viewModel.playingID == nil)
@@ -119,17 +119,17 @@ struct VoicePickerTests {
         let service = ScriptedVoices()
         let (viewModel, _, appState) = await make(service)
         await viewModel.select(Self.list.items[1])
-        #expect(service.picks == ["eve"])
-        #expect(viewModel.selectedID == "eve")
-        #expect(appState.voiceID == "eve" && appState.voiceName == "Eve")
+        #expect(service.picks == ["george"])
+        #expect(viewModel.selectedID == "george")
+        #expect(appState.voiceID == "george" && appState.voiceName == "George")
     }
 
     @Test func aFailedPickPutsTheCheckmarkBack() async {
         let service = ScriptedVoices(failure: .offline)
         let (viewModel, _, appState) = await make(service)
         await viewModel.select(Self.list.items[1])
-        #expect(viewModel.selectedID == "clint")
-        #expect(appState.voiceID == "clint")
+        #expect(viewModel.selectedID == "eve")
+        #expect(appState.voiceID == "eve")
         #expect(viewModel.toastMessage == "Couldn’t save your voice. Try again.")
         #expect(viewModel.haptic?.kind == .error)
         #expect(service.listCalls == 1)
@@ -140,7 +140,7 @@ struct VoicePickerTests {
         let service = ScriptedVoices(failure: .server(.init(code: .validationFailed, message: "voice", status: 400)))
         let (viewModel, _, _) = await make(service)
         await viewModel.select(Self.list.items[2])
-        #expect(viewModel.selectedID == "clint")
+        #expect(viewModel.selectedID == "eve")
         #expect(service.listCalls == 2)
     }
 
@@ -149,7 +149,7 @@ struct VoicePickerTests {
         let (viewModel, _, _) = await make(appState: AppState(store: preferences))
         await viewModel.select(Self.list.items[1])
         let relaunched = AppState(store: preferences)
-        #expect(relaunched.voiceID == "eve")
-        #expect(relaunched.voiceName == "Eve")
+        #expect(relaunched.voiceID == "george")
+        #expect(relaunched.voiceName == "George")
     }
 }

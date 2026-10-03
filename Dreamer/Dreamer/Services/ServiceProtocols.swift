@@ -208,7 +208,8 @@ struct UserPreferences: Codable, Hashable, Sendable {
     var unsyncedProfile: ProfileUpdate?
     var reminderPromptShown = false
     /// The voice dreams are read in (`voice` of the profile); the server's default until it answers.
-    var voiceID = "clint"
+    // The backend's default since contract 1.6.2 (Clint, the first default, left the catalog).
+    var voiceID = "eve"
     /// Its name, for the Settings row; nil until the voice list has named it.
     var voiceName: String?
 }

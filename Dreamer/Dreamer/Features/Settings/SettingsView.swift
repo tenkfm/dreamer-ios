@@ -27,6 +27,7 @@ struct SettingsView: View {
 
                     preferencesGroup.padding(.top, 8)
                     accountGroup
+                    exportGroup
 
                     VStack(spacing: 0) {
                         TextLinkButton(title: viewModel.isSigningOut ? "Signing out…" : "Sign out") {
@@ -117,6 +118,35 @@ struct SettingsView: View {
             navigationRow("doc.text", "Terms of use") { openURL(AppLinks.terms) }
             SettingsDivider()
             navigationRow("questionmark.circle", "Contact support") { openURL(AppLinks.support) }
+        }
+    }
+
+    /// Right above the account deletion: the user's copy of what deleting would erase.
+    private var exportGroup: some View {
+        VStack(spacing: 8) {
+            SettingsGroup {
+                Button { Task { await viewModel.exportData() } } label: {
+                    SettingsRow(systemImage: "square.and.arrow.up", title: "Export my data") {
+                        if viewModel.isExporting {
+                            ProgressView().tint(DS.Palette.icon)
+                        } else {
+                            SettingsValue(value: nil)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isExporting)
+            }
+            Text("A copy of your account, dreams, notes and interpretations as a JSON file. Links to images and voice-overs in it work for one hour.")
+                .textStyle(.label, color: DS.Palette.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 18)
+        }
+        .sheet(item: $viewModel.exportFile, onDismiss: viewModel.exportSheetDismissed) { file in
+            ActivityView(items: [file.url]) { _, completed in viewModel.exportShared(completed: completed) }
+                .presentationDetents([.medium, .large])
+                .ignoresSafeArea()
         }
     }
 

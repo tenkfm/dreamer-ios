@@ -19,13 +19,13 @@ extension APIClient: VoiceService {
 /// River has no preview yet, like a voice right after a deploy.
 final class MockVoiceService: VoiceService, @unchecked Sendable {
     static let list = VoiceList(items: [
-        Voice(id: "clint", name: "Clint", gender: .male, accent: "american", description: "Deep, intimate baritone",
-              previewURL: URL(string: "https://media.example.com/voices/previews/clint-3f2a9c1b7d4e.mp3"), isDefault: true),
         Voice(id: "eve", name: "Eve", gender: .female, accent: "american", description: "Warm audiobook narrator",
-              previewURL: URL(string: "https://media.example.com/voices/previews/eve-8b1c0d2e4f6a.mp3"), isDefault: false),
+              previewURL: URL(string: "https://media.example.com/voices/previews/eve-8b1c0d2e4f6a.mp3"), isDefault: true),
+        Voice(id: "george", name: "George", gender: .male, accent: "british", description: "Warm storyteller",
+              previewURL: URL(string: "https://media.example.com/voices/previews/george-3f2a9c1b7d4e.mp3"), isDefault: false),
         Voice(id: "river", name: "River", gender: .neutral, accent: "american", description: "Calm, even narrator",
               previewURL: nil, isDefault: false)
-    ], defaultVoiceID: "clint")
+    ], defaultVoiceID: "eve")
 
     private let state: OSAllocatedUnfairLock<(list: VoiceList, voice: String, failure: APIError?)>
 

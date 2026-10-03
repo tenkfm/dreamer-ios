@@ -1,10 +1,10 @@
-# Normalized copy of the Dreamer API contract 1.6.0 (dreamer-platform openapi.yaml).
+# Normalized copy of the Dreamer API contract 1.6.2 (dreamer-platform openapi.yaml).
 # Written by scripts/sync-openapi.sh - do not edit. Only change: nullable `anyOf [X, null]`
 # values became optional `X` (see scripts/normalize_openapi.py).
 openapi: 3.1.0
 info:
   title: Dreamer API
-  version: 1.6.0
+  version: 1.6.2
   description: 'API of the Dreamer iOS app (phase 1, app2app). Generated from the zod schemas in packages/shared - do not
     edit by hand; run `pnpm contract`.
 
@@ -530,7 +530,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
-                voice: clint
+                voice: eve
                 createdAt: 2026-09-20 07:00:00+00:00
         '401':
           description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
@@ -597,7 +597,7 @@ paths:
                   time: 07:30
                 timezone: America/New_York
                 nightMode: true
-                voice: clint
+                voice: eve
                 createdAt: 2026-09-20 07:00:00+00:00
         '400':
           description: 'Error: VALIDATION_FAILED'
@@ -700,21 +700,21 @@ paths:
                 $ref: '#/components/schemas/VoiceList'
               example:
                 items:
-                - id: clint
-                  name: Clint
-                  gender: male
-                  accent: american
-                  description: Deep, intimate baritone
-                  previewUrl: https://media.example.com/voices/previews/clint-3f2a9c1b7d4e.mp3
-                  isDefault: true
                 - id: eve
                   name: Eve
                   gender: female
                   accent: american
                   description: Warm audiobook narrator
                   previewUrl: https://media.example.com/voices/previews/eve-8b1c0d2e4f6a.mp3
+                  isDefault: true
+                - id: george
+                  name: George
+                  gender: male
+                  accent: british
+                  description: Warm storyteller
+                  previewUrl: https://media.example.com/voices/previews/george-3f2a9c1b7d4e.mp3
                   isDefault: false
-                defaultVoiceId: clint
+                defaultVoiceId: eve
         '401':
           description: 'Error: AUTH_REQUIRED, AUTH_INVALID_TOKEN'
           content:
@@ -785,7 +785,7 @@ paths:
                     time: 07:30
                   timezone: Europe/Warsaw
                   nightMode: true
-                  voice: clint
+                  voice: eve
                   createdAt: 2026-09-01 08:00:00+00:00
                 subscription:
                   status: trialing
@@ -3123,8 +3123,9 @@ paths:
       summary: Register the APNs token of this device
       description: 'Call on every launch with notification permission (tokens rotate). A token belongs to one account: registering
         it moves it from whoever had it. `environment` is the APNs environment of the build (sandbox for Xcode/TestFlight
-        debug, production for the App Store). Pushes carry `dreamId` and `type` (`interpretation_ready`, `image_ready`) to
-        open the dream; both use the collapse id `dream-<id>`.'
+        debug, production for the App Store). Pushes carry `dreamId` and `type` (`interpretation_ready`, then `video_ready`
+        when the dream video is made; older builds may still see `image_ready`) to open the dream; both use the collapse id
+        `dream-<id>`.'
       security:
       - bearer: []
       requestBody:

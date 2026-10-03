@@ -113,7 +113,7 @@ private struct RouteDestination: View {
                                            drafts: dependencies.drafts, appState: appState,
                                            unlink: dependencies.unlinkAccount,
                                            unregisterPush: dependencies.unregisterPush),
-                analytics: dependencies.analytics))
+                analytics: dependencies.analytics, dataExport: dependencies.dataExport))
         case .voice:
             ViewModelHost {
                 VoicePickerViewModel(appState: appState, service: dependencies.voices, player: AVVoicePlayback())

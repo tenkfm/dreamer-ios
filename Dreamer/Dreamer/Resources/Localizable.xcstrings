@@ -37,6 +37,7 @@
     "12": {
       "shouldTranslate": false
     },
+    "A copy of your account, dreams, notes and interpretations as a JSON file. Links to images and voice-overs in it work for one hour.": {},
     "A dream is waiting": {},
     "A dream keeps coming back": {},
     "A dream you told": {},
@@ -65,6 +66,7 @@
     "Continue recording": {},
     "Copied": {},
     "Couldn’t delete this dream. Please try again.": {},
+    "Couldn’t export your data. Check your connection and try again.": {},
     "Couldn’t make a new image. Please try again.": {},
     "Couldn’t open Instagram": {},
     "Couldn’t play your dream video. Please try again.": {},
@@ -258,6 +260,7 @@
     "Writing your interpretation": {},
     "Yearly": {},
     "Yesterday": {},
+    "You can export your data 3 times an hour. Try again later.": {},
     "Your %@": {},
     "Your %@ subscription is restored.": {},
     "Your dream": {},

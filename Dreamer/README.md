@@ -437,8 +437,20 @@ again whenever it goes to the background, and hides its content in the app switc
 passcode is the fallback (`deviceOwnerAuthentication`). `NSFaceIDUsageDescription` is in
 Info.plist. Debug: `-lockJournal`.
 
+Export my data (contract 1.6.2, `Services/DataExport.swift`): a Settings row right above the account
+deletion, with the footnote on what the file holds. A tap shows a spinner in the row, ignores further
+taps and calls `GET /v1/me/export` outside the generated client (`APIClient+Raw`), so the JSON keeps
+every field and the server's order instead of being decoded and encoded again; the bearer token and
+the refresh on 401 still apply, and no middleware or crash report sees the body. The bytes go to
+`tmp/mooncatch-export-YYYY-MM-DD.json` (local date, complete protection) and the system share sheet
+(Files, AirDrop, Mail); the file is deleted when the sheet is gone, shared or not. 429 says "You can
+export your data 3 times an hour. Try again later.", a session that could not be refreshed says
+nothing (the app is back at sign-in), anything else "Couldn’t export your data. Check your connection
+and try again." Nothing about the export, its size included, is logged or sent to analytics.
+
 Voice (contract 1.6.0, `Features/Settings/VoicePicker*`, `Services/Voices.swift`): Settings ->
-Voice shows the current voice's name and opens the picker. `GET /v1/voices` is asked every time it
+Voice shows the current voice's name (Eve by default since 1.6.2; Clint left the catalog) and opens
+the picker. `GET /v1/voices` is asked every time it
 opens (a preview the server was still making may be ready). All / Male / Female filter on the
 device by `gender`; neutral voices show under All only. Each row has a play button for
 `previewUrl` (streamed with `AVVoicePlayback`, the Listen session), one preview at a time, stopped

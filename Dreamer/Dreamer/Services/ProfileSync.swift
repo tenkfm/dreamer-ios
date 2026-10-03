@@ -20,7 +20,7 @@ actor MockProfileService: ProfileService {
 
     init(profile: UserProfile = UserProfile(id: "mock-user", email: nil, name: "Anna", goal: nil, preferredLens: .psychology,
                                             reminder: .init(enabled: true, time: "07:30"), timezone: "UTC",
-                                            nightMode: true, voice: "clint", createdAt: .now)) {
+                                            nightMode: true, voice: "eve", createdAt: .now)) {
         stored = profile
     }
 

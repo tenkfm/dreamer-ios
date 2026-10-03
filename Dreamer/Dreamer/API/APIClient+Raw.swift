@@ -1,9 +1,17 @@
 import Foundation
 
-// Calls that do not go through the generated client (the event stream). They get the same bearer
-// token, refresh-and-retry and error mapping as the generated calls.
+// Calls that do not go through the generated client (the event stream, the data export). They get
+// the same bearer token, refresh-and-retry and error mapping as the generated calls.
 
 extension APIClient {
+    /// `GET /v1/me/export`: everything the backend holds about the user (GDPR), as the server's own
+    /// bytes. Decoding into the generated model and encoding again would drop the fields this build
+    /// does not know and reorder the rest. Not through the generated client, so no middleware sees
+    /// the body; the session has no URL cache.
+    func exportData() async throws(APIError) -> Data {
+        try await sendAuthorized(path: "/v1/me/export").0
+    }
+
     /// Builds a request to `path` (with query) on the API host.
     func makeRequest(path: String, method: String = "GET", accept: String = "application/json") -> URLRequest {
         let url = URL(string: path, relativeTo: baseURL) ?? baseURL.appending(path: path)

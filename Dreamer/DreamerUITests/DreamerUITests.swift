@@ -160,6 +160,18 @@ final class DreamerUITests: XCTestCase {
             .waitForExistence(timeout: 5))
     }
 
+    /// The export (mock data) opens the system sheet with the JSON file, and closing it leaves Settings.
+    @MainActor
+    func testExportingDataOpensTheShareSheet() throws {
+        let app = launch(["-debugScreen", "settings"])
+        let export = app.buttons["Export my data"]
+        scrollTo(export, in: app)
+        export.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["Save to Files"].waitForExistence(timeout: 10))
+        app.swipeDown(velocity: .fast)
+        XCTAssertTrue(export.waitForExistence(timeout: 5))
+    }
+
     @MainActor
     func testDeletingTheAccountStartsOver() throws {
         let app = launch(["-debugScreen", "settings"])

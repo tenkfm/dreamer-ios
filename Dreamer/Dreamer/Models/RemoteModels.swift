@@ -31,7 +31,7 @@ struct UserProfile: Sendable, Equatable {
     /// IANA time zone the backend computes insights in.
     var timezone: String
     var nightMode: Bool
-    /// Id of the voice new dreams are read in; the default ("clint") until one is picked.
+    /// Id of the voice new dreams are read in; the default ("eve") until one is picked.
     var voice: String
     var createdAt: Date
 }
@@ -241,7 +241,7 @@ struct Voice: Sendable, Equatable, Identifiable, Codable {
         case male, female, neutral
     }
 
-    /// Ours ("clint", "eve"); the ElevenLabs id stays on the server.
+    /// Ours ("eve", "george"); the ElevenLabs id stays on the server.
     var id: String
     var name: String
     var gender: Gender

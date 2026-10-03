@@ -46,6 +46,8 @@ final class AppDependencies {
     let insights: InsightStore?
     /// The voices to read dreams in (Settings -> Voice).
     let voices: any VoiceService
+    /// Settings -> "Export my data".
+    let dataExport: any DataExporting
     /// Install attribution (the MMP); a no-op until it is chosen.
     let attribution: any AttributionService
     /// Ad networks' SDKs (Meta, TikTok); none until their app ids exist.
@@ -86,6 +88,7 @@ final class AppDependencies {
          shareCards: (any ShareCardProviding)? = nil,
          insights: InsightStore? = nil,
          voices: any VoiceService = MockVoiceService(),
+         dataExport: any DataExporting = MockDataExport(),
          attribution: any AttributionService = NoopAttribution(),
          adNetworks: [any AdNetworkSDK] = [],
          instagramAppID: String? = nil,
@@ -121,6 +124,7 @@ final class AppDependencies {
         self.shareCards = shareCards
         self.insights = insights
         self.voices = voices
+        self.dataExport = dataExport
         self.attribution = attribution
         self.adNetworks = adNetworks
         trackingConsent = TrackingConsent(permission: trackingPermission, analytics: analytics,
@@ -221,6 +225,7 @@ final class AppDependencies {
             shareCards: APIShareCardProvider(client: api),
             insights: InsightStore(service: api),
             voices: api,
+            dataExport: api,
             instagramAppID: config.facebookAppID,
             makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
             makeReadAloudService: {

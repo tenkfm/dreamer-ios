@@ -29,23 +29,83 @@ final class SettingsViewModel {
     private let purchases: any PurchaseService
     private let account: any AccountActions
     private let analytics: any Analytics
+    private let dataExport: any DataExporting
     private let calendar: Calendar
+    private let now: () -> Date
 
     init(appState: AppState, purchases: any PurchaseService, account: any AccountActions,
-         analytics: any Analytics = NoopAnalytics(), calendar: Calendar = .current) {
+         analytics: any Analytics = NoopAnalytics(), dataExport: any DataExporting = MockDataExport(),
+         calendar: Calendar = .current, now: @escaping () -> Date = Date.init) {
         self.appState = appState
         self.purchases = purchases
         self.account = account
         self.analytics = analytics
+        self.dataExport = dataExport
         self.calendar = calendar
+        self.now = now
     }
 
-    /// Settings -> Subscription: subscribers manage it in the App Store sheet, others see the plans.
     /// The voice dreams are read in; its id until the voice list has named it.
     var voiceName: String { appState.voiceName ?? appState.voiceID.capitalized }
 
     func openVoice() { appState.push(.voice, on: appState.selectedTab) }
 
+    // MARK: Data export
+
+    /// The export is being fetched: the row shows a spinner and further taps are ignored.
+    private(set) var isExporting = false
+    /// Set to present the share sheet with the export file.
+    var exportFile: ExportFile?
+    /// The file on disk until its sheet is gone (`exportFile` is cleared before the sheet closes).
+    @ObservationIgnored private var writtenExport: URL?
+
+    struct ExportFile: Identifiable {
+        let url: URL
+        var id: URL { url }
+    }
+
+    /// "Export my data": the server's JSON as is, to a temporary file for the share sheet. Nothing
+    /// about it (its size included) is logged or reported.
+    func exportData() async {
+        guard !isExporting else { return }
+        isExporting = true
+        defer { isExporting = false }
+        do {
+            let data = try await dataExport.exportData()
+            let url = try DataExportFile.write(data, on: now(), calendar: calendar)
+            writtenExport = url
+            exportFile = ExportFile(url: url)
+        } catch let error as APIError {
+            switch error {
+            // The session ended and the refresh failed: the app is already back at sign-in.
+            case .signedOut: return
+            case .server(let server) where server.code == .authRequired || server.code == .authInvalidToken: return
+            case .server(let server) where server.code == .rateLimited:
+                alertMessage = String(localized: "You can export your data 3 times an hour. Try again later.")
+            default:
+                alertMessage = String(localized: "Couldn’t export your data. Check your connection and try again.")
+            }
+            haptic = HapticEvent(.error)
+        } catch {
+            haptic = HapticEvent(.error)
+            alertMessage = String(localized: "Couldn’t export your data. Check your connection and try again.")
+        }
+    }
+
+    /// The share sheet finished; `completed` is false when the user cancelled.
+    func exportShared(completed: Bool) {
+        if completed { haptic = HapticEvent(.success) }
+        exportFile = nil
+    }
+
+    /// The sheet is gone (shared, cancelled or swiped away): the file with every dream goes too.
+    func exportSheetDismissed() {
+        if let writtenExport { DataExportFile.remove(writtenExport) }
+        writtenExport = nil
+        exportFile = nil
+    }
+
+    /// Settings -> Subscription: subscribers manage it in the App Store sheet, others see the plans.
     func openSubscription() {
         if appState.subscription != .none {
             isManagingSubscription = true

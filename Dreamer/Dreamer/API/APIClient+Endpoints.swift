@@ -100,14 +100,6 @@ extension APIClient {
         guard case .noContent = output else { return try unexpected() }
     }
 
-    /// Everything the backend holds about the user, as JSON (GDPR export).
-    func exportData() async throws(APIError) -> Data {
-        let output = try await perform { try await client.exportData() }
-        guard case .ok(let ok) = output else { return try unexpected() }
-        let export = try body { try ok.body.json }
-        return try body { try JSONEncoder().encode(export) }
-    }
-
     // MARK: - Dreams
 
     /// Idempotent by `clientId`: `created` is false when the server already had this dream.
