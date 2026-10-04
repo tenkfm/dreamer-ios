@@ -12,6 +12,10 @@ REVENUECAT_API_KEY =
 POSTHOG_API_KEY =
 POSTHOG_HOST =
 SENTRY_DSN =
+// AppsFlyer: the dev key comes from Secrets.xcconfig (Release only, like the analytics); the App
+// Store id of Mooncatch is public. Empty key: no install attribution.
+APPSFLYER_DEV_KEY =
+APPSFLYER_APPLE_APP_ID = 6817921054
 // Meta app id for sharing to Instagram Stories (not a secret; value from Tony, blocker IOS-05.6).
 // Empty: the Stories button is hidden and sharing goes through the share sheet only.
 FACEBOOK_APP_ID =

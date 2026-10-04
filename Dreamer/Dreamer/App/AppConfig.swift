@@ -17,6 +17,9 @@ struct AppConfig: Sendable, Equatable {
     let sentryDSN: String?
     /// Instagram Stories needs the Meta app id in its share URL; nil hides the Stories button.
     let facebookAppID: String?
+    /// AppsFlyer's dev key and the App Store id; attribution is off without the key.
+    let appsFlyerDevKey: String?
+    let appsFlyerAppleAppID: String?
     /// The iOS OAuth client id Google's SDK reads (`GIDClientID`); nil hides the Google button.
     let googleClientID: String?
     /// Which APNs the device token belongs to (the aps-environment entitlement of the build).
@@ -43,6 +46,8 @@ struct AppConfig: Sendable, Equatable {
         postHogHost = value("DreamerPostHogHost").flatMap(URL.init(string:))
         sentryDSN = value("DreamerSentryDSN")
         facebookAppID = value("DreamerFacebookAppID")
+        appsFlyerDevKey = value("DreamerAppsFlyerDevKey")
+        appsFlyerAppleAppID = value("DreamerAppsFlyerAppleAppID")
         googleClientID = GoogleClientID.validated(value("GIDClientID"))
         pushEnvironment = value("DreamerAPSEnvironment") == "production" ? .production : .sandbox
     }

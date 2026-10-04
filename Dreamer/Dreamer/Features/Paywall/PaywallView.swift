@@ -31,7 +31,6 @@ struct PaywallView: View {
         .haptic(viewModel.haptic)
         .task { await viewModel.loadProducts() }
         .onAppear { viewModel.viewed() }
-        .trackScreen(.paywall)
         .alert("Mooncatch", isPresented: alertBinding) {
             Button("OK", role: .cancel) {}
         } message: {

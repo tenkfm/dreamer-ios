@@ -55,8 +55,10 @@ final class MockTrackingPermission: TrackingPermission {
 }
 
 /// When to ask about tracking: our explanation first, then the system alert, at a moment chosen by
-/// the `attAfterFirstDream` flag (A/B): on the first Home, or after the first interpretation. Install measurement starts with the answer; without consent the app works the
-/// same and attribution relies on SKAN and AEM.
+/// the `attAfterFirstDream` flag (A/B): on the first Home, or after the first interpretation.
+/// AppsFlyer starts with every app open but waits up to a minute for this answer before it reports,
+/// so an answer given in time sends the IDFA; the answer also reaches RevenueCat. Without consent
+/// the app works the same and attribution relies on SKAN and AEM.
 @MainActor
 @Observable
 final class TrackingConsent {
@@ -72,21 +74,19 @@ final class TrackingConsent {
     var isPrePromptPresented = false
 
     @ObservationIgnored private let permission: any TrackingPermission
-    @ObservationIgnored private let analytics: any Analytics
     @ObservationIgnored private let measurement: MeasurementStack
     @ObservationIgnored private let moment: Moment
     @ObservationIgnored private var measurementStarted = false
 
-    init(permission: any TrackingPermission, analytics: any Analytics, measurement: MeasurementStack, askAfterFirstDream: Bool) {
+    init(permission: any TrackingPermission, measurement: MeasurementStack, askAfterFirstDream: Bool) {
         self.permission = permission
-        self.analytics = analytics
         self.measurement = measurement
         moment = askAfterFirstDream ? .firstInterpretation : .firstHome
         status = permission.status
     }
 
-    /// Launch: an earlier answer (or a restriction) starts measurement at once; otherwise it waits
-    /// for the question, so no SDK starts before the user could say no.
+    /// Launch: an earlier answer (or a restriction) is handed on at once; otherwise it waits for
+    /// the question, so the IDFA is never read before the user could say no.
     func launched() async {
         guard status != .notDetermined else { return }
         await startMeasurement()
@@ -98,12 +98,11 @@ final class TrackingConsent {
         isPrePromptPresented = true
     }
 
-    /// "Continue" on our explanation: the system alert, the answer to analytics and every SDK.
+    /// "Continue" on our explanation: the system alert, then the answer to every SDK.
     func continueToSystemPrompt() async {
         isPrePromptPresented = false
         let answer = await permission.request()
         status = answer
-        analytics.track(.attResponse(status: answer))
         await startMeasurement()
     }
 

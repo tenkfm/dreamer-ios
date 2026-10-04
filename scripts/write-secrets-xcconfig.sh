@@ -4,7 +4,7 @@
 set -euo pipefail
 
 OUT="$(cd "$(dirname "$0")/.." && pwd)/Dreamer/Config/Secrets.xcconfig"
-NAMES=(REVENUECAT_API_KEY POSTHOG_API_KEY POSTHOG_HOST SENTRY_DSN)
+NAMES=(REVENUECAT_API_KEY POSTHOG_API_KEY POSTHOG_HOST SENTRY_DSN APPSFLYER_DEV_KEY)
 
 # "//" starts a comment in xcconfig files, so URLs are written as "https:/$()/host".
 escape_url() { printf '%s' "$1" | sed 's#://#:/$()/#'; }

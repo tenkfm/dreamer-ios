@@ -72,7 +72,6 @@ enum AnalyticsEvent: Equatable, Sendable {
     case librarySymbolOpened(slug: String)
     case pushOpened(type: String)
     /// The App Tracking Transparency answer (IOS-08.4; not in tracking.ts yet, blocker).
-    case attResponse(status: TrackingStatus)
 
     var name: String {
         switch self {
@@ -94,7 +93,6 @@ enum AnalyticsEvent: Equatable, Sendable {
         case .journalOpened: "journal_opened"
         case .librarySymbolOpened: "library_symbol_opened"
         case .pushOpened: "push_opened"
-        case .attResponse: "att_response"
         }
     }
 
@@ -119,7 +117,6 @@ enum AnalyticsEvent: Equatable, Sendable {
         case .dreamShared(let target): ["target": .string(target.rawValue)]
         case .librarySymbolOpened(let slug): ["slug": .string(String(slug.prefix(60)))]
         case .pushOpened(let type): ["type": .string(type)]
-        case .attResponse(let status): ["status": .string(status.rawValue)]
         }
     }
 }
@@ -137,32 +134,20 @@ enum ShareTarget: String, Sendable {
 /// Product analytics (PostHog in the app, a recorder in tests).
 protocol Analytics: Sendable {
     func track(_ event: AnalyticsEvent)
-    /// A screen was shown (names from `AnalyticsScreen`).
-    func screen(_ screen: AnalyticsScreen)
     /// Sent with every later event: the preferred lens and the paywall variant. Never personal data.
     func setContext(_ context: AnalyticsContext)
     /// The backend user id (the same distinct id the server uses). Never an email.
     func identify(userID: String)
     /// After sign-out and account deletion.
     func reset()
+    /// The install's campaign from the MMP, on the first launch: `app_installed`, with the campaign
+    /// as person properties set once (utm_*), so the funnel splits by campaign and creative.
+    func installAttributed(_ campaign: InstallCampaign)
 }
 
 extension Analytics {
-    func screen(_ screen: AnalyticsScreen) {}
     func setContext(_ context: AnalyticsContext) {}
-}
-
-/// Screen names for screen views.
-enum AnalyticsScreen: String, Sendable {
-    case onboarding = "Onboarding"
-    case paywall = "Paywall"
-    case home = "Home"
-    case journal = "Journal"
-    case library = "Library"
-    case settings = "Settings"
-    case interpretation = "Interpretation"
-    case symbol = "Symbol"
-    case record = "Record"
+    func installAttributed(_ campaign: InstallCampaign) {}
 }
 
 /// Super properties: who the user is in product terms, nothing personal.
@@ -193,31 +178,32 @@ final class RecordingAnalytics: Analytics {
     private let storage = OSAllocatedUnfairLock<[AnalyticsEvent]>(initialState: [])
     private let identities = OSAllocatedUnfairLock<[String?]>(initialState: [])
 
-    private let screens = OSAllocatedUnfairLock<[AnalyticsScreen]>(initialState: [])
+    private let installs = OSAllocatedUnfairLock<[InstallCampaign]>(initialState: [])
     private let contexts = OSAllocatedUnfairLock<[AnalyticsContext]>(initialState: [])
 
     var events: [AnalyticsEvent] { storage.withLock { $0 } }
-    var screenViews: [AnalyticsScreen] { screens.withLock { $0 } }
+    var installCampaigns: [InstallCampaign] { installs.withLock { $0 } }
     var context: AnalyticsContext? { contexts.withLock { $0.last } }
     /// nil entries are resets.
     var identified: [String?] { identities.withLock { $0 } }
 
     func track(_ event: AnalyticsEvent) { storage.withLock { $0.append(event) } }
-    func screen(_ screen: AnalyticsScreen) { screens.withLock { $0.append(screen) } }
+    func installAttributed(_ campaign: InstallCampaign) { installs.withLock { $0.append(campaign) } }
     func setContext(_ context: AnalyticsContext) { contexts.withLock { $0.append(context) } }
     func identify(userID: String) { identities.withLock { $0.append(userID) } }
     func reset() { identities.withLock { $0.append(nil) } }
 }
 
-/// PostHog: the plan's events with typed properties, screen views, the context as super
-/// properties, and the backend user id as the distinct id (the server sends under the same id).
+/// PostHog: exactly the plan's events with typed properties (no screen views: the plan has none),
+/// the context as super properties, and the backend user id as the distinct id (the server sends
+/// under the same id).
 struct PostHogAnalytics: Analytics {
     func track(_ event: AnalyticsEvent) {
         PostHogSDK.shared.capture(event.name, properties: event.properties.mapValues(\.raw))
     }
 
-    func screen(_ screen: AnalyticsScreen) {
-        PostHogSDK.shared.screen(screen.rawValue)
+    func installAttributed(_ campaign: InstallCampaign) {
+        PostHogSDK.shared.capture("app_installed", userPropertiesSetOnce: campaign.userProperties)
     }
 
     func setContext(_ context: AnalyticsContext) {
@@ -231,6 +217,23 @@ struct PostHogAnalytics: Analytics {
     func reset() {
         PostHogSDK.shared.reset()
     }
+}
+
+/// Sends the plan's events on, and the paywall views to the MMP too, where they optimise the ads:
+/// one place for every paywall.
+struct AttributedAnalytics: Analytics {
+    let base: any Analytics
+    let attribution: any AttributionService
+
+    func track(_ event: AnalyticsEvent) {
+        base.track(event)
+        if case .paywallViewed = event { attribution.log(.paywallViewed) }
+    }
+
+    func setContext(_ context: AnalyticsContext) { base.setContext(context) }
+    func identify(userID: String) { base.identify(userID: userID) }
+    func reset() { base.reset() }
+    func installAttributed(_ campaign: InstallCampaign) { base.installAttributed(campaign) }
 }
 
 enum AnalyticsFactory {

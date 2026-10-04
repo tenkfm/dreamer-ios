@@ -15,9 +15,14 @@ enum PostHogBootstrap {
         guard isFirstCall else { return true }
 
         let postHog = PostHogConfig(projectToken: projectToken, host: host.absoluteString)
-        // Events are sent explicitly by the analytics service (tracking plan), nothing automatic.
-        postHog.captureApplicationLifecycleEvents = false
+        // App opened / backgrounded only; every other event is named by hand (tracking plan).
+        postHog.captureApplicationLifecycleEvents = true
         postHog.captureScreenViews = false
+        // Never: autocapture would pick up text on screen and a replay would record it, and the
+        // screens show dreams.
+        postHog.captureElementInteractions = false
+        postHog.sessionReplay = false
+        postHog.personProfiles = .identifiedOnly
         postHog.preloadFeatureFlags = true
         PostHogSDK.shared.setup(postHog)
         return true

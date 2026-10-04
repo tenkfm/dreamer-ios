@@ -36,11 +36,11 @@ change to it goes through the backend (a blocker, never an edit from this repo).
 | `dream_shared` | `target` (share_sheet, photos), only when the share finished | `InterpretationViewModel` |
 | `journal_opened` | - | `JournalViewModel` |
 | `library_symbol_opened` | `slug` | `SymbolDetailViewModel` |
-| `push_opened` | `type` (interpretation_ready, image_ready) | `RootView` |
-| `att_response` | `status` (not in the plan yet: blocker) | `TrackingConsent` |
+| `push_opened` | `type` (interpretation_ready, video_ready) | `RootView` |
+| `app_installed` | none; person properties set once: `utm_source`, `utm_campaign`, `utm_content`, `utm_term` | `AppsFlyerAttribution` (first launch's conversion data) |
 
-Screen views (`Home`, `Journal`, `Library`, `Settings`, `Interpretation`, `Symbol`, `Record`,
-`Paywall`, `Onboarding`) come from `.trackScreen(_:)` on each screen.
+No screen views and no autocapture: the app sends exactly these events, plus PostHog's lifecycle
+events (app opened / backgrounded). Session replay is off.
 
 Server events (sign-up, dream created, interpretation ready, subscription changes, ...) and the
 revenue events (trial started, purchased; through RevenueCat's integrations) are not sent by the
@@ -71,8 +71,9 @@ In Debug builds, override any flag at launch: `-featureFlag ttsEnabled=false`.
 
 ## Seeing the SDKs at work
 
-**PostHog.** Put `POSTHOG_API_KEY` and `POSTHOG_HOST` in `Config/Secrets.xcconfig`, run a Debug
-build with `-liveServices` (or no debug screen), and watch PostHog -> Activity -> Live events.
+**PostHog.** The keys are Release-only (`POSTHOG_API_KEY[config=Release]` and
+`POSTHOG_HOST[config=Release]` in `Config/Secrets.xcconfig`): install a Release build on a device and
+watch PostHog -> Activity -> Live events, project Mooncatch.
 Without a key, every event goes to the unified log instead:
 
 ```
@@ -92,8 +93,9 @@ in the Xcode console). Use a sandbox Apple ID on a device. Without a key, the ap
 expires or refunds a purchase to test the paywall's return.
 
 **Tracking question and attribution.** `-askTracking` shows the tracking question in Debug.
-Attribution and the ad SDKs are protocols without an implementation until the MMP and the ad
-networks' ids exist (blockers). `MeasurementStack` is where they start with the user's answer.
+AppsFlyer runs in Release builds (its dev key is Release-only): register the device as a test device
+in AppsFlyer and use SDK Integration Test; the install shows our user id as customer user id. The
+ad networks' SDKs are protocols without an implementation until their ids exist (blockers).
 
 **Launch time.** Debug and Staging log the time to the first frame:
 

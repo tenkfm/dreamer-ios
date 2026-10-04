@@ -127,8 +127,9 @@ final class AppDependencies {
         self.dataExport = dataExport
         self.attribution = attribution
         self.adNetworks = adNetworks
-        trackingConsent = TrackingConsent(permission: trackingPermission, analytics: analytics,
-                                          measurement: MeasurementStack(attribution: attribution, adNetworks: adNetworks),
+        trackingConsent = TrackingConsent(permission: trackingPermission,
+                                          measurement: MeasurementStack(attribution: attribution, adNetworks: adNetworks,
+                                                                        purchases: purchases),
                                           askAfterFirstDream: featureFlags.isEnabled(.attAfterFirstDream))
         self.instagramAppID = instagramAppID
         self.makeSpeechService = makeSpeechService
@@ -199,8 +200,15 @@ final class AppDependencies {
             ?? InMemoryDreamStore(seed: [])
         let serverSpeech = featureFlags.isEnabled(.serverSttFallback)
         let ttsEnabled = featureFlags.isEnabled(.ttsEnabled)
-        // Events go to PostHog when the build has its key (the debug log otherwise).
-        let analytics = AnalyticsFactory.make(config: config)
+        // Events go to PostHog when the build has its key (the debug log otherwise). Analytics and
+        // attribution have keys only in Release: the test builds measure nothing.
+        let postHog = AnalyticsFactory.make(config: config)
+        let attribution: any AttributionService = {
+            guard let devKey = config.appsFlyerDevKey, let appID = config.appsFlyerAppleAppID else { return NoopAttribution() }
+            return AppsFlyerAttribution(devKey: devKey, appleAppID: appID, userID: UserDefaultsPreferencesStore().load().userID,
+                                        analytics: postHog)
+        }()
+        let analytics = AttributedAnalytics(base: postHog, attribution: attribution)
         return AppDependencies(
             mode: .live,
             api: api,
@@ -226,6 +234,7 @@ final class AppDependencies {
             insights: InsightStore(service: api),
             voices: api,
             dataExport: api,
+            attribution: attribution,
             instagramAppID: config.facebookAppID,
             makeSpeechService: { OnDeviceSpeechService(keepsAudio: serverSpeech) },
             makeReadAloudService: {
@@ -362,17 +371,12 @@ extension AppDependencies {
         crashReporter.setUserID(userID)
     }
 
-    /// After sign-out, account deletion or a revoked session.
-    /// Everything that measures installs, started with the tracking answer.
-    var measurement: MeasurementStack {
-        MeasurementStack(attribution: attribution, adNetworks: adNetworks)
-    }
-
     /// Sign-out: remove the push token while the session can still do it.
     func unregisterPush() async {
         await pushDevices.unregister(token: PushRegistration.shared.token)
     }
 
+    /// After sign-out, account deletion or a revoked session.
     func unlinkAccount() async {
         await imageLoader?.removeAll()
         DreamVideoFiles.purge()

@@ -106,13 +106,17 @@ struct RevenueCatPurchaseService: PurchaseService {
         _ = try? await Purchases.shared.logIn(userID)
     }
 
-    /// `$appsflyerId` / `$adjustId` plus the device identifiers (IDFA only with tracking allowed),
-    /// so RevenueCat's MMP integration can attribute trial_start and purchase.
+    /// `$appsflyerId` / `$adjustId`, so RevenueCat's MMP integration can attribute trial_start and
+    /// purchase.
     func setAttribution(_ id: AttributionID) {
         switch id {
         case .appsFlyer(let value): Purchases.shared.attribution.setAppsflyerID(value)
         case .adjust(let value): Purchases.shared.attribution.setAdjustID(value)
         }
+    }
+
+    /// Only after the tracking answer: asked before it, the IDFA would be empty for good.
+    func collectDeviceIdentifiers() {
         Purchases.shared.attribution.collectDeviceIdentifiers()
     }
 

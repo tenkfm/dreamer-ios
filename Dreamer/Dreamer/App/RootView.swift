@@ -13,7 +13,8 @@ struct RootView: View {
             switch appState.rootScreen {
             case .onboarding:
                 OnboardingFlowView(viewModel: OnboardingViewModel(appState: appState, step: initialOnboardingStep,
-                                                                  analytics: dependencies.analytics))
+                                                                  analytics: dependencies.analytics,
+                                                                  attribution: dependencies.attribution))
                     .offlineBannerInset()
                     .transition(.opacity)
             case .paywall:
@@ -111,8 +112,11 @@ struct RootView: View {
         #if DEBUG
         .task { if let url = DebugLaunch.openLink { open(url) } }
         #endif
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { appState.refreshClock() }
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            guard phase == .active else { return }
+            appState.refreshClock()
+            // A session for the MMP at every return (it waits for the tracking answer by itself).
+            dependencies.attribution.appBecameActive()
         }
         .overlay {
             // Above everything, the pre-prompts included: nothing of the journal shows while locked.

@@ -77,12 +77,12 @@ This is what the app collects, taken from the code. The product board owns the f
 | Name | Sign in with Apple, first name only (backend) | App functionality | Yes | No |
 | User content: dream texts, notes | Backend | App functionality | Yes | No |
 | Audio data | Server transcription fallback only; deleted after transcription (IOS-04.5) | App functionality | Yes | No |
-| User ID | Backend id; PostHog, Sentry and RevenueCat get the same id | App functionality, analytics | Yes | No |
-| Purchase history | RevenueCat | App functionality | Yes | No |
-| Product interaction | PostHog: tracking-plan events, no dream content | Analytics | Yes | No |
+| User ID | Backend id; PostHog, Sentry, RevenueCat and AppsFlyer (customer user id) get the same id | App functionality, analytics, third-party advertising | Yes | Yes |
+| Purchase history | RevenueCat; trials and purchases go on to AppsFlyer, Meta and TikTok | App functionality, third-party advertising | Yes | Yes |
+| Product interaction | PostHog: tracking-plan events, no dream content; AppsFlyer: registration and paywall views | Analytics, third-party advertising | Yes | Yes |
 | Crash data, performance data, other diagnostic data | Sentry: codes and the user id only | App functionality | Yes | No |
 | Other usage data | PostHog SDK (declared in its manifest) | Analytics | Yes | No |
-| Device ID (IDFA) | MMP and ad networks, only after the user allows tracking (IOS-08.2 to 08.4) | Third-party advertising, attribution | No | Yes |
+| Device ID (IDFA) | AppsFlyer (and the ad networks once added), only after the user allows tracking | Third-party advertising, analytics | Yes (AppsFlyer links it to our user id) | Yes |
 | Advertising data | MMP, Meta and TikTok (once integrated) | Third-party advertising | No | Yes |
 
 The app's `Dreamer/Resources/PrivacyInfo.xcprivacy` declares its own part; RevenueCat, PostHog and

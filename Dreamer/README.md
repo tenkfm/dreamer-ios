@@ -486,11 +486,16 @@ The paywall variant is not a flag: the backend assigns it (`GET /v1/subscription
 
 `Services/Analytics.swift` is the only place with event names, properties and their allowed values.
 All of them are the client-owned events of `../dreamerweb/docs/tracking-plan.md`, with numbers and
-booleans kept typed. With `POSTHOG_API_KEY` set, `PostHogAnalytics` sends them to PostHog;
-otherwise, and in mock mode, they only go to the debug log. After sign-in the user is identified by
+booleans kept typed. With `POSTHOG_API_KEY` set (Release only: EU project Mooncatch,
+`https://eu.i.posthog.com`), `PostHogAnalytics` sends them to PostHog; otherwise, and in mock mode,
+they only go to the debug log. After sign-in the user is identified by
 the backend user id, the same distinct id the server uses, and at sign-out the identity is reset.
-Every event carries `preferred_lens` and `paywall_variant` as super properties. Screens report
-screen views with `.trackScreen(...)`. Automatic lifecycle and screen capture stay off. Dream text,
+Every event carries `preferred_lens` and `paywall_variant` as super properties. The app sends
+exactly the plan's events plus PostHog's app opened / backgrounded: no screen views, no autocapture
+of taps or text, no session replay (it would record dreams on screen), person profiles only for
+identified users. On the first launch AppsFlyer's campaign arrives as `app_installed` with
+`utm_source` (organic or the media source), `utm_campaign`, `utm_content` (the creative) and
+`utm_term` (the ad set) as person properties set once. Dream text,
 titles, notes, emails and names are never properties (`AnalyticsTests` checks the keys against the
 backend's forbidden list). Mappings to the plan's values: the paywall's gate and onboarding
 placements count as `onboarding`, Record and Analysis as `limit`; the voice switched off by the
@@ -499,20 +504,23 @@ sent (see Blockers).
 
 ## Attribution
 
-`Services/Attribution.swift`: `AttributionService` starts install attribution once per launch,
-gets the backend user id at sign-in (`nil` at sign-out), and hands the MMP's install id to
-RevenueCat (`$appsflyerId` / `$adjustId`, plus `collectDeviceIdentifiers()`). This lets
-RevenueCat's server-side integration send trial_start and purchase to the MMP, so the app never
-sends revenue events itself. Until the MMP (AppsFlyer or Adjust) and its dev key are chosen,
-`NoopAttribution` is used and nothing is attributed (see Blockers). The chosen SDK plugs in behind
-the protocol, and its key goes into `Secrets.xcconfig`.
+AppsFlyer (`Services/AppsFlyerAttribution.swift`, SDK 6.18: 7.0 dropped the wait for the tracking
+answer). `APPSFLYER_DEV_KEY` (Secrets.xcconfig, Release only) and `APPSFLYER_APPLE_APP_ID`
+(6817921054, Shared.xcconfig). The SDK waits up to 60 s for the tracking answer and starts at every
+return to the foreground. Its customer user id is our user id: set at launch for a stored session,
+at sign-in, and cleared at sign-out. The app logs only `af_complete_registration` (the first sign-in
+of a new account) and `paywall_viewed` (`AttributedAnalytics`, one place for every paywall).
+Trials and purchases reach AppsFlyer through RevenueCat's integration (dashboard), never from the
+app, so nothing counts twice. RevenueCat gets the AppsFlyer id (`setAppsflyerID`) and, after the
+tracking answer, `collectDeviceIdentifiers()`. Without the key `NoopAttribution` is used.
 
 Ad networks (IOS-08.3): the Meta SDK (with Aggregated Event Measurement) and the TikTok Events SDK
 plug in as `AdNetworkSDK`s. `MeasurementStack` starts them with the attribution once per launch
 and passes on the user's tracking answer. Trials and purchases reach Meta and TikTok through the
 MMP, and SKAN conversion values follow the MMP's schema. None of them is registered until the
-Meta App ID and client token, the TikTok App ID and the SKAN schema exist (see Blockers). Their
-SKAdNetwork ids go into Info.plist together with the SDKs.
+Meta App ID and client token, the TikTok App ID and the SKAN schema exist (see Blockers).
+`SKAdNetworkItems` in Info.plist lists Meta's ids (v9wttpbfk9, n38lu8286q, from Meta's docs);
+TikTok's are still to add (see Blockers).
 
 ## Tracking consent (ATT)
 
@@ -520,10 +528,10 @@ SKAdNetwork ids go into Info.plist together with the SDKs.
 set by the `attAfterFirstDream` flag. With the flag off (the default) it comes on the first Home
 after onboarding, before the reminder offer; with it on, after the first interpretation. Our
 explanation comes first (`TrackingPrePrompt`, a card in a translucent modal over Home with a
-single "Continue"), then the system alert. The answer is sent as `att_response {status}` and passed to every measurement SDK through
-`MeasurementStack`. With an earlier answer, or on a restricted device, measurement starts at
-launch. Otherwise nothing starts until the user has answered, so no SDK can use the IDFA before
-the user could refuse. A refusal changes nothing else in the app. `NSUserTrackingUsageDescription`
+single "Continue"), then the system alert. The answer is passed to every measurement SDK through
+`MeasurementStack`, and RevenueCat collects the device identifiers then. AppsFlyer starts at launch
+but waits up to a minute for the answer, so the IDFA is read only after a yes; an answer given later
+still reaches it, from then on. A refusal changes nothing else in the app. `NSUserTrackingUsageDescription`
 is in Info.plist. Debug: `-askTracking` with `-debugScreen home` (mock mode otherwise counts as
 answered "no").
 
@@ -628,11 +636,13 @@ email; neither the dream text nor the email may appear.
 ## Privacy manifest
 
 `Dreamer/Resources/PrivacyInfo.xcprivacy` declares:
-- no tracking (it becomes true with the MMP and ad SDKs, which bring their tracking domains);
+- tracking (AppsFlyer, with the user's consent): Device ID, and User ID, purchase history and
+  product interaction also for third-party advertising (AppsFlyer's own manifest lists its tracking
+  domains, which iOS blocks after a refusal);
 - the data the app collects, which matches docs/app-store-connect.md;
 - the required-reason APIs: UserDefaults for its own preferences (CA92.1), and system uptime to
   pace the recording waveform (35F9.1).
-RevenueCat, PostHog and Sentry include their own manifests. Organizer's Privacy Report of an
+RevenueCat, PostHog, Sentry and AppsFlyer include their own manifests. Organizer's Privacy Report of an
 archive combines them and must match the App Privacy answers.
 
 ## App Store Connect

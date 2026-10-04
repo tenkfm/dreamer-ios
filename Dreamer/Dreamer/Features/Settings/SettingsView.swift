@@ -45,7 +45,6 @@ struct SettingsView: View {
             }
             .scrollIndicators(.hidden)
         }
-        .trackScreen(.settings)
         .alert("Mooncatch", isPresented: lockAlert) {
             Button("OK", role: .cancel) {}
         } message: {

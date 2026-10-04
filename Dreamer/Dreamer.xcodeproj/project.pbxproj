@@ -14,6 +14,7 @@
 		3AF97CEC306DAABD009E2B34 /* HTTPTypes in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009B /* HTTPTypes */; };
 		D7A0000000000000000000BF /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009D /* RevenueCat */; };
 		D7A0000000000000000000C0 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = D7A00000000000000000009F /* GoogleSignIn */; };
+		D7A0000000000000000000F2 /* AppsFlyerLib in Frameworks */ = {isa = PBXBuildFile; productRef = D7A0000000000000000000F1 /* AppsFlyerLib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +88,7 @@
 				3AF97CE8306DAABD009E2B34 /* PostHog in Frameworks */,
 				D7A0000000000000000000BF /* RevenueCat in Frameworks */,
 				D7A0000000000000000000C0 /* GoogleSignIn in Frameworks */,
+				D7A0000000000000000000F2 /* AppsFlyerLib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +170,7 @@
 				D7A00000000000000000009B /* HTTPTypes */,
 				D7A00000000000000000009D /* RevenueCat */,
 				D7A00000000000000000009F /* GoogleSignIn */,
+				D7A0000000000000000000F1 /* AppsFlyerLib */,
 			);
 			productName = Dreamer;
 			productReference = D7A000000000000000000002 /* Dreamer.app */;
@@ -260,6 +263,7 @@
 				D7A00000000000000000009A /* XCRemoteSwiftPackageReference "swift-http-types" */,
 				D7A00000000000000000009C /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 				D7A00000000000000000009E /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				D7A0000000000000000000F0 /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7A000000000000000000007 /* Products */;
@@ -732,6 +736,14 @@
 				minimumVersion = 10.0.0;
 			};
 		};
+		D7A0000000000000000000F0 /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AppsFlyerSDK/AppsFlyerFramework";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.18.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -774,6 +786,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D7A00000000000000000009E /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignIn;
+		};
+		D7A0000000000000000000F1 /* AppsFlyerLib */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7A0000000000000000000F0 /* XCRemoteSwiftPackageReference "AppsFlyerFramework" */;
+			productName = AppsFlyerLib;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

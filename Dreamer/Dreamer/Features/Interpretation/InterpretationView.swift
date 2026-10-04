@@ -36,7 +36,6 @@ struct InterpretationView: View {
             viewModel.viewed()
             await viewModel.refreshDream()
         }
-        .trackScreen(.interpretation)
         .task(id: viewModel.imageRequest) { await viewModel.loadImage() }
         // Separate from the image: the film keeps being awaited after the picture is shown.
         .task(id: viewModel.imageRequest) { await viewModel.watchVideo() }

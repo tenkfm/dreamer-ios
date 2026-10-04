@@ -91,10 +91,13 @@ protocol PurchaseService: Sendable {
     func logOut() async
     /// The MMP's install id, for the purchase integration to attribute trials and purchases.
     func setAttribution(_ id: AttributionID)
+    /// The device identifiers, after the tracking answer (the IDFA only when it was yes).
+    func collectDeviceIdentifiers()
 }
 
 extension PurchaseService {
     func setAttribution(_ id: AttributionID) {}
+    func collectDeviceIdentifiers() {}
 }
 
 enum ReadAloudState: Equatable, Sendable {

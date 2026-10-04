@@ -45,7 +45,6 @@ struct HomeView: View {
         .sheet(item: $viewModel.article) { article in
             SafariView(url: article.url).ignoresSafeArea()
         }
-        .trackScreen(.home)
         // The first Home after onboarding offers the morning reminder (once).
         .task {
             // The tracking question first (placement A), then the reminder offer after it.

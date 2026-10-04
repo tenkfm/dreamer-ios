@@ -50,10 +50,13 @@ final class OnboardingViewModel {
 
     private let appState: AppState
     private let analytics: any Analytics
+    private let attribution: any AttributionService
 
-    init(appState: AppState, step: Step = .welcome, analytics: any Analytics = NoopAnalytics()) {
+    init(appState: AppState, step: Step = .welcome, analytics: any Analytics = NoopAnalytics(),
+         attribution: any AttributionService = NoopAttribution()) {
         self.appState = appState
         self.analytics = analytics
+        self.attribution = attribution
         lens = appState.preferredLens
         goal = appState.goal ?? .understand
         self.step = step
@@ -124,6 +127,7 @@ final class OnboardingViewModel {
         if let subscription { appState.serverSubscription = subscription }
         appState.signedIn(userID: session.userID, isNewUser: session.isNewUser)
         guard session.isNewUser else { return }
+        attribution.log(.completeRegistration)
         if appState.hasFreeInterpretation {
             appState.finishOnboardingWithoutPurchase()
         } else {

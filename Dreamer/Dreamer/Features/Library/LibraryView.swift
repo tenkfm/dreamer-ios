@@ -38,7 +38,6 @@ struct LibraryView: View {
         // while it scrolled.
         .animation(.soft(0.4), value: viewModel.listIdentity)
         .task(id: viewModel.category) { await viewModel.refresh() }
-        .trackScreen(.library)
     }
 
     private var categories: some View {

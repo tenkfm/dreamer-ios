@@ -47,7 +47,6 @@ struct OnboardingFlowView: View {
             .zIndex(1)
         }
         .sensoryFeedback(.selection, trigger: viewModel.step)
-        .trackScreen(.onboarding)
         // A sign-in link can arrive on any step, while the account screen does not exist yet: go
         // there, and it takes the token when it appears.
         .onChange(of: appState.pendingDeepLink, initial: true) { _, link in

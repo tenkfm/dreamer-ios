@@ -27,7 +27,6 @@ struct SymbolDetailView: View {
             }, center: { EmptyView() })
         }
         .task { await viewModel.appeared() }
-        .trackScreen(.symbol)
     }
 
     private func content(_ symbol: LibrarySymbol) -> some View {
