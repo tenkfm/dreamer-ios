@@ -68,6 +68,7 @@ jobs:
           POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
           POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          APPSFLYER_DEV_KEY: ${{ secrets.APPSFLYER_DEV_KEY }}
           API_HOST_RELEASE: ${{ secrets.API_HOST_RELEASE }}
         run: ../scripts/write-secrets-xcconfig.sh
 

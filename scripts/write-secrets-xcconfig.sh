@@ -5,6 +5,8 @@ set -euo pipefail
 
 OUT="$(cd "$(dirname "$0")/.." && pwd)/Dreamer/Config/Secrets.xcconfig"
 NAMES=(REVENUECAT_API_KEY POSTHOG_API_KEY POSTHOG_HOST SENTRY_DSN APPSFLYER_DEV_KEY)
+# Analytics and attribution measure production only: test builds would mix into the real funnel.
+RELEASE_ONLY=(POSTHOG_API_KEY POSTHOG_HOST APPSFLYER_DEV_KEY)
 
 # "//" starts a comment in xcconfig files, so URLs are written as "https:/$()/host".
 escape_url() { printf '%s' "$1" | sed 's#://#:/$()/#'; }
@@ -15,7 +17,9 @@ escape_url() { printf '%s' "$1" | sed 's#://#:/$()/#'; }
     value="${!name:-}"
     if [[ -n "$value" ]]; then
       [[ "$name" == *HOST* || "$name" == *DSN* ]] && value="$(escape_url "$value")"
-      echo "$name = $value"
+      key="$name"
+      [[ " ${RELEASE_ONLY[*]} " == *" $name "* ]] && key="$name[config=Release]"
+      echo "$key = $value"
       echo "set: $name" >&2
     fi
   done
