@@ -16,7 +16,7 @@ give; they are also listed under Blockers in PROGRESS.md.
 | Category | **Tony**: Health & Fitness or Lifestyle |
 | Privacy Policy URL | https://dreamerapp.io/privacy (`fastlane/metadata/en-US/privacy_url.txt`, `AppLinks.privacy`) |
 | Terms of Use (EULA) | https://dreamerapp.io/terms: linked at the end of the description (App Review 3.1.2 asks for it with subscriptions) and in the app (`AppLinks.terms`) |
-| Support URL | **Tony** (`AppLinks.support` is a placeholder) |
+| Support URL | Support address support@dreamerapp.io (`AppLinks.support`, Settings -> Contact support) |
 | Marketing URL | optional, **Tony** |
 | Copyright | **Tony** (the legal holder) |
 | Screenshots | `fastlane screenshots` (IOS-12.1) |
