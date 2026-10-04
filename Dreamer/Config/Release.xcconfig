@@ -2,9 +2,10 @@
 #include "Shared.xcconfig"
 
 APP_ENVIRONMENT = production
-// The production API domain is not chosen yet (blocker in PROGRESS.md). Empty = the app
-// has no API instead of silently hitting staging; set API_HOST[config=Release] in Secrets.xcconfig.
-API_HOST =
+// The production API. It also gives the Release build `applinks:api.dreamerapp.io` (the entitlements
+// list applinks:$(API_HOST)), so sign-in links of production open this build and never staging's.
+// Secrets.xcconfig may still override it with API_HOST[config=Release] (CI: API_HOST_RELEASE).
+API_HOST = api.dreamerapp.io
 APS_ENVIRONMENT = production
 APP_ATTEST_ENVIRONMENT = production
 PRODUCT_BUNDLE_IDENTIFIER = com.braincode.dreamer.io

@@ -21,8 +21,9 @@ manager, never in the repo.
 | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | dSYM upload (optional, needs `sentry-cli`) |
 
 The SDK keys go in `Config/Secrets.xcconfig`, copied from `Secrets.example.xcconfig`. CI writes
-this file from its secrets. The Release build also needs `API_HOST_RELEASE`, the production
-domain.
+this file from its secrets. The Release build talks to https://api.dreamerapp.io (`API_HOST` in
+`Release.xcconfig`, which also makes its `applinks:api.dreamerapp.io`); `API_HOST_RELEASE` only
+overrides it.
 
 ## Signing with match
 
