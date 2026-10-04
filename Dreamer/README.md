@@ -310,6 +310,14 @@ Main exists in Debug builds only.
 
 ## Purchases
 
+Every purchase and restore belongs to the signed-in account: the backend's RevenueCat webhook finds
+the user only by our user id (`id` of `GET /v1/me`, the same as the sign-in's `user.id`), and a
+purchase made as RevenueCat's anonymous `$RCAnonymousID` would unlock premium for nobody. So the SDK
+is configured with the stored user id when a session survives the relaunch, `logIn` runs at every
+sign-in, and `RevenueCatPurchaseService.ensureLinked()` checks `appUserID` before asking the store,
+calling `logIn` again if it had failed; without a link the purchase does not start
+(`PurchaseError.accountNotLinked`).
+
 `PurchaseService` has three implementations: `RevenueCatPurchaseService` (RevenueCat SDK over
 StoreKit 2, entitlement `premium`, app user id = backend user id) when `REVENUECAT_API_KEY` is
 set; `StoreKitPurchaseService` (StoreKit 2 directly) otherwise, so purchases can be tried before

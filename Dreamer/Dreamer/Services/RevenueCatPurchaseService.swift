@@ -1,4 +1,5 @@
 import Foundation
+import os
 @preconcurrency import RevenueCat
 
 /// Subscriptions through RevenueCat (StoreKit 2 underneath). Access is the `premium` entitlement;
@@ -7,14 +8,36 @@ import Foundation
 struct RevenueCatPurchaseService: PurchaseService {
     static let entitlementID = "premium"
 
-    /// Configures the SDK once, anonymous until `logIn`.
-    init(apiKey: String, debugLogs: Bool) {
+    /// The backend user id purchases must belong to: set at sign-in and for a session restored at
+    /// launch, cleared at sign-out. The server finds the account only by this id; a purchase made
+    /// by RevenueCat's anonymous `$RCAnonymousID` would unlock premium for nobody.
+    private static let account = OSAllocatedUnfairLock<String?>(initialState: nil)
+
+    /// Configures the SDK once: with the stored user id when a session survives the relaunch, so
+    /// the root paywall never starts anonymous; anonymous otherwise, until `logIn`.
+    init(apiKey: String, debugLogs: Bool, appUserID: String? = nil) {
         if !Purchases.isConfigured {
+            Self.account.withLock { $0 = appUserID }
             Purchases.logLevel = debugLogs ? .debug : .warn
             Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey)
+                .with(appUserID: appUserID)
                 .with(storeKitVersion: .storeKit2)
                 .build())
         }
+    }
+
+    /// Purchases and restores happen as the signed-in account. `logIn` runs in the background at
+    /// sign-in and its failure (no network) was silent, so a quick tap on the paywall could buy as
+    /// the anonymous id: the link is checked, and made, before the store is asked.
+    private func ensureLinked() async throws {
+        guard let userID = Self.account.withLock({ $0 }) else { throw PurchaseError.accountNotLinked }
+        if Purchases.shared.appUserID == userID { return }
+        do {
+            _ = try await Purchases.shared.logIn(userID)
+        } catch {
+            throw PurchaseError.accountNotLinked
+        }
+        guard Purchases.shared.appUserID == userID else { throw PurchaseError.accountNotLinked }
     }
 
     func products() async throws -> [PaywallProduct] {
@@ -43,6 +66,7 @@ struct RevenueCatPurchaseService: PurchaseService {
     }
 
     func purchase(_ plan: Plan) async throws -> PurchaseOutcome {
+        try await ensureLinked()
         guard let package = try await currentPackages().first(where: { Self.plan(for: $0) == plan }) else {
             throw PurchaseError.productNotFound
         }
@@ -60,7 +84,8 @@ struct RevenueCatPurchaseService: PurchaseService {
     }
 
     func restore() async throws -> EntitlementState {
-        Self.entitlement(from: try await Purchases.shared.restorePurchases())
+        try await ensureLinked()
+        return Self.entitlement(from: try await Purchases.shared.restorePurchases())
     }
 
     func entitlementUpdates() -> AsyncStream<EntitlementState> {
@@ -75,7 +100,9 @@ struct RevenueCatPurchaseService: PurchaseService {
         }
     }
 
+    /// A failure here (no network) is retried by `ensureLinked` before the next purchase.
     func logIn(userID: String) async {
+        Self.account.withLock { $0 = userID }
         _ = try? await Purchases.shared.logIn(userID)
     }
 
@@ -90,6 +117,7 @@ struct RevenueCatPurchaseService: PurchaseService {
     }
 
     func logOut() async {
+        Self.account.withLock { $0 = nil }
         guard !Purchases.shared.isAnonymous else { return }
         _ = try? await Purchases.shared.logOut()
     }

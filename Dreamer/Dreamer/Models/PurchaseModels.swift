@@ -52,6 +52,8 @@ enum PurchaseError: Error, Equatable {
     case productNotFound
     case notAllowed
     case storeUnavailable
+    /// The purchase could not be tied to the signed-in account (no session, or `logIn` failed).
+    case accountNotLinked
     case failed(String)
 }
 

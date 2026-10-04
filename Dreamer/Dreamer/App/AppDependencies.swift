@@ -255,7 +255,9 @@ final class AppDependencies {
     /// purchases can be tried in the simulator before the RevenueCat project exists.
     private static func livePurchases(config: AppConfig) -> any PurchaseService {
         if let key = config.revenueCatAPIKey {
-            return RevenueCatPurchaseService(apiKey: key, debugLogs: config.environment != .production)
+            // The session restored at launch: RevenueCat starts as that account, not anonymous.
+            return RevenueCatPurchaseService(apiKey: key, debugLogs: config.environment != .production,
+                                             appUserID: UserDefaultsPreferencesStore().load().userID)
         }
         return StoreKitPurchaseService()
     }
